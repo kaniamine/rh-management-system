@@ -1,3 +1,11 @@
 import { Routes } from '@angular/router';
 
-export const routes: Routes = [];
+export const routes: Routes = [
+  {
+    path: 'personnel',
+    loadChildren: () =>
+      import('./features/personnel/personnel-module').then(
+        (m) => m.PersonnelModule
+      ),
+  },
+];
