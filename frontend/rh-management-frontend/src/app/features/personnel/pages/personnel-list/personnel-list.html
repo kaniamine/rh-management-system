@@ -1,1 +1,202 @@
-<p>personnel-list works!</p>
+
+
+
+
+
+
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>Gestion du personnel</h1>
+      <p class="subtitle">Liste des employés + ajout rapide</p>
+    </div>
+
+    <button class="btn btn-primary" type="button">
+      + Ajouter employé
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <input class="input" type="text" placeholder="Rechercher (matricule, nom, prénom)..." />
+
+    <select class="input">
+      <option value="">Direction (toutes)</option>
+      <option>IT</option>
+      <option>RH</option>
+      <option>Production</option>
+      <option>Qualité</option>
+    </select>
+
+    <select class="input">
+      <option value="">Rôle (tous)</option>
+      <option>Employé</option>
+      <option>SH</option>
+      <option>DG</option>
+      <option>RH</option>
+      <option>Admin</option>
+    </select>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Matricule</th>
+          <th>Nom</th>
+          <th>Prénom</th>
+          <th>Direction</th>
+          <th>Service</th>
+          <th>Fonction</th>
+          <th>Rôle</th>
+          <th>Solde congés</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <!-- Ligne exemple 1 -->
+        <tr>
+          <td>001</td>
+          <td>Kani</td>
+          <td>Amine</td>
+          <td>IT</td>
+          <td>Développement</td>
+          <td>Développeur</td>
+          <td>Employé</td>
+          <td>12</td>
+          <td class="actions">
+            <button class="btn btn-light" type="button">Modifier</button>
+            <button class="btn btn-danger" type="button">Désactiver</button>
+          </td>
+        </tr>
+
+        <!-- Ligne exemple 2 -->
+        <tr>
+          <td>002</td>
+          <td>Ben</td>
+          <td>Ali</td>
+          <td>RH</td>
+          <td>Administration</td>
+          <td>RH</td>
+          <td>RH</td>
+          <td>25</td>
+          <td class="actions">
+            <button class="btn btn-light" type="button">Modifier</button>
+            <button class="btn btn-danger" type="button">Désactiver</button>
+          </td>
+        </tr>
+
+        <!-- Si table vide (optionnel) -->
+        <!--
+        <tr>
+          <td colspan="9" class="empty">
+            Aucun employé trouvé.
+          </td>
+        </tr>
+        -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination (simple UI) -->
+  <div class="pagination">
+    <span>Affichage 1–10 sur 24</span>
+
+    <div class="pagination-buttons">
+      <button class="btn btn-light" type="button">Précédent</button>
+      <button class="btn btn-light" type="button">Suivant</button>
+    </div>
+  </div>
+
+  <!-- ========================= -->
+  <!-- MODAL : Ajouter employé -->
+  <!-- ========================= -->
+  <!--
+    Pour l'instant, la modal est affichée en dur.
+    Après on la relie au bouton "Ajouter employé" avec Angular (isModalOpen).
+  -->
+  <div class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Ajouter un employé</h2>
+        <button class="btn btn-light" type="button">X</button>
+      </div>
+
+      <form class="form">
+        <div class="grid">
+          <div class="field">
+            <label>Matricule *</label>
+            <input class="input" type="text" placeholder="Ex: 001" />
+          </div>
+
+          <div class="field">
+            <label>Rôle *</label>
+            <select class="input">
+              <option>Employé</option>
+              <option>SH</option>
+              <option>DG</option>
+              <option>RH</option>
+              <option>Admin</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Nom *</label>
+            <input class="input" type="text" placeholder="Nom" />
+          </div>
+
+          <div class="field">
+            <label>Prénom *</label>
+            <input class="input" type="text" placeholder="Prénom" />
+          </div>
+
+          <div class="field">
+            <label>Direction *</label>
+            <select class="input">
+              <option>IT</option>
+              <option>RH</option>
+              <option>Production</option>
+              <option>Qualité</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Service</label>
+            <input class="input" type="text" placeholder="Service" />
+          </div>
+
+          <div class="field">
+            <label>Fonction</label>
+            <input class="input" type="text" placeholder="Fonction" />
+          </div>
+
+          <div class="field">
+            <label>Solde congés (jours)</label>
+            <input class="input" type="number" min="0" placeholder="0" />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-light" type="button">Annuler</button>
+          <button class="btn btn-primary" type="button">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <button class="btn btn-primary" type="button" (click)="openModal()">
+  + Ajouter employé
+</button>
+<button class="btn btn-light" type="button" (click)="closeModal()">Annuler</button>
+<button class="btn btn-primary" type="button" (click)="addEmployee()">Enregistrer</button>
+<button class="btn btn-light" type="button" (click)="closeModal()">X</button>
+<div class="modal-backdrop" *ngIf="isModalOpen">
+  <div class="modal">
+    ...
+  </div>
+</div>
+
+</div>
