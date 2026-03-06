@@ -209,8 +209,16 @@ label {
 }
 
 .page-footer {
+  display: flex;
   justify-content: flex-end;
-  margin-top: 12px;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-light {
+  background: #ffffff;
+  color: #222;
+  border: 1px solid #dddddd;
 }
 
 @media (max-width: 900px) {

@@ -109,8 +109,32 @@
     </div>
   </div>
 
-  <div class="page-footer">
-    <button class="btn btn-secondary" type="button">Annuler</button>
-    <button class="btn btn-primary" type="button">Soumettre la demande</button>
+<div class="page-footer">
+  <button class="btn btn-secondary" type="button">
+    Annuler
+  </button>
+
+  <button class="btn btn-success" type="button">
+    Enregistrer
+  </button>
+
+  <button class="btn btn-primary" type="button" (click)="showConfirm = true">
+    Soumettre la demande
+  </button>
+</div>
+
+<div class="modal-backdrop" *ngIf="showConfirm">
+  <div class="modal confirm-modal">
+    <h3>Confirmation</h3>
+    <p>Êtes-vous sûr de vouloir envoyer cette demande de congé ?</p>
+
+    <div class="modal-footer">
+      <button class="btn btn-light" type="button" (click)="showConfirm = false">
+        Retour
+      </button>
+      <button class="btn btn-primary" type="button" (click)="envoyerDemande()">
+        Confirmer
+      </button>
+    </div>
   </div>
 </div>

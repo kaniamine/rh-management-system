@@ -2,13 +2,20 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
+    path: 'personnel',
+    loadComponent: () =>
+      import('./features/personnel/pages/personnel-list/personnel-list')
+        .then(m => m.PersonnelList)
+  },
+  {
     path: 'conge',
-    loadChildren: () =>
-      import('./features/conge/conge-module').then(m => m.CongeModule)
+    loadComponent: () =>
+      import('./features/conge/pages/demande-conge/demande-conge')
+        .then(m => m.DemandeConge)
   },
   {
     path: '',
-    redirectTo: 'conge',
+    redirectTo: 'personnel',
     pathMatch: 'full'
   }
 ];
