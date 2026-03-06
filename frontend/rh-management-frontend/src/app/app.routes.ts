@@ -2,15 +2,13 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
-    path: 'personnel',
+    path: 'conge',
     loadChildren: () =>
-      import('./features/personnel/personnel-module').then(
-        (m) => m.PersonnelModule
-      )
+      import('./features/conge/conge-module').then(m => m.CongeModule)
   },
   {
     path: '',
-    redirectTo: 'personnel',
+    redirectTo: 'conge',
     pathMatch: 'full'
   }
 ];

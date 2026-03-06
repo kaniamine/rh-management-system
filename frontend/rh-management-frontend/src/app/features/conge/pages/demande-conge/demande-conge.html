@@ -1,0 +1,116 @@
+<div class="leave-page">
+  <div class="page-header">
+    <div>
+      <h1>Demande de congé</h1>
+      <p class="subtitle">Saisir une nouvelle demande de congé</p>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-secondary" type="button">Annuler</button>
+      <button class="btn btn-success" type="button">Enregistrer</button>
+    </div>
+  </div>
+
+  <div class="progress-bar">
+    <div class="step active">1. Informations</div>
+    <div class="step">2. Validation</div>
+    <div class="step">3. Confirmation</div>
+  </div>
+
+  <div class="card form-card">
+    <div class="card-title">Informations du demandeur</div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Nom et prénom *</label>
+        <input class="input" type="text" placeholder="Nom complet" />
+      </div>
+
+      <div class="field">
+        <label>Matricule *</label>
+        <input class="input" type="text" placeholder="Ex : 1025" />
+      </div>
+
+      <div class="field">
+        <label>Grade / Fonction</label>
+        <input class="input" type="text" placeholder="Ex : Agent administratif" />
+      </div>
+
+      <div class="field">
+        <label>Type de congé *</label>
+        <select class="input">
+          <option>Congé annuel</option>
+          <option>Congé exceptionnel</option>
+          <option>Congé sans solde</option>
+          <option>Congé maladie</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Date de début *</label>
+        <input class="input" type="date" />
+      </div>
+
+      <div class="field">
+        <label>Date de fin *</label>
+        <input class="input" type="date" />
+      </div>
+
+      <div class="field">
+        <label>Durée (jours) *</label>
+        <input class="input" type="number" min="1" placeholder="0" />
+      </div>
+
+      <div class="field">
+        <label>Solde disponible</label>
+        <input class="input readonly" type="text" value="18 jours" readonly />
+      </div>
+
+      <div class="field field-full">
+        <label>Motif</label>
+        <textarea class="input textarea" rows="4" placeholder="Motif de la demande"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Adresse pendant congé</label>
+        <input class="input" type="text" placeholder="Adresse" />
+      </div>
+
+      <div class="field">
+        <label>Numéro de téléphone</label>
+        <input class="input" type="tel" placeholder="Ex : 55 555 555" />
+      </div>
+    </div>
+  </div>
+
+  <div class="card info-card">
+    <div class="card-title">Traitement administratif</div>
+
+    <div class="info-grid">
+      <div class="info-box">
+        <span class="info-label">Avis du responsable direct</span>
+        <span class="badge waiting">En attente</span>
+      </div>
+
+      <div class="info-box">
+        <span class="info-label">Avis de la direction générale</span>
+        <span class="badge neutral">Non traité</span>
+      </div>
+
+      <div class="info-box">
+        <span class="info-label">Nombre de jours</span>
+        <span class="info-value">--</span>
+      </div>
+
+      <div class="info-box">
+        <span class="info-label">Reliquat</span>
+        <span class="info-value">--</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <button class="btn btn-secondary" type="button">Annuler</button>
+    <button class="btn btn-primary" type="button">Soumettre la demande</button>
+  </div>
+</div>
