@@ -6,6 +6,11 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./features/personnel/personnel-module').then(
         (m) => m.PersonnelModule
-      ),
+      )
   },
+  {
+    path: '',
+    redirectTo: 'personnel',
+    pathMatch: 'full'
+  }
 ];

@@ -1,9 +1,13 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-personnel-list',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './personnel-list.html',
-  styleUrls: ['./personnel-list.css'],
+  styleUrls: ['./personnel-list.css']
 })
 export class PersonnelList {
   isModalOpen = false;
@@ -17,7 +21,7 @@ export class PersonnelList {
       service: 'Développement',
       fonction: 'Développeur',
       role: 'Employé',
-      solde: 12,
+      solde: 12
     },
     {
       matricule: '002',
@@ -27,8 +31,8 @@ export class PersonnelList {
       service: 'Administration',
       fonction: 'RH',
       role: 'RH',
-      solde: 25,
-    },
+      solde: 25
+    }
   ];
 
   newEmployee = {
@@ -39,7 +43,7 @@ export class PersonnelList {
     service: '',
     fonction: '',
     role: 'Employé',
-    solde: 0,
+    solde: 0
   };
 
   openModal() {
@@ -50,7 +54,24 @@ export class PersonnelList {
     this.isModalOpen = false;
   }
 
-  resetForm() {
+  addEmployee() {
+    console.log('addEmployee called');
+    console.log(this.newEmployee);
+
+    if (
+      !this.newEmployee.matricule ||
+      !this.newEmployee.nom ||
+      !this.newEmployee.prenom
+    ) {
+      alert('Remplis les champs obligatoires');
+      return;
+    }
+
+    this.employees.push({
+      ...this.newEmployee,
+      solde: Number(this.newEmployee.solde)
+    });
+
     this.newEmployee = {
       matricule: '',
       nom: '',
@@ -59,16 +80,9 @@ export class PersonnelList {
       service: '',
       fonction: '',
       role: 'Employé',
-      solde: 0,
+      solde: 0
     };
-  }
 
-  addEmployee() {
-    // petite validation
-    if (!this.newEmployee.matricule || !this.newEmployee.nom || !this.newEmployee.prenom) return;
-
-    this.employees.push({ ...this.newEmployee, solde: Number(this.newEmployee.solde) });
     this.closeModal();
-    this.resetForm();
   }
 }
