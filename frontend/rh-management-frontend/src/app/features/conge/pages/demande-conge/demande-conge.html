@@ -6,8 +6,7 @@
     </div>
 
     <div class="header-actions">
-      <button class="btn btn-secondary" type="button">Annuler</button>
-      <button class="btn btn-success" type="button">Enregistrer</button>
+      
     </div>
   </div>
 
@@ -123,12 +122,12 @@
   </button>
 </div>
 
-<div class="modal-backdrop" *ngIf="showConfirm">
-  <div class="modal confirm-modal">
+<div class="confirm-backdrop" *ngIf="showConfirm">
+  <div class="confirm-modal">
     <h3>Confirmation</h3>
     <p>Êtes-vous sûr de vouloir envoyer cette demande de congé ?</p>
 
-    <div class="modal-footer">
+    <div class="confirm-actions">
       <button class="btn btn-light" type="button" (click)="showConfirm = false">
         Retour
       </button>
