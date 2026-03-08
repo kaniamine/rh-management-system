@@ -1,0 +1,108 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Amine\\Documents\\rh-management-system\\backend\\rh-management-backend\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{6DD002C1-533C-1340-F2FF-5BE30CA3CADC}|rh-management-backend.csproj|c:\\users\\amine\\documents\\rh-management-system\\backend\\rh-management-backend\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6DD002C1-533C-1340-F2FF-5BE30CA3CADC}|rh-management-backend.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6DD002C1-533C-1340-F2FF-5BE30CA3CADC}|rh-management-backend.csproj|c:\\users\\amine\\documents\\rh-management-system\\backend\\rh-management-backend\\rh-management-backend.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{6DD002C1-533C-1340-F2FF-5BE30CA3CADC}|rh-management-backend.csproj|solutionrelative:rh-management-backend.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6DD002C1-533C-1340-F2FF-5BE30CA3CADC}|rh-management-backend.csproj|c:\\users\\amine\\documents\\rh-management-system\\backend\\rh-management-backend\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{6DD002C1-533C-1340-F2FF-5BE30CA3CADC}|rh-management-backend.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6DD002C1-533C-1340-F2FF-5BE30CA3CADC}|rh-management-backend.csproj|c:\\users\\amine\\documents\\rh-management-system\\backend\\rh-management-backend\\rh-management-backend.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
+      "RelativeMoniker": "D:0:0:{6DD002C1-533C-1340-F2FF-5BE30CA3CADC}|rh-management-backend.csproj|solutionrelative:rh-management-backend.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6DD002C1-533C-1340-F2FF-5BE30CA3CADC}|rh-management-backend.csproj|c:\\users\\amine\\documents\\rh-management-system\\backend\\rh-management-backend\\rh-management-backend.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
+      "RelativeMoniker": "D:0:0:{6DD002C1-533C-1340-F2FF-5BE30CA3CADC}|rh-management-backend.csproj|solutionrelative:rh-management-backend.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Amine\\Documents\\rh-management-system\\backend\\rh-management-backend\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\Users\\Amine\\Documents\\rh-management-system\\backend\\rh-management-backend\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-03-08T23:03:49.75Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Amine\\Documents\\rh-management-system\\backend\\rh-management-backend\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\Amine\\Documents\\rh-management-system\\backend\\rh-management-backend\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-08T23:02:09.764Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "rh-management-backend",
+              "DocumentMoniker": "C:\\Users\\Amine\\Documents\\rh-management-system\\backend\\rh-management-backend\\rh-management-backend.csproj",
+              "RelativeDocumentMoniker": "rh-management-backend.csproj",
+              "ToolTip": "C:\\Users\\Amine\\Documents\\rh-management-system\\backend\\rh-management-backend\\rh-management-backend.csproj",
+              "RelativeToolTip": "rh-management-backend.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-03-08T23:03:45.656Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "rh-management-backend",
+              "DocumentMoniker": "C:\\Users\\Amine\\Documents\\rh-management-system\\backend\\rh-management-backend\\rh-management-backend.csproj",
+              "RelativeDocumentMoniker": "rh-management-backend.csproj",
+              "ToolTip": "C:\\Users\\Amine\\Documents\\rh-management-system\\backend\\rh-management-backend\\rh-management-backend.csproj",
+              "RelativeToolTip": "rh-management-backend.csproj",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-03-08T23:03:48.734Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "rh-management-backend.http",
+              "DocumentMoniker": "C:\\Users\\Amine\\Documents\\rh-management-system\\backend\\rh-management-backend\\rh-management-backend.http",
+              "RelativeDocumentMoniker": "rh-management-backend.http",
+              "ToolTip": "C:\\Users\\Amine\\Documents\\rh-management-system\\backend\\rh-management-backend\\rh-management-backend.http",
+              "RelativeToolTip": "rh-management-backend.http",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
+              "WhenOpened": "2026-03-08T23:03:42.931Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
