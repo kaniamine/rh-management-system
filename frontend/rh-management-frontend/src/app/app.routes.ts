@@ -11,9 +11,21 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./features/personnel/personnel-module').then(m => m.PersonnelModule)
   },
+   {
+    path: 'dashboard-rh',
+    loadChildren: () =>
+      import('./features/dashboard-rh/dashboard-rh-module').then(m => m.DashboardRhModule)
+  },
   {
+    path: 'dashboard-employee',
+    loadChildren: () =>
+      import('./features/dashboard-employee/dashboard-employee-module').then(m => m.DashboardEmployeeModule)
+  },
+
+
+   {
     path: '',
-    redirectTo: 'conge',
+    redirectTo: 'dashboard-employee',
     pathMatch: 'full'
   }
 ];

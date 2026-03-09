@@ -1,0 +1,65 @@
+<div class="dashboard-page">
+  <div class="dashboard-header">
+    <h1>Tableau de bord employé</h1>
+    <p>Consultez vos demandes et accédez rapidement aux formulaires RH.</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h3>Congés restants</h3>
+      <p>12 jours</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Demandes en attente</h3>
+      <p>3</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Demandes validées</h3>
+      <p>8</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Demandes rejetées</h3>
+      <p>1</p>
+    </div>
+  </div>
+
+  <div class="actions-grid">
+    <a routerLink="/conge" class="action-card">Demande de congé</a>
+    <a routerLink="/conge/demande-autorisation" class="action-card">Demande d'autorisation</a>
+    <a routerLink="/personnel" class="action-card">Mon profil</a>
+  </div>
+
+  <div class="table-section">
+    <h2>Mes demandes récentes</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Date</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Congé annuel</td>
+          <td>08/03/2026</td>
+          <td><span class="badge pending">En attente</span></td>
+        </tr>
+        <tr>
+          <td>Autorisation personnelle</td>
+          <td>06/03/2026</td>
+          <td><span class="badge approved">Validée</span></td>
+        </tr>
+        <tr>
+          <td>Congé exceptionnel</td>
+          <td>02/03/2026</td>
+          <td><span class="badge rejected">Rejetée</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
