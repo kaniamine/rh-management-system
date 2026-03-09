@@ -7,6 +7,11 @@ export const routes: Routes = [
       import('./features/conge/conge-module').then(m => m.CongeModule)
   },
   {
+    path: 'personnel',
+    loadChildren: () =>
+      import('./features/personnel/personnel-module').then(m => m.PersonnelModule)
+  },
+  {
     path: '',
     redirectTo: 'conge',
     pathMatch: 'full'
