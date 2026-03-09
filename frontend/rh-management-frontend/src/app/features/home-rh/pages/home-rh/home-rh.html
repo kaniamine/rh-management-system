@@ -1,0 +1,118 @@
+<div class="home-page">
+  <section class="hero-section">
+    <div>
+      <h1>Accueil Direction RH</h1>
+      <p>
+        Supervisez les demandes, le personnel et les indicateurs RH depuis un point d’entrée unique.
+      </p>
+    </div>
+
+    <div class="hero-badge">
+      <span>Accès RH</span>
+      <strong>Suivi global actif</strong>
+    </div>
+  </section>
+
+  <section class="actions-section">
+    <a class="action-card primary" routerLink="/dashboard-rh">
+      <div>
+        <h2>Tableau de bord RH</h2>
+        <p>Vue globale des demandes, validations et indicateurs.</p>
+      </div>
+      <span class="card-btn">Ouvrir</span>
+    </a>
+
+    <a class="action-card success" routerLink="/conge">
+      <div>
+        <h2>Consulter les demandes</h2>
+        <p>Accéder aux demandes de congé et d’autorisation en circulation.</p>
+      </div>
+      <span class="card-btn">Consulter</span>
+    </a>
+
+    <a class="action-card secondary" routerLink="/personnel">
+      <div>
+        <h2>Gérer le personnel</h2>
+        <p>Mettre à jour les informations et les données des employés.</p>
+      </div>
+      <span class="card-btn">Gérer</span>
+    </a>
+
+    <a class="action-card neutral" routerLink="/personnel">
+      <div>
+        <h2>Reporting RH</h2>
+        <p>Préparer le suivi mensuel et l’aide à la décision.</p>
+      </div>
+      <span class="card-btn">Voir</span>
+    </a>
+  </section>
+
+  <section class="stats-section">
+    <div class="section-header">
+      <h3>Indicateurs clés</h3>
+      <p>Vue rapide de l’activité RH</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card" *ngFor="let kpi of kpis" [ngClass]="kpi.tone">
+        <span>{{ kpi.label }}</span>
+        <strong>{{ kpi.value }}</strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-grid">
+    <div class="panel-card">
+      <div class="section-header">
+        <h3>Demandes récentes</h3>
+        <p>Suivi des derniers mouvements</p>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Employé</th>
+              <th>Type</th>
+              <th>Date</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of recentItems">
+              <td>{{ item.employe }}</td>
+              <td>{{ item.type }}</td>
+              <td>{{ item.date }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'badge-pending': item.statut === 'En attente',
+                    'badge-approved': item.statut === 'Validée',
+                    'badge-rejected': item.statut === 'Rejetée'
+                  }"
+                >
+                  {{ item.statut }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <div class="section-header">
+        <h3>Alertes RH</h3>
+        <p>Éléments de suivi et de contrôle</p>
+      </div>
+
+      <div class="alert-list">
+        <div class="alert-item" *ngFor="let alert of alerts">
+          <div class="alert-icon">!</div>
+          <p>{{ alert }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

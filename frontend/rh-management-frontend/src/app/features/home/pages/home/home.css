@@ -1,0 +1,90 @@
+.home-page {
+  min-height: 100vh;
+  background: #ffffff;
+  padding: 24px;
+  color: #5e6167;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.hero-card {
+  background: linear-gradient(135deg, #ff5800 0%, #ff7a33 100%);
+  color: #ffffff;
+  border-radius: 18px;
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.hero-card h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.hero-card p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.activities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.activity-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 220px;
+  padding: 22px;
+  border-radius: 16px;
+  text-decoration: none;
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.activity-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+}
+
+.activity-card.primary {
+  background: #ff5800;
+}
+
+.activity-card.validate {
+  background: #0D776E;
+}
+
+.activity-card.neutral {
+  background: #5e6167;
+}
+
+.card-content h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.card-content p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.card-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  min-width: 120px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.16);
+  font-weight: 600;
+  font-size: 14px;
+}

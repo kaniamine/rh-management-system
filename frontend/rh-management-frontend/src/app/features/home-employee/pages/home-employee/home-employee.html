@@ -1,0 +1,135 @@
+<div class="home-page">
+  <section class="hero-section">
+    <div class="hero-left">
+      <div class="avatar-circle">
+        {{ employee.nom.charAt(0) }}
+      </div>
+
+      <div class="hero-text">
+        <h1>Bonjour, {{ employee.nom }}</h1>
+        <p>
+          Bienvenue sur votre espace RH. Sélectionnez l’action que vous souhaitez effectuer.
+        </p>
+
+        <div class="employee-meta">
+          <span>Matricule : {{ employee.matricule }}</span>
+          <span>Poste : {{ employee.poste }}</span>
+          <span>Service : {{ employee.service }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="status-box">
+        <span class="status-label">Résumé</span>
+        <strong>2 demandes en attente</strong>
+        <small>Dernière activité : aujourd’hui</small>
+      </div>
+    </div>
+  </section>
+
+  <section class="actions-section">
+    <a class="action-card primary" routerLink="/conge">
+      <div>
+        <h2>Demande de congé</h2>
+        <p>Créer et suivre vos demandes de congé.</p>
+      </div>
+      <span class="card-btn">Accéder</span>
+    </a>
+
+    <a class="action-card success" routerLink="/conge/demande-autorisation">
+      <div>
+        <h2>Demande d’autorisation</h2>
+        <p>Soumettre une autorisation personnelle ou professionnelle.</p>
+      </div>
+      <span class="card-btn">Accéder</span>
+    </a>
+
+    <a class="action-card neutral" routerLink="/dashboard-employee">
+      <div>
+        <h2>Tableau de bord</h2>
+        <p>Consulter vos demandes récentes et vos statuts.</p>
+      </div>
+      <span class="card-btn">Voir</span>
+    </a>
+
+    <a class="action-card secondary" routerLink="/personnel">
+      <div>
+        <h2>Mon profil</h2>
+        <p>Modifier vos informations personnelles et professionnelles.</p>
+      </div>
+      <span class="card-btn">Modifier</span>
+    </a>
+  </section>
+
+  <section class="stats-section">
+    <div class="section-header">
+      <h3>Résumé rapide</h3>
+      <p>Vue synthétique de votre situation RH</p>
+    </div>
+
+    <div class="stats-grid">
+      <div
+        class="stat-card"
+        *ngFor="let stat of stats"
+        [ngClass]="stat.tone"
+      >
+        <span>{{ stat.label }}</span>
+        <strong>{{ stat.value }}</strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-grid">
+    <div class="panel-card">
+      <div class="section-header">
+        <h3>Mes demandes récentes</h3>
+        <p>Historique de vos dernières actions</p>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Date</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let request of recentRequests">
+              <td>{{ request.type }}</td>
+              <td>{{ request.date }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'badge-pending': request.statut === 'En attente',
+                    'badge-approved': request.statut === 'Validée',
+                    'badge-rejected': request.statut === 'Rejetée'
+                  }"
+                >
+                  {{ request.statut }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <div class="section-header">
+        <h3>Notifications</h3>
+        <p>Informations importantes liées à vos demandes</p>
+      </div>
+
+      <div class="notification-list">
+        <div class="notification-item" *ngFor="let notification of notifications">
+          <div class="notification-dot"></div>
+          <p>{{ notification }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
