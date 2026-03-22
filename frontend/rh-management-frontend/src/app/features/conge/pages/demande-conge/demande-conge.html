@@ -1,6 +1,4 @@
 <div class="leave-page">
-
-  <!-- HEADER -->
   <div class="page-header">
     <div>
       <h1>Demande de congé</h1>
@@ -14,14 +12,12 @@
     </div>
   </div>
 
-  <!-- PROGRESS -->
   <div class="progress-bar">
     <div class="step done">Informations</div>
     <div class="step active">Détails</div>
     <div class="step">Confirmation</div>
   </div>
 
-  <!-- SUMMARY -->
   <div class="summary-strip">
     <div class="summary-card">
       <span class="label">Solde congés</span>
@@ -39,7 +35,6 @@
     </div>
   </div>
 
-  <!-- FORM CARD -->
   <div class="card form-card">
     <div class="card-title">Informations de la demande</div>
     <p class="card-subtitle">
@@ -47,8 +42,6 @@
     </p>
 
     <div class="form-grid">
-
-      <!-- TYPE -->
       <div class="field">
         <label>Type de congé <span class="required">*</span></label>
         <select class="input">
@@ -58,7 +51,6 @@
         </select>
       </div>
 
-      <!-- DURATION -->
       <div class="field">
         <label>Durée <span class="required">*</span></label>
         <select class="input">
@@ -67,46 +59,38 @@
         </select>
       </div>
 
-      <!-- DATE START -->
       <div class="field">
         <label>Date début <span class="required">*</span></label>
         <input type="date" class="input" />
       </div>
 
-      <!-- DATE END -->
       <div class="field">
         <label>Date fin <span class="required">*</span></label>
         <input type="date" class="input" />
       </div>
 
-      <!-- REASON -->
       <div class="field field-full">
         <label>Motif <span class="required">*</span></label>
         <textarea class="input textarea" placeholder="Décrivez la raison du congé..."></textarea>
       </div>
 
-      <!-- ADDRESS -->
       <div class="field field-full">
         <label>Adresse pendant le congé</label>
         <input type="text" class="input" placeholder="Adresse temporaire..." />
       </div>
 
-      <!-- PHONE -->
       <div class="field">
         <label>Téléphone alternatif</label>
         <input type="text" class="input" placeholder="Numéro de téléphone" />
       </div>
 
-      <!-- FILE -->
       <div class="field">
         <label>Pièce justificative</label>
         <input type="file" class="input" />
       </div>
-
     </div>
   </div>
 
-  <!-- EMPLOYEE INFO -->
   <div class="card">
     <div class="card-title">Informations employé</div>
 
@@ -133,36 +117,32 @@
     </div>
   </div>
 
-  <!-- ACTIONS -->
-<div class="page-footer">
-  <button class="btn btn-light">
-    Annuler
-  </button>
+  <div class="page-footer">
+    <button class="btn btn-light">Annuler</button>
 
-  <button class="btn btn-outline-primary" (click)="openConfirmModal('draft')">
-    Enregistrer brouillon
-  </button>
+    <button class="btn btn-outline-primary" (click)="openConfirmModal('draft')">
+      Enregistrer brouillon
+    </button>
 
-  <button class="btn btn-success" (click)="openConfirmModal('submit')">
-    Soumettre la demande
-  </button>
-</div>
+    <button class="btn btn-success" (click)="openConfirmModal('submit')">
+      Soumettre la demande
+    </button>
+  </div>
 
+  <div class="confirm-backdrop" *ngIf="showConfirmModal">
+    <div class="confirm-modal">
+      <h3>{{ modalTitle }}</h3>
+      <p>{{ modalMessage }}</p>
 
+      <div class="confirm-actions">
+        <button class="btn btn-light" (click)="closeConfirmModal()">
+          Retour
+        </button>
 
-<!-- CONFIRMATION MODAL --><div class="confirm-backdrop" *ngIf="showConfirmModal">
-  <div class="confirm-modal">
-    <h3>{{ modalTitle }}</h3>
-    <p>{{ modalMessage }}</p>
-
-    <div class="confirm-actions">
-      <button class="btn btn-light" (click)="closeConfirmModal()">
-        Retour
-      </button>
-
-      <button class="btn btn-success" (click)="confirmAction()">
-        Confirmer
-      </button>
+        <button class="btn btn-success" (click)="confirmAction()">
+          Confirmer
+        </button>
+      </div>
     </div>
   </div>
 </div>

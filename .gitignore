@@ -137,3 +137,14 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Visual Studio / .NET
+**/.vs/
+**/bin/
+**/obj/
+*.user
+*.suo
+
+# Benchmark project (optional local tooling)
+**/BenchmarkSuite1/bin/
+**/BenchmarkSuite1/obj/
