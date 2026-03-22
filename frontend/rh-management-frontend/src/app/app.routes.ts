@@ -28,7 +28,12 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'home-employee',
     pathMatch: 'full'
+  },
+   {
+    path: 'personnel',
+    loadChildren: () =>
+      import('./features/personnel/personnel-module').then(m => m.PersonnelModule)
   }
 ];

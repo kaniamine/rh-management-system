@@ -1,137 +1,166 @@
 <div class="leave-page">
+
+  <!-- HEADER -->
   <div class="page-header">
     <div>
       <h1>Demande de congé</h1>
-      <p class="subtitle">Saisir une nouvelle demande de congé</p>
+      <p class="subtitle">
+        Remplissez les informations nécessaires pour soumettre votre demande de congé.
+      </p>
     </div>
 
     <div class="header-actions">
-      
+      <span class="badge waiting">En attente de validation</span>
     </div>
   </div>
 
+  <!-- PROGRESS -->
   <div class="progress-bar">
-    <div class="step active">1. Informations</div>
-    <div class="step">2. Validation</div>
-    <div class="step">3. Confirmation</div>
+    <div class="step done">Informations</div>
+    <div class="step active">Détails</div>
+    <div class="step">Confirmation</div>
   </div>
 
+  <!-- SUMMARY -->
+  <div class="summary-strip">
+    <div class="summary-card">
+      <span class="label">Solde congés</span>
+      <span class="value">12 jours</span>
+    </div>
+
+    <div class="summary-card">
+      <span class="label">Demandes en attente</span>
+      <span class="value">2</span>
+    </div>
+
+    <div class="summary-card">
+      <span class="label">Type sélectionné</span>
+      <span class="value">Congé annuel</span>
+    </div>
+  </div>
+
+  <!-- FORM CARD -->
   <div class="card form-card">
-    <div class="card-title">Informations du demandeur</div>
+    <div class="card-title">Informations de la demande</div>
+    <p class="card-subtitle">
+      Veuillez renseigner les champs obligatoires afin de soumettre votre demande.
+    </p>
 
     <div class="form-grid">
-      <div class="field">
-        <label>Nom et prénom *</label>
-        <input class="input" type="text" placeholder="Nom complet" />
-      </div>
 
+      <!-- TYPE -->
       <div class="field">
-        <label>Matricule *</label>
-        <input class="input" type="text" placeholder="Ex : 1025" />
-      </div>
-
-      <div class="field">
-        <label>Grade / Fonction</label>
-        <input class="input" type="text" placeholder="Ex : Agent administratif" />
-      </div>
-
-      <div class="field">
-        <label>Type de congé *</label>
+        <label>Type de congé <span class="required">*</span></label>
         <select class="input">
           <option>Congé annuel</option>
-          <option>Congé exceptionnel</option>
-          <option>Congé sans solde</option>
           <option>Congé maladie</option>
+          <option>Congé exceptionnel</option>
         </select>
       </div>
 
+      <!-- DURATION -->
       <div class="field">
-        <label>Date de début *</label>
-        <input class="input" type="date" />
+        <label>Durée <span class="required">*</span></label>
+        <select class="input">
+          <option>Journée entière</option>
+          <option>Demi-journée</option>
+        </select>
       </div>
 
+      <!-- DATE START -->
       <div class="field">
-        <label>Date de fin *</label>
-        <input class="input" type="date" />
+        <label>Date début <span class="required">*</span></label>
+        <input type="date" class="input" />
       </div>
 
+      <!-- DATE END -->
       <div class="field">
-        <label>Durée (jours) *</label>
-        <input class="input" type="number" min="1" placeholder="0" />
+        <label>Date fin <span class="required">*</span></label>
+        <input type="date" class="input" />
       </div>
 
-      <div class="field">
-        <label>Solde disponible</label>
-        <input class="input readonly" type="text" value="18 jours" readonly />
-      </div>
-
+      <!-- REASON -->
       <div class="field field-full">
-        <label>Motif</label>
-        <textarea class="input textarea" rows="4" placeholder="Motif de la demande"></textarea>
+        <label>Motif <span class="required">*</span></label>
+        <textarea class="input textarea" placeholder="Décrivez la raison du congé..."></textarea>
       </div>
 
-      <div class="field">
-        <label>Adresse pendant congé</label>
-        <input class="input" type="text" placeholder="Adresse" />
+      <!-- ADDRESS -->
+      <div class="field field-full">
+        <label>Adresse pendant le congé</label>
+        <input type="text" class="input" placeholder="Adresse temporaire..." />
       </div>
 
+      <!-- PHONE -->
       <div class="field">
-        <label>Numéro de téléphone</label>
-        <input class="input" type="tel" placeholder="Ex : 55 555 555" />
+        <label>Téléphone alternatif</label>
+        <input type="text" class="input" placeholder="Numéro de téléphone" />
       </div>
+
+      <!-- FILE -->
+      <div class="field">
+        <label>Pièce justificative</label>
+        <input type="file" class="input" />
+      </div>
+
     </div>
   </div>
 
-  <div class="card info-card">
-    <div class="card-title">Traitement administratif</div>
+  <!-- EMPLOYEE INFO -->
+  <div class="card">
+    <div class="card-title">Informations employé</div>
 
     <div class="info-grid">
       <div class="info-box">
-        <span class="info-label">Avis du responsable direct</span>
-        <span class="badge waiting">En attente</span>
+        <span class="info-label">Nom complet</span>
+        <span class="info-value">Amine Kani</span>
       </div>
 
       <div class="info-box">
-        <span class="info-label">Avis de la direction générale</span>
-        <span class="badge neutral">Non traité</span>
+        <span class="info-label">Matricule</span>
+        <span class="info-value">EMP-2026-014</span>
       </div>
 
       <div class="info-box">
-        <span class="info-label">Nombre de jours</span>
-        <span class="info-value">--</span>
+        <span class="info-label">Service</span>
+        <span class="info-value">Production</span>
       </div>
 
       <div class="info-box">
-        <span class="info-label">Reliquat</span>
-        <span class="info-value">--</span>
+        <span class="info-label">Supérieur hiérarchique</span>
+        <span class="info-value">Ahmed Ben Ali</span>
       </div>
     </div>
   </div>
 
+  <!-- ACTIONS -->
 <div class="page-footer">
-  <button class="btn btn-secondary" type="button">
+  <button class="btn btn-light">
     Annuler
   </button>
 
-  <button class="btn btn-success" type="button">
-    Enregistrer
+  <button class="btn btn-outline-primary" (click)="openConfirmModal('draft')">
+    Enregistrer brouillon
   </button>
 
-  <button class="btn btn-primary" type="button" (click)="showConfirm = true">
+  <button class="btn btn-success" (click)="openConfirmModal('submit')">
     Soumettre la demande
   </button>
 </div>
 
-<div class="confirm-backdrop" *ngIf="showConfirm">
+
+
+<!-- CONFIRMATION MODAL --><div class="confirm-backdrop" *ngIf="showConfirmModal">
   <div class="confirm-modal">
-    <h3>Confirmation</h3>
-    <p>Êtes-vous sûr de vouloir envoyer cette demande de congé ?</p>
+    <h3>{{ modalTitle }}</h3>
+    <p>{{ modalMessage }}</p>
 
     <div class="confirm-actions">
-      <button class="btn btn-light" type="button" (click)="showConfirm = false">
+      <button class="btn btn-light" (click)="closeConfirmModal()">
         Retour
       </button>
-      <button class="btn btn-primary" type="button" (click)="envoyerDemande()">
+
+      <button class="btn btn-success" (click)="confirmAction()">
         Confirmer
       </button>
     </div>
