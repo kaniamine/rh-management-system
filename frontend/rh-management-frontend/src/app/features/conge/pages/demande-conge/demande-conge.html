@@ -10,77 +10,88 @@
     </div>
   </div>
 
+  <p class="form-alert success" *ngIf="successMessage">{{ successMessage }}</p>
+  <p class="form-alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
   <div class="progress-bar">
     <div class="step active">1. Informations</div>
     <div class="step">2. Validation</div>
     <div class="step">3. Confirmation</div>
   </div>
 
-  <div class="card form-card">
+  <form class="card form-card" (ngSubmit)="$event.preventDefault()">
     <div class="card-title">Informations du demandeur</div>
 
     <div class="form-grid">
       <div class="field">
         <label>Nom et prénom *</label>
-        <input class="input" type="text" placeholder="Nom complet" />
+        <input class="input" type="text" name="nomComplet" placeholder="Nom complet"
+          [(ngModel)]="form.nomComplet" required />
       </div>
 
       <div class="field">
         <label>Matricule *</label>
-        <input class="input" type="text" placeholder="Ex : 1025" />
+        <input class="input" type="text" name="matricule" placeholder="Ex : 1025"
+          [(ngModel)]="form.matricule" required />
       </div>
 
       <div class="field">
         <label>Grade / Fonction</label>
-        <input class="input" type="text" placeholder="Ex : Agent administratif" />
+        <input class="input" type="text" name="gradeFonction" placeholder="Ex : Agent administratif"
+          [(ngModel)]="form.gradeFonction" />
       </div>
 
       <div class="field">
         <label>Type de congé *</label>
-        <select class="input">
-          <option>Congé annuel</option>
-          <option>Congé exceptionnel</option>
-          <option>Congé sans solde</option>
-          <option>Congé maladie</option>
+        <select class="input" name="typeConge" [(ngModel)]="form.typeConge" required>
+          <option *ngFor="let t of typesConge" [value]="t">{{ t }}</option>
         </select>
       </div>
 
       <div class="field">
         <label>Date de début *</label>
-        <input class="input" type="date" />
+        <input class="input" type="date" name="dateDebut"
+          [(ngModel)]="form.dateDebut"
+          (ngModelChange)="onDatesChanged()" required />
       </div>
 
       <div class="field">
         <label>Date de fin *</label>
-        <input class="input" type="date" />
+        <input class="input" type="date" name="dateFin"
+          [(ngModel)]="form.dateFin"
+          (ngModelChange)="onDatesChanged()" required />
       </div>
 
       <div class="field">
         <label>Durée (jours) *</label>
-        <input class="input" type="number" min="1" placeholder="0" />
+        <input class="input" type="number" name="dureeJours" min="1" placeholder="1"
+          [(ngModel)]="form.dureeJours" required />
       </div>
 
       <div class="field">
         <label>Solde disponible</label>
-        <input class="input readonly" type="text" value="18 jours" readonly />
+        <input class="input readonly" type="text" name="solde" [value]="form.soldeDisponible" readonly />
       </div>
 
       <div class="field field-full">
         <label>Motif</label>
-        <textarea class="input textarea" rows="4" placeholder="Motif de la demande"></textarea>
+        <textarea class="input textarea" name="motif" rows="4" placeholder="Motif de la demande"
+          [(ngModel)]="form.motif"></textarea>
       </div>
 
       <div class="field">
         <label>Adresse pendant congé</label>
-        <input class="input" type="text" placeholder="Adresse" />
+        <input class="input" type="text" name="adressePendantConge" placeholder="Adresse"
+          [(ngModel)]="form.adressePendantConge" />
       </div>
 
       <div class="field">
         <label>Numéro de téléphone</label>
-        <input class="input" type="tel" placeholder="Ex : 55 555 555" />
+        <input class="input" type="tel" name="telephone" placeholder="Ex : 55 555 555"
+          [(ngModel)]="form.telephone" />
       </div>
     </div>
-  </div>
+  </form>
 
   <div class="card info-card">
     <div class="card-title">Traitement administratif</div>
@@ -98,26 +109,26 @@
 
       <div class="info-box">
         <span class="info-label">Nombre de jours</span>
-        <span class="info-value">--</span>
+        <span class="info-value">{{ form.dureeJours || '—' }}</span>
       </div>
 
       <div class="info-box">
         <span class="info-label">Reliquat</span>
-        <span class="info-value">--</span>
+        <span class="info-value">{{ form.soldeDisponible }}</span>
       </div>
     </div>
   </div>
 
 <div class="page-footer">
-  <button class="btn btn-secondary" type="button">
+  <button class="btn btn-secondary" type="button" [disabled]="submitting">
     Annuler
   </button>
 
-  <button class="btn btn-success" type="button">
-    Enregistrer
+  <button class="btn btn-success" type="button" (click)="enregistrer()" [disabled]="submitting">
+    {{ submitting ? 'Envoi…' : 'Enregistrer' }}
   </button>
 
-  <button class="btn btn-primary" type="button" (click)="showConfirm = true">
+  <button class="btn btn-primary" type="button" (click)="showConfirm = true" [disabled]="submitting">
     Soumettre la demande
   </button>
 </div>
@@ -128,11 +139,11 @@
     <p>Êtes-vous sûr de vouloir envoyer cette demande de congé ?</p>
 
     <div class="confirm-actions">
-      <button class="btn btn-light" type="button" (click)="showConfirm = false">
+      <button class="btn btn-light" type="button" (click)="showConfirm = false" [disabled]="submitting">
         Retour
       </button>
-      <button class="btn btn-primary" type="button" (click)="envoyerDemande()">
-        Confirmer
+      <button class="btn btn-primary" type="button" (click)="envoyerDemande()" [disabled]="submitting">
+        {{ submitting ? 'Envoi…' : 'Confirmer' }}
       </button>
     </div>
   </div>
