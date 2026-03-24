@@ -600,8 +600,7 @@ textarea.input:focus {
   color: #5e6167;
   border: 1px solid #d9d9d9;
 }
-<<<<<<< HEAD
-=======
+
 
 .confirm-actions {
   display: flex;
@@ -627,4 +626,4 @@ textarea.input:focus {
   color: var(--danger);
   border: 1px solid #f5c6cb;
 }
->>>>>>> 30ccfea43cb8b0794a43448ae91ccc4707a00823
+
