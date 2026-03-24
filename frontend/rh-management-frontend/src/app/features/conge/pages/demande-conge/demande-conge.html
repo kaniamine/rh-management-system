@@ -12,6 +12,9 @@
     </div>
   </div>
 
+  <p class="form-alert success" *ngIf="successMessage">{{ successMessage }}</p>
+  <p class="form-alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
   <div class="progress-bar">
     <div class="step done">Informations</div>
     <div class="step active">Détails</div>
@@ -21,17 +24,17 @@
   <div class="summary-strip">
     <div class="summary-card">
       <span class="label">Solde congés</span>
-      <span class="value">12 jours</span>
+      <span class="value">{{ soldeCongesJours }} jours</span>
     </div>
 
     <div class="summary-card">
       <span class="label">Demandes en attente</span>
-      <span class="value">2</span>
+      <span class="value">{{ demandesEnAttente }}</span>
     </div>
 
     <div class="summary-card">
       <span class="label">Type sélectionné</span>
-      <span class="value">Congé annuel</span>
+      <span class="value">{{ form.typeConge }}</span>
     </div>
   </div>
 
@@ -44,49 +47,49 @@
     <div class="form-grid">
       <div class="field">
         <label>Type de congé <span class="required">*</span></label>
-        <select class="input">
-          <option>Congé annuel</option>
-          <option>Congé maladie</option>
-          <option>Congé exceptionnel</option>
+        <select class="input" name="typeConge" [(ngModel)]="form.typeConge" [disabled]="submitting">
+          <option *ngFor="let t of typesConge" [value]="t">{{ t }}</option>
         </select>
       </div>
 
       <div class="field">
         <label>Durée <span class="required">*</span></label>
-        <select class="input">
-          <option>Journée entière</option>
-          <option>Demi-journée</option>
+        <select class="input" name="typeDuree" [(ngModel)]="form.typeDuree" [disabled]="submitting">
+          <option *ngFor="let d of typesDuree" [value]="d">{{ d }}</option>
         </select>
       </div>
 
       <div class="field">
         <label>Date début <span class="required">*</span></label>
-        <input type="date" class="input" />
+        <input type="date" class="input" name="dateDebut" [(ngModel)]="form.dateDebut" [disabled]="submitting" />
       </div>
 
       <div class="field">
         <label>Date fin <span class="required">*</span></label>
-        <input type="date" class="input" />
+        <input type="date" class="input" name="dateFin" [(ngModel)]="form.dateFin" [disabled]="submitting" />
       </div>
 
       <div class="field field-full">
         <label>Motif <span class="required">*</span></label>
-        <textarea class="input textarea" placeholder="Décrivez la raison du congé..."></textarea>
+        <textarea class="input textarea" name="motif" placeholder="Décrivez la raison du congé..."
+          [(ngModel)]="form.motif" [disabled]="submitting"></textarea>
       </div>
 
       <div class="field field-full">
         <label>Adresse pendant le congé</label>
-        <input type="text" class="input" placeholder="Adresse temporaire..." />
+        <input type="text" class="input" name="adresse" placeholder="Adresse temporaire..."
+          [(ngModel)]="form.adressePendantConge" [disabled]="submitting" />
       </div>
 
       <div class="field">
         <label>Téléphone alternatif</label>
-        <input type="text" class="input" placeholder="Numéro de téléphone" />
+        <input type="text" class="input" name="tel" placeholder="Numéro de téléphone"
+          [(ngModel)]="form.telephone" [disabled]="submitting" />
       </div>
 
       <div class="field">
         <label>Pièce justificative</label>
-        <input type="file" class="input" />
+        <input type="file" class="input" (change)="onJustificatifChange($event)" [disabled]="submitting" />
       </div>
     </div>
   </div>
@@ -97,34 +100,34 @@
     <div class="info-grid">
       <div class="info-box">
         <span class="info-label">Nom complet</span>
-        <span class="info-value">Amine Kani</span>
+        <input type="text" class="input info-input" name="nomComplet" [(ngModel)]="form.nomComplet" [disabled]="submitting" />
       </div>
 
       <div class="info-box">
         <span class="info-label">Matricule</span>
-        <span class="info-value">EMP-2026-014</span>
+        <input type="text" class="input info-input" name="matricule" [(ngModel)]="form.matricule" [disabled]="submitting" />
       </div>
 
       <div class="info-box">
         <span class="info-label">Service</span>
-        <span class="info-value">Production</span>
+        <input type="text" class="input info-input" name="service" [(ngModel)]="form.service" [disabled]="submitting" />
       </div>
 
       <div class="info-box">
         <span class="info-label">Supérieur hiérarchique</span>
-        <span class="info-value">Ahmed Ben Ali</span>
+        <input type="text" class="input info-input" name="sup" [(ngModel)]="form.superieurHierarchique" [disabled]="submitting" />
       </div>
     </div>
   </div>
 
   <div class="page-footer">
-    <button class="btn btn-light">Annuler</button>
+    <button class="btn btn-light" type="button" [disabled]="submitting">Annuler</button>
 
-    <button class="btn btn-outline-primary" (click)="openConfirmModal('draft')">
-      Enregistrer brouillon
+    <button class="btn btn-outline-primary" type="button" (click)="openConfirmModal('draft')" [disabled]="submitting">
+      {{ submitting ? 'Envoi…' : 'Enregistrer brouillon' }}
     </button>
 
-    <button class="btn btn-success" (click)="openConfirmModal('submit')">
+    <button class="btn btn-success" type="button" (click)="openConfirmModal('submit')" [disabled]="submitting">
       Soumettre la demande
     </button>
   </div>
@@ -135,12 +138,12 @@
       <p>{{ modalMessage }}</p>
 
       <div class="confirm-actions">
-        <button class="btn btn-light" (click)="closeConfirmModal()">
+        <button class="btn btn-light" type="button" (click)="closeConfirmModal()" [disabled]="submitting">
           Retour
         </button>
 
-        <button class="btn btn-success" (click)="confirmAction()">
-          Confirmer
+        <button class="btn btn-success" type="button" (click)="confirmAction()" [disabled]="submitting">
+          {{ submitting ? 'Envoi…' : 'Confirmer' }}
         </button>
       </div>
     </div>
