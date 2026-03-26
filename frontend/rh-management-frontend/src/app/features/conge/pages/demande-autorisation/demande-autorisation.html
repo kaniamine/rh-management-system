@@ -1,178 +1,176 @@
 <div class="authorization-page">
-  <div class="page-header">
+  <header class="page-header">
     <div>
       <h1>Demande d’autorisation</h1>
-      <p class="subtitle">Choisissez le type puis remplissez le formulaire</p>
+      <p class="subtitle">
+        Saisissez votre demande d’autorisation temporaire selon le type choisi,
+        puis transmettez-la pour validation hiérarchique.
+      </p>
     </div>
+
+    <div class="header-actions">
+      <button routerLink="/home-employee" class="btn btn-light">Retour</button>
+      
+      <button routerLink="/dashboard-employee" class="btn btn-light">Historique</button>
+    </div>
+  </header>
+
+  <div class="progress-bar">
+    <div class="step done">Informations</div>
+    <div class="step active">Détails</div>
+    <div class="step">Confirmation</div>
   </div>
 
-  <!-- Choix du type -->
-  <div class="type-selector">
-    <button
-      type="button"
-      class="type-card"
-      [class.active]="selectedType === 'personnel'"
-      (click)="selectType('personnel')">
-      Autorisation personnelle
-    </button>
+  <section class="summary-strip">
+    <div class="summary-card">
+      <span class="label">Statut</span>
+      <span class="value">Brouillon</span>
+    </div>
+    <div class="summary-card">
+      <span class="label">Type sélectionné</span>
+      <span class="value">Personnelle</span>
+    </div>
+    <div class="summary-card">
+      <span class="label">Durée calculée</span>
+      <span class="value">01h 15</span>
+    </div>
+  </section>
 
-    <button
-      type="button"
-      class="type-card"
-      [class.active]="selectedType === 'professionnel'"
-      (click)="selectType('professionnel')">
-      Autorisation professionnelle
-    </button>
-
-    <button
-      type="button"
-      class="type-card"
-      [class.active]="selectedType === 'formation'"
-      (click)="selectType('formation')">
-      Autorisation de formation
-    </button>
-  </div>
-
-  <!-- En-tête formulaire -->
-  <div class="card title-card">
+  <section class="card title-card">
     <div class="document-title">
-      <span class="doc-badge">إذن مغادرة</span>
-      <h2>{{ selectedTypeLabel }}</h2>
+      <span class="doc-badge">Formulaire RH</span>
+      <h2>Demande d’autorisation d’absence temporaire</h2>
+      <span class="badge waiting">En préparation</span>
     </div>
-  </div>
+  </section>
 
-  <!-- Formulaire -->
-  <div class="card form-card">
-    <div class="card-title">Informations générales</div>
+  
+
+  <section class="card form-card">
+    <div class="card-title">Informations de la demande</div>
+    <p class="card-subtitle">
+      Complétez les informations obligatoires. La durée est contrôlée selon les règles RH.
+    </p>
 
     <div class="form-grid">
       <div class="field">
-        <label>Nom de l’employé *</label>
-        <input class="input" type="text" [(ngModel)]="demande.nomEmploye" name="nomEmploye" placeholder="Nom complet" />
+        <label for="type">Type d’autorisation <span class="required">*</span></label>
+        <select id="type" class="input">
+          <option>Autorisation personnelle</option>
+          <option>Autorisation professionnelle</option>
+        </select>
       </div>
 
       <div class="field">
-        <label>Matricule *</label>
-        <input class="input" type="text" [(ngModel)]="demande.matricule" name="matricule" placeholder="Ex : 1025" />
+        <label for="date">Date <span class="required">*</span></label>
+        <input id="date" class="input" type="date" />
       </div>
 
       <div class="field">
-        <label>Direction *</label>
-        <input class="input" type="text" [(ngModel)]="demande.direction" name="direction" placeholder="Direction / Service" />
+        <label for="matricule">Matricule</label>
+        <input id="matricule" class="input readonly" type="text" value="EMP-2026-014" readonly />
       </div>
 
       <div class="field">
-        <label>Date *</label>
-        <input class="input" type="date" [(ngModel)]="demande.date" name="date" />
-      </div>
-
-      <div class="field field-full">
-        <label>Motif de la sortie *</label>
-        <textarea
-          class="input textarea"
-          rows="4"
-          [(ngModel)]="demande.motif"
-          name="motif"
-          [placeholder]="
-            selectedType === 'personnel'
-              ? 'Préciser le motif personnel'
-              : selectedType === 'professionnel'
-              ? 'Préciser le motif professionnel'
-              : 'Préciser le motif de formation'
-          ">
-        </textarea>
-      </div>
-
-      <div class="field">
-        <label>Durée de l’autorisation *</label>
-        <input class="input" type="text" [(ngModel)]="demande.duree" name="duree" placeholder="Ex : 1h30" />
+        <label for="service">Direction / Service</label>
+        <input id="service" class="input readonly" type="text" value="Direction Finance / Comptabilité" readonly />
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Horaires -->
-  <div class="card time-card">
-    <div class="card-title">Horaires</div>
+  <section class="card">
+    <div class="card-title">Plage horaire</div>
 
     <div class="time-grid">
       <div class="time-box">
-        <h3>Heure de départ</h3>
+        <h3>Heures de l’autorisation</h3>
         <div class="mini-grid">
           <div class="field">
-            <label>Heure</label>
-            <input class="input" type="number" min="0" max="23" [(ngModel)]="demande.heureDepart" name="heureDepart" placeholder="HH" />
+            <label for="heureDebut">Heure de début <span class="required">*</span></label>
+            <input id="heureDebut" class="input" type="time" />
           </div>
+
           <div class="field">
-            <label>Minute</label>
-            <input class="input" type="number" min="0" max="59" [(ngModel)]="demande.minuteDepart" name="minuteDepart" placeholder="MM" />
+            <label for="heureFin">Heure de fin <span class="required">*</span></label>
+            <input id="heureFin" class="input" type="time" />
           </div>
         </div>
       </div>
 
       <div class="time-box">
-        <h3>Heure de retour</h3>
+        <h3>Calcul automatique</h3>
         <div class="mini-grid">
           <div class="field">
-            <label>Heure</label>
-            <input class="input" type="number" min="0" max="23" [(ngModel)]="demande.heureRetour" name="heureRetour" placeholder="HH" />
+            <label for="duree">Durée calculée</label>
+            <input id="duree" class="input readonly" type="text" value="01h 15" readonly />
           </div>
+
           <div class="field">
-            <label>Minute</label>
-            <input class="input" type="number" min="0" max="59" [(ngModel)]="demande.minuteRetour" name="minuteRetour" placeholder="MM" />
+            <label for="solde">Cumul mensuel</label>
+            <input id="solde" class="input readonly" type="text" value="03h 20" readonly />
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Signatures / RH -->
-  <div class="card admin-card">
-    <div class="card-title">Validation et traitement</div>
+  <section class="card">
+    <div class="card-title">Justification</div>
 
-    <div class="admin-grid">
-      <div class="signature-box">
-        <label>Signature de l’employé</label>
-        <div class="signature-area"></div>
-      </div>
-
-      <div class="signature-box">
-        <label>Signature du responsable direct</label>
-        <div class="signature-area"></div>
+    <div class="form-grid">
+      <div class="field field-full">
+        <label for="motif">Motif <span class="required">*</span></label>
+        <textarea
+          id="motif"
+          class="input textarea"
+          placeholder="Décrivez le motif de votre demande..."
+        ></textarea>
       </div>
 
       <div class="field field-full">
-        <label>Remarques RH</label>
-        <textarea class="input textarea" rows="3" [(ngModel)]="demande.remarqueRh" name="remarqueRh" placeholder="Zone réservée aux RH"></textarea>
+        <label for="commentaire">Commentaire complémentaire</label>
+        <textarea
+          id="commentaire"
+          class="input textarea"
+          placeholder="Informations additionnelles si nécessaire..."
+        ></textarea>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Actions -->
-  <div class="page-footer">
-    <button class="btn btn-secondary" type="button">Annuler</button>
-    <button class="btn btn-success" type="button">Enregistrer</button>
-    <button class="btn btn-primary" type="button" (click)="openConfirm()">
-      Soumettre la demande
-    </button>
-  </div>
+  <section class="card">
+    <div class="card-title">Circuit de validation</div>
 
-  <!-- Popup confirmation -->
-  <div class="confirm-backdrop" *ngIf="showConfirm">
-    <div class="confirm-modal">
-      <h3>Confirmation</h3>
-      <p>
-        Êtes-vous sûr de vouloir envoyer cette demande d’autorisation
-        <strong>{{ selectedTypeLabel.toLowerCase() }}</strong> ?
-      </p>
+    <div class="info-grid">
+      <div class="info-box">
+        <span class="info-label">Supérieur hiérarchique</span>
+        <span class="info-value">Responsable Service Finance</span>
+      </div>
 
-      <div class="confirm-actions">
-        <button class="btn btn-light" type="button" (click)="closeConfirm()">
-          Retour
-        </button>
-        <button class="btn btn-primary" type="button" (click)="submitDemande()">
-          Confirmer
-        </button>
+      <div class="info-box">
+        <span class="info-label">Suivi RH</span>
+        <span class="info-value">Direction Ressources Humaines</span>
+      </div>
+
+      <div class="info-box">
+        <span class="info-label">Statut courant</span>
+        <span class="info-value">Brouillon</span>
+      </div>
+
+      <div class="info-box">
+        <span class="info-label">Notification prévue</span>
+        <span class="info-value">Envoi au supérieur hiérarchique après soumission</span>
       </div>
     </div>
+  </section>
+
+  <div class="form-alert warning">
+    Attention : pour une autorisation personnelle, la durée maximale autorisée est de 1h30 par jour.
   </div>
+
+  <footer class="page-footer">
+    <button class="btn btn-light" type="button">Annuler</button>
+    <button class="btn btn-outline-primary" type="button">Enregistrer brouillon</button>
+    <button class="btn btn-success" type="submit">Soumettre</button>
+  </footer>
 </div>
