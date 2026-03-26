@@ -26,14 +26,15 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./features/dashboard-rh/dashboard-rh-module').then(m => m.DashboardRhModule)
   },
-  {
-    path: '',
-    redirectTo: 'home-employee',
-    pathMatch: 'full'
-  },
+
    {
     path: 'personnel',
     loadChildren: () =>
       import('./features/personnel/personnel-module').then(m => m.PersonnelModule)
-  }
+  },
+  {
+  path: 'login',
+  loadComponent: () =>
+    import('./features/auth/login/login-module').then(m => m.LoginModule)
+}
 ];

@@ -1,0 +1,90 @@
+<div class="login-page">
+  <div class="login-wrapper">
+    <section class="login-brand">
+      <div class="brand-badge">Intranet RH</div>
+
+      <h1>Al Baraka Assurances</h1>
+
+      <p class="brand-text">
+        Plateforme interne de gestion des demandes RH. Accédez à votre espace
+        sécurisé pour gérer les congés, les autorisations et le suivi des
+        traitements.
+      </p>
+
+      <div class="brand-features">
+        <div class="feature-item">
+          <span class="feature-dot"></span>
+          <span>Gestion des congés et autorisations</span>
+        </div>
+
+        <div class="feature-item">
+          <span class="feature-dot"></span>
+          <span>Suivi en temps réel des demandes</span>
+        </div>
+
+        <div class="feature-item">
+          <span class="feature-dot"></span>
+          <span>Validation rapide par la hiérarchie</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="login-card">
+      <div class="form-badge">Connexion</div>
+
+      <h2>Se connecter</h2>
+
+      <p class="form-text">
+        Saisissez vos identifiants pour accéder à votre espace personnel.
+      </p>
+
+      <form class="login-form">
+        <div class="field">
+          <label for="email">Email professionnel <span class="required">*</span></label>
+          <input
+            id="email"
+            type="email"
+            class="input"
+            placeholder="exemple@albaraka.tn"
+          />
+        </div>
+
+        <div class="field">
+          <label for="password">Mot de passe <span class="required">*</span></label>
+
+          <div class="password-wrapper">
+            <input
+              id="password"
+              type="password"
+              class="input password-input"
+              placeholder="Saisir votre mot de passe"
+            />
+            <button type="button" class="toggle-password">Afficher</button>
+          </div>
+        </div>
+
+        <div class="form-options">
+          <label class="remember-me">
+            <input type="checkbox" />
+            <span>Se souvenir de moi</span>
+          </label>
+
+          <a routerLink="/forgot-password" class="form-link">
+            Mot de passe oublié ?
+          </a>
+        </div>
+
+        <button type="submit" class="login-btn">Se connecter</button>
+
+        <a routerLink="/activate-account" class="activate-link">
+          Activer mon compte
+        </a>
+      </form>
+
+      <div class="login-footer">
+        En cas de problème d’accès, contactez la Direction des Ressources
+        Humaines.
+      </div>
+    </section>
+  </div>
+</div>
