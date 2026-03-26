@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using rh_management_backend.Data;
 using rh_management_backend.Models;
+using rh_management_backend.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddScoped<IDemandeCongeRepository, DemandeCongeRepository>();
 
 builder.Services.AddOpenApi();
 builder.Services.AddCors(options =>
@@ -153,4 +155,7 @@ public record CreateDemandeCongeDto(
     string? Telephone = null,
     string? PieceJustificativeFichierNom = null);
 
+
 internal record DemandeCongeResponse(int Id, string Statut);
+
+ 
