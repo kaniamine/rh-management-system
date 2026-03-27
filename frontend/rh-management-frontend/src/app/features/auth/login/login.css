@@ -285,21 +285,30 @@ label {
 }
 
 .login-btn {
+  width: 100%;
   min-height: 50px;
   border: none;
   border-radius: 14px;
-  background: var(--success);
-  color: #fff;
+  background: #0D776E; /* vert principal */
+  color: #ffffff;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  transition: 0.2s ease;
-  margin-top: 4px;
+  transition: all 0.2s ease;
+  margin-top: 10px;
 }
 
+/* hover */
 .login-btn:hover {
-  opacity: 0.95;
+  background: #0b665f;
   transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(13, 119, 110, 0.25);
+}
+
+/* click */
+.login-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 .activate-link {

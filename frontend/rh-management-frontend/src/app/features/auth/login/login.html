@@ -32,7 +32,9 @@
     <section class="login-card">
       <div class="form-badge">Connexion</div>
 
-      <h2>Se connecter</h2>
+
+   
+      
 
       <p class="form-text">
         Saisissez vos identifiants pour accéder à votre espace personnel.
@@ -74,7 +76,9 @@
           </a>
         </div>
 
-        <button type="submit" class="login-btn">Se connecter</button>
+     <button type="button" class="login-btn" (click)="onLogin()">
+  Se connecter
+</button>
 
         <a routerLink="/activate-account" class="activate-link">
           Activer mon compte
