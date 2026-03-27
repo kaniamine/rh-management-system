@@ -2,20 +2,22 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-/** Même URL que le profil http du backend (launchSettings). */
 const API_BASE_URL = 'http://localhost:5130';
 
 export interface DemandeCongePayload {
-  nomComplet: string;
-  matricule: string;
-  gradeFonction?: string | null;
   typeConge: string;
+  typeDuree: string;
   dateDebut: string;
   dateFin: string;
-  dureeJours: number;
+  estBrouillon: boolean;
+  nomComplet: string;
+  matricule: string;
+  service?: string | null;
+  superieurHierarchique?: string | null;
   motif?: string | null;
   adressePendantConge?: string | null;
   telephone?: string | null;
+  pieceJustificativeFichierNom?: string | null;
 }
 
 export interface DemandeCongeResponse {
