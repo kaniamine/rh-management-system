@@ -28,39 +28,69 @@
     </div>
   </section>
 
-  <section class="actions-section">
-    <a class="action-card primary" routerLink="/conge">
-      <div>
-        <h2>Demande de congé</h2>
+ 
+
+  <div class="actions-section">
+  <div class="flip-card primary">
+    <div class="flip-card-inner">
+      
+      <div class="flip-face flip-front">
+        <h3>Demande de congé</h3>
+      </div>
+      <div class="flip-face flip-back">
+        <h4>Congé</h4>
         <p>Créer et suivre vos demandes de congé.</p>
+        <a class="action-card primary" routerLink="/conge">
+        <button class="card-btn">Accéder</button></a>
       </div>
-      <span class="card-btn">Accéder</span>
-    </a>
+      
+    </div>
+  </div>
 
-    <a class="action-card success" routerLink="/conge/demande-autorisation">
-      <div>
-        <h2>Demande d’autorisation</h2>
+  <div class="flip-card secondary">
+    <div class="flip-card-inner">
+      <div class="flip-face flip-front">
+        <h3>Demande d’autorisation</h3>
+      </div>
+      <div class="flip-face flip-back">
+        <h4>Autorisation</h4>
         <p>Soumettre une autorisation personnelle ou professionnelle.</p>
+          <a class="action-card success" routerLink="/conge/demande-autorisation">
+        <button class="card-btn">Accéder</button></a>
       </div>
-      <span class="card-btn">Accéder</span>
-    </a>
+    </div>
+  </div>
 
-    <a class="action-card neutral" routerLink="/dashboard-employee">
-      <div>
-        <h2>Tableau de bord</h2>
-        <p>Consulter vos demandes récentes et vos statuts.</p>
+  <div class="flip-card neutral">
+    <div class="flip-card-inner">
+      <div class="flip-face flip-front">
+        <h3>Mon profil</h3>
       </div>
-      <span class="card-btn">Voir</span>
-    </a>
-
-    <a class="action-card secondary" routerLink="/personnel">
-      <div>
-        <h2>Mon profil</h2>
+      <div class="flip-face flip-back">
+        <h4>Profil</h4>
         <p>Modifier vos informations personnelles et professionnelles.</p>
+         <a class="action-card success" routerLink="/home-employee">
+        <button class="card-btn">Modifier</button></a>
       </div>
-      <span class="card-btn">Modifier</span>
-    </a>
-  </section>
+    </div>
+  </div>
+
+  <div class="flip-card success">
+    <div class="flip-card-inner">
+      <div class="flip-face flip-front">
+        <h3>Tableau de bord</h3>
+      </div>
+      <div class="flip-face flip-back">
+        <h4>Suivi</h4>
+        <p>Consultez vos demandes récentes et vos statuts.</p>
+         <a class="action-card neutral" routerLink="/dashboard-employee">
+        <button class="card-btn">Voir</button></a>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
 
   <section class="stats-section">
     <div class="section-header">

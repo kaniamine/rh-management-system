@@ -668,3 +668,89 @@ a.return-link:visited {
   color: inherit;
 }
 }
+.file-input {
+  min-height: 52px;
+  padding: 10px 12px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.file-input::file-selector-button {
+  margin-right: 12px;
+  min-height: 38px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.field-hint {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #7b7d81;
+}
+
+.uploaded-files {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.uploaded-file {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.file-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #323438;
+  word-break: break-word;
+}
+
+.file-remove-btn {
+  min-height: 38px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(198, 12, 48, 0.10);
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.file-remove-btn:hover {
+  background: rgba(198, 12, 48, 0.16);
+}
+
+.validation-grid {
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+}
+
+@media (max-width: 900px) {
+  .validation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .uploaded-file {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .file-remove-btn {
+    width: 100%;
+  }
+}

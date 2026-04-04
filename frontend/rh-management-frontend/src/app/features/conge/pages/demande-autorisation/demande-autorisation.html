@@ -137,6 +137,41 @@
       </div>
     </div>
   </section>
+  <section class="card">
+  <div class="card-title">Pièces jointes</div>
+  <p class="card-subtitle">
+    Vous pouvez joindre des documents justificatifs : PDF, Word, PNG, JPG, etc.
+  </p>
+
+  <div class="form-grid">
+    <div class="field field-full">
+      <label for="attachments">Ajouter un ou plusieurs fichiers</label>
+      <input
+        id="attachments"
+        type="file"
+        class="input file-input"
+        multiple
+        accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
+      />
+      <small class="field-hint">
+        Formats autorisés : PDF, DOC, DOCX, PNG, JPG, JPEG, WEBP
+      </small>
+    </div>
+  </div>
+
+  
+  <div class="uploaded-files">
+    <div class="uploaded-file">
+      <span class="file-name">justificatif-rdv.pdf</span>
+      <button type="button" class="file-remove-btn">Retirer</button>
+    </div>
+
+    <div class="uploaded-file">
+      <span class="file-name">capture-horaire.png</span>
+      <button type="button" class="file-remove-btn">Retirer</button>
+    </div>
+  </div>
+</section>
 
   <section class="card">
     <div class="card-title">Circuit de validation</div>
