@@ -2,7 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-const API_BASE_URL = 'http://localhost:5130';
+// Avec `ng serve`, le proxy (proxy.conf.json) envoie /api → http://localhost:5130 (même origine, pas de CORS).
+// Pour appeler l’API sans proxy, définir l’URL complète, ex. 'http://localhost:5130'.
+const API_BASE_URL = '';
 
 export interface DemandeCongePayload {
   typeConge: string;

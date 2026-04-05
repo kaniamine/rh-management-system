@@ -1,4 +1,4 @@
-import { Component, inject, ViewEncapsulation } from '@angular/core';
+import { Component, HostListener, inject, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -50,6 +50,10 @@ export class DemandeConge {
     return 2;
   }
 
+  get isCongeMaladie(): boolean {
+    return this.form.typeConge.toLowerCase().includes('maladie');
+  }
+
   openConfirmModal(action: 'submit' | 'draft'): void {
     this.errorMessage = null;
     this.successMessage = null;
@@ -71,6 +75,27 @@ export class DemandeConge {
     this.currentAction = null;
   }
 
+  /** Clic sur le fond assombri : fermer (comme Retour). */
+  onConfirmBackdropClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('confirm-backdrop')) {
+      this.closeConfirmModal();
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeCloseModal(): void {
+    if (this.showConfirmModal) {
+      this.closeConfirmModal();
+    }
+  }
+
+  /** Bouton Annuler : ferme la modale si elle est ouverte. */
+  onAnnuler(): void {
+    if (this.showConfirmModal) {
+      this.closeConfirmModal();
+    }
+  }
+
   onJustificatifChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -86,6 +111,13 @@ export class DemandeConge {
 
     if (!this.form.dateDebut || !this.form.dateFin) {
       this.errorMessage = 'Indiquez la date de début et la date de fin.';
+      this.closeConfirmModal();
+      return;
+    }
+
+    if (this.form.dateFin < this.form.dateDebut) {
+      this.errorMessage =
+        'La date de fin doit être postérieure ou égale à la date de début.';
       this.closeConfirmModal();
       return;
     }
@@ -108,6 +140,12 @@ export class DemandeConge {
       }
       if (!this.form.motif.trim()) {
         this.errorMessage = 'Le motif est obligatoire pour soumettre la demande.';
+        this.closeConfirmModal();
+        return;
+      }
+      if (this.isCongeMaladie && !this.form.pieceJustificativeFichierNom.trim()) {
+        this.errorMessage =
+          'Une pièce justificative est obligatoire pour un congé maladie.';
         this.closeConfirmModal();
         return;
       }
@@ -148,7 +186,7 @@ export class DemandeConge {
           this.errorMessage =
             typeof msg === 'string'
               ? msg
-              : 'Échec d’enregistrement (API sur http://localhost:5130 ?).';
+              : 'Échec d’enregistrement : lancez l’API (`dotnet run` sur le port 5130) et le front avec `ng serve` (proxy /api).';
           this.closeConfirmModal();
           this.submitting = false;
         }

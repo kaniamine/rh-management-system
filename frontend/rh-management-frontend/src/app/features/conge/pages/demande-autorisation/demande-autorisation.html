@@ -9,11 +9,13 @@
     </div>
 
     <div class="header-actions">
-      <button routerLink="/home-employee" class="btn btn-light">Retour</button>
-      
-      <button routerLink="/dashboard-employee" class="btn btn-light">Historique</button>
+      <button routerLink="/home-employee" type="button" class="btn btn-light">Retour</button>
+      <button routerLink="/dashboard-employee" type="button" class="btn btn-light">Historique</button>
     </div>
   </header>
+
+  <p class="form-alert success" *ngIf="successMessage">{{ successMessage }}</p>
+  <p class="form-alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
 
   <div class="progress-bar">
     <div class="step done">Informations</div>
@@ -24,15 +26,15 @@
   <section class="summary-strip">
     <div class="summary-card">
       <span class="label">Statut</span>
-      <span class="value">Brouillon</span>
+      <span class="value">Formulaire</span>
     </div>
     <div class="summary-card">
       <span class="label">Type sélectionné</span>
-      <span class="value">Personnelle</span>
+      <span class="value">{{ selectedTypeLabel }}</span>
     </div>
     <div class="summary-card">
       <span class="label">Durée calculée</span>
-      <span class="value">01h 15</span>
+      <span class="value">{{ dureeLabel }}</span>
     </div>
   </section>
 
@@ -44,8 +46,6 @@
     </div>
   </section>
 
-  
-
   <section class="card form-card">
     <div class="card-title">Informations de la demande</div>
     <p class="card-subtitle">
@@ -53,27 +53,65 @@
     </p>
 
     <div class="form-grid">
+      <div class="field field-full">
+        <label for="nomComplet">Nom complet <span class="required">*</span></label>
+        <input
+          id="nomComplet"
+          class="input"
+          type="text"
+          name="nomComplet"
+          [(ngModel)]="form.nomComplet"
+          [disabled]="submitting"
+        />
+      </div>
+
       <div class="field">
         <label for="type">Type d’autorisation <span class="required">*</span></label>
-        <select id="type" class="input">
-          <option>Autorisation personnelle</option>
-          <option>Autorisation professionnelle</option>
+        <select
+          id="type"
+          class="input"
+          name="typeAutorisation"
+          [(ngModel)]="form.typeAutorisation"
+          [disabled]="submitting"
+        >
+          <option *ngFor="let t of typesAutorisation" [value]="t">{{ t }}</option>
         </select>
       </div>
 
       <div class="field">
         <label for="date">Date <span class="required">*</span></label>
-        <input id="date" class="input" type="date" />
+        <input
+          id="date"
+          class="input"
+          type="date"
+          name="dateDemande"
+          [(ngModel)]="form.dateDemande"
+          [disabled]="submitting"
+        />
       </div>
 
       <div class="field">
-        <label for="matricule">Matricule</label>
-        <input id="matricule" class="input readonly" type="text" value="EMP-2026-014" readonly />
+        <label for="matricule">Matricule <span class="required">*</span></label>
+        <input
+          id="matricule"
+          class="input"
+          type="text"
+          name="matricule"
+          [(ngModel)]="form.matricule"
+          [disabled]="submitting"
+        />
       </div>
 
-      <div class="field">
-        <label for="service">Direction / Service</label>
-        <input id="service" class="input readonly" type="text" value="Direction Finance / Comptabilité" readonly />
+      <div class="field field-full">
+        <label for="gradeFonction">Direction / Service</label>
+        <input
+          id="gradeFonction"
+          class="input"
+          type="text"
+          name="gradeFonction"
+          [(ngModel)]="form.gradeFonction"
+          [disabled]="submitting"
+        />
       </div>
     </div>
   </section>
@@ -86,13 +124,27 @@
         <h3>Heures de l’autorisation</h3>
         <div class="mini-grid">
           <div class="field">
-            <label for="heureDebut">Heure de début <span class="required">*</span></label>
-            <input id="heureDebut" class="input" type="time" />
+            <label for="heureDebut">Heure de début <span class="required">*</span> (soumission)</label>
+            <input
+              id="heureDebut"
+              class="input"
+              type="time"
+              name="heureSortie"
+              [(ngModel)]="form.heureSortie"
+              [disabled]="submitting"
+            />
           </div>
 
           <div class="field">
-            <label for="heureFin">Heure de fin <span class="required">*</span></label>
-            <input id="heureFin" class="input" type="time" />
+            <label for="heureFin">Heure de fin <span class="required">*</span> (soumission)</label>
+            <input
+              id="heureFin"
+              class="input"
+              type="time"
+              name="heureRetour"
+              [(ngModel)]="form.heureRetour"
+              [disabled]="submitting"
+            />
           </div>
         </div>
       </div>
@@ -102,12 +154,20 @@
         <div class="mini-grid">
           <div class="field">
             <label for="duree">Durée calculée</label>
-            <input id="duree" class="input readonly" type="text" value="01h 15" readonly />
+            <input id="duree" class="input readonly" type="text" [value]="dureeLabel" readonly />
           </div>
 
           <div class="field">
-            <label for="solde">Cumul mensuel</label>
-            <input id="solde" class="input readonly" type="text" value="03h 20" readonly />
+            <label for="telephone">Téléphone</label>
+            <input
+              id="telephone"
+              class="input"
+              type="text"
+              name="telephone"
+              [(ngModel)]="form.telephone"
+              [disabled]="submitting"
+              placeholder="Optionnel"
+            />
           </div>
         </div>
       </div>
@@ -119,59 +179,52 @@
 
     <div class="form-grid">
       <div class="field field-full">
-        <label for="motif">Motif <span class="required">*</span></label>
+        <label for="motif">Motif <span class="required">*</span> (soumission)</label>
         <textarea
           id="motif"
           class="input textarea"
+          name="motif"
           placeholder="Décrivez le motif de votre demande..."
+          [(ngModel)]="form.motif"
+          [disabled]="submitting"
         ></textarea>
       </div>
 
       <div class="field field-full">
-        <label for="commentaire">Commentaire complémentaire</label>
+        <label for="destination">Destination / commentaire</label>
         <textarea
-          id="commentaire"
+          id="destination"
           class="input textarea"
-          placeholder="Informations additionnelles si nécessaire..."
+          name="destination"
+          placeholder="Lieu, détails complémentaires..."
+          [(ngModel)]="form.destination"
+          [disabled]="submitting"
         ></textarea>
       </div>
     </div>
   </section>
+
   <section class="card">
-  <div class="card-title">Pièces jointes</div>
-  <p class="card-subtitle">
-    Vous pouvez joindre des documents justificatifs : PDF, Word, PNG, JPG, etc.
-  </p>
+    <div class="card-title">Pièces jointes</div>
+    <p class="card-subtitle">
+      Vous pouvez joindre des documents justificatifs : PDF, Word, PNG, JPG, etc. (nom du fichier transmis à titre informatif)
+    </p>
 
-  <div class="form-grid">
-    <div class="field field-full">
-      <label for="attachments">Ajouter un ou plusieurs fichiers</label>
-      <input
-        id="attachments"
-        type="file"
-        class="input file-input"
-        multiple
-        accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
-      />
-      <small class="field-hint">
-        Formats autorisés : PDF, DOC, DOCX, PNG, JPG, JPEG, WEBP
-      </small>
+    <div class="form-grid">
+      <div class="field field-full">
+        <label for="attachments">Ajouter un fichier</label>
+        <input
+          id="attachments"
+          type="file"
+          class="input file-input"
+          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
+          (change)="onPieceJointeChange($event)"
+          [disabled]="submitting"
+        />
+        <small class="field-hint" *ngIf="form.pieceJointeNom">{{ form.pieceJointeNom }}</small>
+      </div>
     </div>
-  </div>
-
-  
-  <div class="uploaded-files">
-    <div class="uploaded-file">
-      <span class="file-name">justificatif-rdv.pdf</span>
-      <button type="button" class="file-remove-btn">Retirer</button>
-    </div>
-
-    <div class="uploaded-file">
-      <span class="file-name">capture-horaire.png</span>
-      <button type="button" class="file-remove-btn">Retirer</button>
-    </div>
-  </div>
-</section>
+  </section>
 
   <section class="card">
     <div class="card-title">Circuit de validation</div>
@@ -189,7 +242,7 @@
 
       <div class="info-box">
         <span class="info-label">Statut courant</span>
-        <span class="info-value">Brouillon</span>
+        <span class="info-value">À soumettre</span>
       </div>
 
       <div class="info-box">
@@ -200,12 +253,49 @@
   </section>
 
   <div class="form-alert warning">
-    Attention : pour une autorisation personnelle, la durée maximale autorisée est de 1h30 par jour.
+    Attention : pour une autorisation personnelle, la durée maximale autorisée est de 1h30 par jour. Pour soumettre, remplissez date, nom, matricule, type, heures et motif. Le brouillon exige moins de champs.
   </div>
 
   <footer class="page-footer">
-    <button class="btn btn-light" type="button">Annuler</button>
-    <button class="btn btn-outline-primary" type="button">Enregistrer brouillon</button>
-    <button class="btn btn-success" type="submit">Soumettre</button>
+    <button class="btn btn-light" type="button" (click)="onAnnuler()" [disabled]="submitting">Annuler</button>
+    <button
+      class="btn btn-outline-primary"
+      type="button"
+      (click)="openConfirmModal('draft')"
+      [disabled]="submitting"
+    >
+      {{ submitting ? 'Envoi…' : 'Enregistrer brouillon' }}
+    </button>
+    <button
+      class="btn btn-success"
+      type="button"
+      (click)="openConfirmModal('submit')"
+      [disabled]="submitting"
+    >
+      {{ submitting ? 'Envoi…' : 'Soumettre' }}
+    </button>
   </footer>
+
+  <div
+    class="confirm-backdrop"
+    *ngIf="showConfirmModal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="autorisation-confirm-title"
+    (click)="onConfirmBackdropClick($event)"
+  >
+    <div class="confirm-modal" (click)="$event.stopPropagation()">
+      <h3 id="autorisation-confirm-title">{{ modalTitle }}</h3>
+      <p>{{ modalMessage }}</p>
+
+      <div class="confirm-actions">
+        <button type="button" class="btn btn-light" (click)="closeConfirmModal()">
+          Retour
+        </button>
+        <button type="button" class="btn btn-success" (click)="confirmAction()" [disabled]="submitting">
+          {{ submitting ? 'Envoi…' : 'Confirmer' }}
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
