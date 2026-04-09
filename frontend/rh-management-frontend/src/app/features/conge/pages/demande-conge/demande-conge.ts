@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { Component, inject } from '@angular/core';
+=======
+import { Component, HostListener, inject, ViewEncapsulation } from '@angular/core';
+>>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -80,6 +84,7 @@ export class DemandeConge {
     return `${j} jour${j > 1 ? 's' : ''}`;
   }
 
+<<<<<<< HEAD
   // ─── Règles de gestion ──────────────────────────────────────────────────────
 
   get isMotifObligatoire(): boolean {
@@ -122,6 +127,12 @@ export class DemandeConge {
 
   // ─── Actions ────────────────────────────────────────────────────────────────
 
+=======
+  get isCongeMaladie(): boolean {
+    return this.form.typeConge.toLowerCase().includes('maladie');
+  }
+
+>>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
   openConfirmModal(action: 'submit' | 'draft'): void {
     this.errorMessage = null;
     this.successMessage = null;
@@ -171,6 +182,27 @@ export class DemandeConge {
     this.currentAction = null;
   }
 
+  /** Clic sur le fond assombri : fermer (comme Retour). */
+  onConfirmBackdropClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('confirm-backdrop')) {
+      this.closeConfirmModal();
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeCloseModal(): void {
+    if (this.showConfirmModal) {
+      this.closeConfirmModal();
+    }
+  }
+
+  /** Bouton Annuler : ferme la modale si elle est ouverte. */
+  onAnnuler(): void {
+    if (this.showConfirmModal) {
+      this.closeConfirmModal();
+    }
+  }
+
   onJustificatifChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -182,6 +214,51 @@ export class DemandeConge {
 
     const estBrouillon = this.currentAction === 'draft';
 
+<<<<<<< HEAD
+=======
+    if (!this.form.dateDebut || !this.form.dateFin) {
+      this.errorMessage = 'Indiquez la date de début et la date de fin.';
+      this.closeConfirmModal();
+      return;
+    }
+
+    if (this.form.dateFin < this.form.dateDebut) {
+      this.errorMessage =
+        'La date de fin doit être postérieure ou égale à la date de début.';
+      this.closeConfirmModal();
+      return;
+    }
+
+    if (
+      this.form.typeDuree.includes('Demi') &&
+      this.form.dateDebut !== this.form.dateFin
+    ) {
+      this.errorMessage =
+        'Pour une demi-journée, la date de début et de fin doivent être le même jour.';
+      this.closeConfirmModal();
+      return;
+    }
+
+    if (!estBrouillon) {
+      if (!this.form.nomComplet.trim() || !this.form.matricule.trim()) {
+        this.errorMessage = 'Le nom et le matricule sont obligatoires.';
+        this.closeConfirmModal();
+        return;
+      }
+      if (!this.form.motif.trim()) {
+        this.errorMessage = 'Le motif est obligatoire pour soumettre la demande.';
+        this.closeConfirmModal();
+        return;
+      }
+      if (this.isCongeMaladie && !this.form.pieceJustificativeFichierNom.trim()) {
+        this.errorMessage =
+          'Une pièce justificative est obligatoire pour un congé maladie.';
+        this.closeConfirmModal();
+        return;
+      }
+    }
+
+>>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
     this.submitting = true;
     this.congeService
       .creerDemande({
@@ -218,7 +295,11 @@ export class DemandeConge {
           this.errorMessage =
             typeof msg === 'string'
               ? msg
+<<<<<<< HEAD
               : "Échec d'enregistrement (API sur http://localhost:5130 indisponible ?).";
+=======
+              : 'Échec d’enregistrement : lancez l’API (`dotnet run` sur le port 5130) et le front avec `ng serve` (proxy /api).';
+>>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
           this.closeConfirmModal();
           this.submitting = false;
         }

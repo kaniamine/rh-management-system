@@ -8,4 +8,6 @@ public class RhDbContext : DbContext
     public RhDbContext(DbContextOptions<RhDbContext> options) : base(options) { }
 
     public DbSet<DemandeConge> DemandesConges => Set<DemandeConge>();
+
+    public DbSet<DemandeAutorisation> DemandesAutorisations => Set<DemandeAutorisation>();
 }

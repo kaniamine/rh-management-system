@@ -1,131 +1,162 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using rh_management_backend.Data;
 using rh_management_backend.Models;
-using rh_management_backend.Repositories;
 
-namespace rh_management_backend.Controllers
+namespace rh_management_backend.Controllers;
+
+[ApiController]
+[Route("api/demandes-conge")]
+public class DemandeCongeController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class DemandeCongeController : ControllerBase
+    private readonly RhDbContext _db;
+
+    public DemandeCongeController(RhDbContext db)
     {
-        private readonly DemandeCongeRepository _repo;
+        _db = db;
+    }
 
-        public DemandeCongeController(DemandeCongeRepository repo)
+    [HttpPost]
+    public async Task<ActionResult<DemandeCongeResponse>> Create([FromBody] CreateDemandeCongeDto? dto)
+    {
+        if (dto == null)
         {
-            _repo = repo;
+            return BadRequest(new { message = "Requête invalide." });
         }
 
-        // ✅ Créer une demande
-        [HttpPost]
-        public IActionResult Create([FromBody] DemandeConge demande)
+        if (string.IsNullOrWhiteSpace(dto.TypeConge))
         {
-            // 🔴 Vérification dates
-            if (demande.DateDebut == default || demande.DateFin == default)
-                return BadRequest("Dates obligatoires");
-
-            if (demande.DateFin < demande.DateDebut)
-                return BadRequest("Date fin invalide");
-
-            // 🔴 Calcul durée
-            int duree = (demande.DateFin - demande.DateDebut).Days + 1;
-
-            // 🔴 Vérification solde
-            
-
-            // ✅ Initialisation
-            
-            demande.Statut = "En attente de validation N+1";
-            
-
-            _repo.Add(demande);
-
-            return Ok(demande);
+            return BadRequest(new { message = "Le type de congé est obligatoire." });
         }
 
-        // ✅ Récupérer toutes les demandes
-        [HttpGet]
-        public IActionResult GetAll()
+        if (dto.DateDebut == default || dto.DateFin == default)
         {
-            var demandes = _repo.GetAll();
-            return Ok(demandes);
+            return BadRequest(new { message = "Les dates de début et de fin sont obligatoires." });
         }
 
-        // ✅ Récupérer par ID
-        [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        if (dto.DateFin < dto.DateDebut)
         {
-            var demande = _repo.GetById(id);
-
-            if (demande == null)
-                return NotFound("Demande non trouvée");
-
-            return Ok(demande);
+            return BadRequest(new { message = "La date de fin doit être postérieure ou égale à la date de début." });
         }
 
-        // ✅ Validation N+1 → envoie vers DG
-        [HttpPut("valider/{id}")]
-        public IActionResult Valider(int id)
+        var typeDuree = string.IsNullOrWhiteSpace(dto.TypeDuree) ? "Journée entière" : dto.TypeDuree.Trim();
+        var demiJournee = typeDuree.Contains("Demi", StringComparison.OrdinalIgnoreCase);
+
+        if (demiJournee && dto.DateDebut != dto.DateFin)
         {
-            var demande = _repo.GetById(id);
-
-            if (demande == null)
-                return NotFound("Demande introuvable");
-
-            demande.Statut = "En attente de validation DG";
-
-            _repo.Update(demande);
-
-            return Ok(demande);
+            return BadRequest(new { message = "Pour une demi-journée, la date de début et de fin doivent être le même jour." });
         }
 
-        // ✅ Validation finale DG
-        [HttpPut("valider-dg/{id}")]
-        public IActionResult ValiderDG(int id)
+        if (!dto.EstBrouillon)
         {
-            var demande = _repo.GetById(id);
+            if (string.IsNullOrWhiteSpace(dto.NomComplet) || string.IsNullOrWhiteSpace(dto.Matricule))
+            {
+                return BadRequest(new { message = "Le nom complet et le matricule sont obligatoires pour une soumission." });
+            }
 
-            if (demande == null)
-                return NotFound("Demande introuvable");
+            if (string.IsNullOrWhiteSpace(dto.Motif))
+            {
+                return BadRequest(new { message = "Le motif est obligatoire pour soumettre la demande." });
+            }
 
-            demande.Statut = "Validée";
-
-            _repo.Update(demande);
-
-            return Ok(demande);
+            if (IsCongeMaladie(dto.TypeConge) && string.IsNullOrWhiteSpace(dto.PieceJustificativeFichierNom))
+            {
+                return BadRequest(new { message = "Une pièce justificative est obligatoire pour un congé maladie." });
+            }
         }
 
-        // ✅ Rejet avec motif
-        [HttpPut("rejeter/{id}")]
-        public IActionResult Rejeter(int id, [FromBody] string motif)
+        var dureeJours = ComputeDureeJours(dto.DateDebut, dto.DateFin, demiJournee);
+        if (dureeJours < 1)
         {
-            var demande = _repo.GetById(id);
-
-            if (demande == null)
-                return NotFound("Demande introuvable");
-
-            if (string.IsNullOrEmpty(motif))
-                return BadRequest("Motif obligatoire");
-
-            demande.Statut = "Rejetée";
-            demande.MotifRejet = motif;
-
-            _repo.Update(demande);
-
-            return Ok(demande);
+            return BadRequest(new { message = "Durée invalide." });
         }
 
-        // ✅ Supprimer
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        var statut = dto.EstBrouillon ? "Brouillon" : "En attente";
+
+        var entity = new DemandeConge
         {
-            var demande = _repo.GetById(id);
+            NomComplet = (dto.NomComplet ?? string.Empty).Trim(),
+            Matricule = (dto.Matricule ?? string.Empty).Trim(),
+            Service = NullIfWhiteSpace(dto.Service),
+            SuperieurHierarchique = NullIfWhiteSpace(dto.SuperieurHierarchique),
+            GradeFonction = NullIfWhiteSpace(dto.GradeFonction),
+            TypeConge = dto.TypeConge.Trim(),
+            TypeDuree = typeDuree,
+            DateDebut = dto.DateDebut,
+            DateFin = dto.DateFin,
+            DureeJours = dureeJours,
+            Motif = NullIfWhiteSpace(dto.Motif),
+            AdressePendantConge = NullIfWhiteSpace(dto.AdressePendantConge),
+            Telephone = NullIfWhiteSpace(dto.Telephone),
+            PieceJustificativeFichierNom = NullIfWhiteSpace(dto.PieceJustificativeFichierNom),
+            EstBrouillon = dto.EstBrouillon,
+            Statut = statut,
+            CreatedAt = DateTime.UtcNow
+        };
 
-            if (demande == null)
-                return NotFound("Demande introuvable");
+        _db.DemandesConges.Add(entity);
+        await _db.SaveChangesAsync();
 
-            _repo.Delete(id);
+        return CreatedAtAction(nameof(GetById), new { id = entity.Id }, new DemandeCongeResponse(entity.Id, entity.Statut));
+    }
 
-            return Ok("Supprimée avec succès");
+    [HttpGet]
+    public async Task<ActionResult<List<DemandeConge>>> GetAll()
+    {
+        return await _db.DemandesConges.AsNoTracking().ToListAsync();
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<DemandeConge>> GetById(int id)
+    {
+        var d = await _db.DemandesConges.FindAsync(id);
+        return d == null ? NotFound() : Ok(d);
+    }
+
+    private static bool IsCongeMaladie(string typeConge) =>
+        typeConge.Contains("maladie", StringComparison.OrdinalIgnoreCase);
+
+    private static int ComputeDureeJours(DateOnly debut, DateOnly fin, bool demiJournee)
+    {
+        var joursCalendaires = fin.DayNumber - debut.DayNumber + 1;
+        if (joursCalendaires < 1)
+        {
+            return 0;
         }
+
+        return demiJournee ? 1 : joursCalendaires;
+    }
+
+    private static string? NullIfWhiteSpace(string? s) =>
+        string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+}
+
+public sealed class CreateDemandeCongeDto
+{
+    public string TypeConge { get; set; } = string.Empty;
+    public DateOnly DateDebut { get; set; }
+    public DateOnly DateFin { get; set; }
+    public bool EstBrouillon { get; set; }
+    public string? NomComplet { get; set; }
+    public string? Matricule { get; set; }
+    public string? Service { get; set; }
+    public string? SuperieurHierarchique { get; set; }
+    public string? GradeFonction { get; set; }
+    public string? TypeDuree { get; set; }
+    public string? Motif { get; set; }
+    public string? AdressePendantConge { get; set; }
+    public string? Telephone { get; set; }
+    public string? PieceJustificativeFichierNom { get; set; }
+}
+
+public sealed class DemandeCongeResponse
+{
+    public int Id { get; init; }
+    public string Statut { get; init; } = string.Empty;
+
+    public DemandeCongeResponse(int id, string statut)
+    {
+        Id = id;
+        Statut = statut;
     }
 }

@@ -173,6 +173,7 @@
 
       <!-- PIÈCE JUSTIFICATIVE -->
       <div class="field">
+<<<<<<< HEAD
         <label>Pièce justificative</label>
         <input
           type="file"
@@ -184,6 +185,14 @@
         <span class="field-success" *ngIf="form.pieceJustificativeFichierNom">
           Fichier sélectionné : {{ form.pieceJustificativeFichierNom }}
         </span>
+=======
+        <label>
+          Pièce justificative
+          <span class="required" *ngIf="isCongeMaladie">*</span>
+          <small *ngIf="isCongeMaladie"> (obligatoire pour congé maladie)</small>
+        </label>
+        <input type="file" class="input" (change)="onJustificatifChange($event)" [disabled]="submitting" />
+>>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
       </div>
     </div>
   </div>
@@ -213,6 +222,7 @@
     </div>
   </div>
 
+<<<<<<< HEAD
   <!-- CIRCUIT DE VALIDATION -->
   <div class="card">
     <div class="card-title">Circuit de validation</div>
@@ -254,6 +264,10 @@
       Une demande rejetée ou annulée n'a aucun impact sur le solde.
     </p>
   </div>
+=======
+  <div class="page-footer">
+    <button class="btn btn-light" type="button" (click)="onAnnuler()" [disabled]="submitting">Annuler</button>
+>>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
 
   <!-- PIED DE PAGE / ACTIONS -->
   <div class="page-footer">
@@ -278,13 +292,26 @@
     </button>
   </div>
 
+<<<<<<< HEAD
   <!-- MODAL DE CONFIRMATION -->
   <div class="confirm-backdrop" *ngIf="showConfirmModal">
     <div class="confirm-modal">
       <h3>{{ modalTitle }}</h3>
+=======
+  <div
+    class="confirm-backdrop"
+    *ngIf="showConfirmModal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="conge-confirm-title"
+    (click)="onConfirmBackdropClick($event)"
+  >
+    <div class="confirm-modal" (click)="$event.stopPropagation()">
+      <h3 id="conge-confirm-title">{{ modalTitle }}</h3>
+>>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
       <p>{{ modalMessage }}</p>
       <div class="confirm-actions">
-        <button class="btn btn-light" type="button" (click)="closeConfirmModal()" [disabled]="submitting">
+        <button class="btn btn-light" type="button" (click)="closeConfirmModal()">
           Retour
         </button>
         <button class="btn btn-success" type="button" (click)="confirmAction()" [disabled]="submitting">
