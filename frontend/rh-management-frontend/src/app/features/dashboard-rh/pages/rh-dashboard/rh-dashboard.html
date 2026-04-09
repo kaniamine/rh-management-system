@@ -1,69 +1,271 @@
-<div class="dashboard-page">
-  <div class="dashboard-header">
-    <h1>Tableau de bord RH</h1>
-    <p>Suivi global des demandes, personnel et reporting RH.</p>
+<div class="rh-page">
+
+  <!-- EN-TÊTE -->
+  <header class="page-header">
+    <div>
+      <h1>Tableau de bord — Direction RH</h1>
+      <p class="subtitle">
+        Gestion complète des demandes RH : congés, autorisations de sortie et congés maladie.
+      </p>
+    </div>
+    <div class="header-actions">
+      <button routerLink="/home-rh" class="btn btn-light">Accueil RH</button>
+      <button routerLink="/personnel" class="btn btn-light">Gestion du personnel</button>
+      <button class="btn btn-primary" (click)="exportCSV()">Exporter CSV</button>
+    </div>
+  </header>
+
+  <!-- KPI GLOBAUX -->
+  <section class="kpi-grid">
+    <div class="kpi-card">
+      <span class="kpi-label">Total demandes</span>
+      <strong class="kpi-value">{{ kpis.total }}</strong>
+    </div>
+    <div class="kpi-card warning">
+      <span class="kpi-label">En attente</span>
+      <strong class="kpi-value">{{ kpis.enAttente }}</strong>
+    </div>
+    <div class="kpi-card success">
+      <span class="kpi-label">Validées</span>
+      <strong class="kpi-value">{{ kpis.validees }}</strong>
+    </div>
+    <div class="kpi-card danger">
+      <span class="kpi-label">Rejetées</span>
+      <strong class="kpi-value">{{ kpis.rejetees }}</strong>
+    </div>
+    <div class="kpi-card neutral">
+      <span class="kpi-label">Clôturées</span>
+      <strong class="kpi-value">{{ kpis.cloturees }}</strong>
+    </div>
+  </section>
+
+  <!-- LISTE PRINCIPALE -->
+  <section class="card" *ngIf="!selectedDemande">
+    <div class="section-header">
+      <h2>Toutes les demandes</h2>
+    </div>
+
+    <!-- ONGLETS -->
+    <div class="tabs-bar">
+      <div class="tabs">
+        <button class="tab" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">
+          Toutes ({{ demandes.length }})
+        </button>
+        <button class="tab" [class.active]="activeTab === 'conge'" (click)="activeTab = 'conge'">
+          Congés ({{ countByType('conge') }})
+        </button>
+        <button class="tab" [class.active]="activeTab === 'autorisation'" (click)="activeTab = 'autorisation'">
+          Autorisations ({{ countByType('autorisation') }})
+        </button>
+        <button class="tab tab-maladie" [class.active]="activeTab === 'maladie'" (click)="activeTab = 'maladie'">
+          Maladie ({{ countByType('maladie') }})
+        </button>
+      </div>
+    </div>
+
+    <!-- FILTRES -->
+    <div class="filters-row">
+      <div class="filter-item">
+        <label>Statut</label>
+        <select class="filter-select" [(ngModel)]="filterStatut">
+          <option value="">Tous</option>
+          <option value="En attente de validation N+1">En attente N+1</option>
+          <option value="En attente de validation RH">En attente RH</option>
+          <option value="En attente de validation du supérieur hiérarchique">En attente Autorisation</option>
+          <option value="Validée – En traitement RH">En traitement RH</option>
+          <option value="Validée">Validée</option>
+          <option value="Clôturée">Clôturée</option>
+          <option value="Rejetée">Rejetée</option>
+          <option value="Annulée">Annulée</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>Employé / Matricule</label>
+        <input
+          class="filter-input"
+          type="text"
+          placeholder="Rechercher..."
+          [(ngModel)]="filterEmploye"
+        />
+      </div>
+      <div class="filter-item">
+        <label>Du</label>
+        <input class="filter-input" type="date" [(ngModel)]="filterDateDebut" />
+      </div>
+      <div class="filter-item">
+        <label>Au</label>
+        <input class="filter-input" type="date" [(ngModel)]="filterDateFin" />
+      </div>
+    </div>
+
+    <!-- TABLEAU -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Réf.</th>
+            <th>Type</th>
+            <th>Employé</th>
+            <th>Direction</th>
+            <th>Période / Durée</th>
+            <th>Soumis le</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of filteredDemandes" (click)="openDetail(d)" class="row-link">
+            <td><strong>{{ d.refNo }}</strong></td>
+            <td>
+              <span class="type-chip" [ngClass]="'chip-' + d.type">
+                {{ getTypeIcon(d.type) }} {{ d.sousType }}
+              </span>
+            </td>
+            <td>
+              <div class="employe-cell">
+                <strong>{{ d.employe }}</strong>
+                <span class="matricule">{{ d.matricule }}</span>
+              </div>
+            </td>
+            <td>{{ d.direction }}</td>
+            <td>
+              <span *ngIf="d.dateFin">{{ d.dateDebut }} → {{ d.dateFin }}</span>
+              <span *ngIf="!d.dateFin">{{ d.dateDebut }}</span>
+              <span class="duree-badge">{{ d.duree }}</span>
+            </td>
+            <td>{{ d.dateCreation }}</td>
+            <td>
+              <span class="badge" [ngClass]="getStatutClass(d.statut)">{{ d.statut }}</span>
+            </td>
+            <td (click)="$event.stopPropagation()">
+              <button class="btn btn-light btn-sm" (click)="openDetail(d)">Détail</button>
+              <button
+                class="btn btn-success btn-sm"
+                *ngIf="canCloturer(d)"
+                (click)="openDetail(d); cloturer()"
+              >Clôturer</button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredDemandes.length === 0">
+            <td colspan="8" class="empty-cell">Aucune demande trouvée.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- DÉTAIL / ACTIONS RH -->
+  <section class="card detail-panel" *ngIf="selectedDemande && !showRejectModal">
+    <div class="detail-header">
+      <div>
+        <h2>{{ selectedDemande.refNo }} — {{ selectedDemande.sousType }}</h2>
+        <p>{{ selectedDemande.employe }} · {{ selectedDemande.direction }}</p>
+      </div>
+      <button class="btn btn-light" (click)="closeDetail()">← Retour à la liste</button>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-section">
+        <h3>Informations de la demande</h3>
+        <div class="detail-rows">
+          <div class="detail-row"><span>Type</span><strong>{{ selectedDemande.sousType }}</strong></div>
+          <div class="detail-row"><span>Employé</span><strong>{{ selectedDemande.employe }}</strong></div>
+          <div class="detail-row"><span>Matricule</span><strong>{{ selectedDemande.matricule }}</strong></div>
+          <div class="detail-row"><span>Direction</span><strong>{{ selectedDemande.direction }}</strong></div>
+          <div class="detail-row">
+            <span>Période</span>
+            <strong>
+              {{ selectedDemande.dateDebut }}
+              <span *ngIf="selectedDemande.dateFin"> → {{ selectedDemande.dateFin }}</span>
+            </strong>
+          </div>
+          <div class="detail-row"><span>Durée</span><strong>{{ selectedDemande.duree }}</strong></div>
+          <div class="detail-row"><span>Motif</span><strong>{{ selectedDemande.motif }}</strong></div>
+          <div class="detail-row"><span>Soumis le</span><strong>{{ selectedDemande.dateCreation }}</strong></div>
+          <div class="detail-row" *ngIf="selectedDemande.certificat">
+            <span>Certificat médical</span>
+            <strong class="cert-link">📄 {{ selectedDemande.certificat }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Statut &amp; Actions RH</h3>
+        <div class="detail-rows">
+          <div class="detail-row">
+            <span>Statut courant</span>
+            <span class="badge" [ngClass]="getStatutClass(selectedDemande.statut)">
+              {{ selectedDemande.statut }}
+            </span>
+          </div>
+        </div>
+
+        <div class="action-block">
+          <h4>Actions disponibles</h4>
+          <div class="action-btns">
+            <button
+              class="btn btn-success"
+              *ngIf="canValiderMaladie(selectedDemande)"
+              (click)="validerMaladie()"
+              [disabled]="actionLoading"
+            >
+              Valider le congé maladie
+            </button>
+            <button
+              class="btn btn-primary"
+              *ngIf="canCloturer(selectedDemande)"
+              (click)="cloturer()"
+              [disabled]="actionLoading"
+            >
+              Clôturer la demande
+            </button>
+            <button
+              class="btn btn-secondary"
+              *ngIf="canReject(selectedDemande)"
+              (click)="openRejectModal()"
+              [disabled]="actionLoading"
+            >
+              Rejeter
+            </button>
+          </div>
+          <p class="action-note" *ngIf="!canValiderMaladie(selectedDemande) && !canCloturer(selectedDemande) && !canReject(selectedDemande)">
+            Aucune action disponible pour cette demande (statut : {{ selectedDemande.statut }}).
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODAL REJET RH -->
+  <div class="confirm-backdrop" *ngIf="showRejectModal && selectedDemande">
+    <div class="confirm-modal">
+      <h3>Rejeter la demande</h3>
+      <p>
+        Vous allez rejeter la demande <strong>{{ selectedDemande.refNo }}</strong>
+        de <strong>{{ selectedDemande.employe }}</strong>.
+        L'employé sera notifié avec le motif indiqué.
+      </p>
+      <div class="field">
+        <label for="rejectMotif">Motif du rejet <span class="required">*</span></label>
+        <textarea
+          id="rejectMotif"
+          class="input textarea"
+          placeholder="Indiquez la raison du rejet (obligatoire)..."
+          [(ngModel)]="rejectMotif"
+          rows="4"
+        ></textarea>
+      </div>
+      <div class="confirm-actions">
+        <button class="btn btn-light" (click)="closeRejectModal()" [disabled]="actionLoading">Annuler</button>
+        <button
+          class="btn btn-secondary"
+          (click)="rejeter()"
+          [disabled]="actionLoading || !rejectMotif.trim()"
+        >
+          {{ actionLoading ? 'En cours…' : 'Confirmer le rejet' }}
+        </button>
+      </div>
+    </div>
   </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <h3>Total demandes</h3>
-      <p>152</p>
-    </div>
-    <div class="stat-card">
-      <h3>En attente</h3>
-      <p>18</p>
-    </div>
-    <div class="stat-card">
-      <h3>Validées</h3>
-      <p>104</p>
-    </div>
-    <div class="stat-card">
-      <h3>Rejetées</h3>
-      <p>12</p>
-    </div>
-    <div class="stat-card">
-      <h3>Clôturées</h3>
-      <p>18</p>
-    </div>
-  </div>
-
-  <div class="actions-grid">
-    <a class="action-card primary">Gérer le personnel</a>
-    <a class="action-card validate">Consulter les demandes</a>
-    <a class="action-card secondary">Exporter reporting</a>
-  </div>
-
-  <div class="table-section">
-    <h2>Demandes récentes</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Employé</th>
-          <th>Type</th>
-          <th>Date</th>
-          <th>Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Ahmed Ben Ali</td>
-          <td>Congé</td>
-          <td>08/03/2026</td>
-          <td><span class="badge pending">En attente</span></td>
-        </tr>
-        <tr>
-          <td>Sarah Trabelsi</td>
-          <td>Autorisation professionnelle</td>
-          <td>07/03/2026</td>
-          <td><span class="badge approved">Validée</span></td>
-        </tr>
-        <tr>
-          <td>Mohamed Kacem</td>
-          <td>Autorisation personnelle</td>
-          <td>06/03/2026</td>
-          <td><span class="badge rejected">Rejetée</span></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
 </div>

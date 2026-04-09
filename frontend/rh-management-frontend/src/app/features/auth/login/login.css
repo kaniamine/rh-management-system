@@ -271,18 +271,6 @@ label {
   height: 16px;
 }
 
-.form-link,
-.activate-link {
-  text-decoration: none;
-  color: #111;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.form-link:hover,
-.activate-link:hover {
-  color: var(--primary);
-}
 
 .login-btn {
   width: 100%;

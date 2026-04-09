@@ -2,6 +2,11 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
+    path: '',
+    redirectTo: '/login',
+    pathMatch: 'full'
+  },
+  {
     path: 'home-employee',
     loadChildren: () =>
       import('./features/home-employee/home-employee-module').then(m => m.HomeEmployeeModule)
@@ -27,14 +32,28 @@ export const routes: Routes = [
       import('./features/dashboard-rh/dashboard-rh-module').then(m => m.DashboardRhModule)
   },
 
-   {
+  {
     path: 'personnel',
     loadChildren: () =>
       import('./features/personnel/personnel-module').then(m => m.PersonnelModule)
   },
   {
-  path: 'login',
-  loadComponent: () =>
-    import('./features/auth/login/login-module').then(m => m.LoginModule)
-}
+    path: 'responsable',
+    loadChildren: () =>
+      import('./features/responsable/responsable-module').then(m => m.ResponsableModule)
+  },
+  {
+    path: 'dg',
+    loadChildren: () =>
+      import('./features/dg/dg-module').then(m => m.DgModule)
+  },
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./features/auth/login/login').then(m => m.Login)
+  },
+  {
+    path: '**',
+    redirectTo: '/login'
+  }
 ];

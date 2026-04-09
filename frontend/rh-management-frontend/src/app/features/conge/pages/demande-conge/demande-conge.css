@@ -579,10 +579,6 @@ textarea.input:focus {
 }
 
 
-
-}
-
-
 .btn-success {
   background-color: #0D776E;
   color: #ffffff;
@@ -637,4 +633,147 @@ textarea.input:focus {
   font-weight: 600;
 }
 
+/* ─── NOUVELLES RÈGLES (validation métier) ──────────────────────────────── */
 
+/* Résumé avec 4 cartes */
+.summary-strip {
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+}
+
+/* Carte d'alerte solde insuffisant */
+.summary-card.alert-card {
+  border-color: rgba(198,12,48,0.3);
+  background: rgba(198,12,48,0.04);
+}
+
+/* Texte danger */
+.text-danger { color: var(--danger) !important; }
+
+/* Inputs en erreur */
+.input-error {
+  border-color: var(--danger) !important;
+  background: rgba(198,12,48,0.03) !important;
+}
+
+.input-over-limit {
+  border-color: var(--danger) !important;
+  background: rgba(198,12,48,0.04) !important;
+  color: var(--danger) !important;
+}
+
+/* Label optionnel */
+.label-optional {
+  font-size: 12px;
+  font-weight: 400;
+  color: #9a9ca1;
+  margin-left: 4px;
+}
+
+/* File input */
+.file-input {
+  min-height: 46px;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-style: dashed;
+}
+
+.file-input::file-selector-button {
+  margin-right: 12px;
+  min-height: 32px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Champs de succès */
+.field-success {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* Info box valeur (lecture seule) */
+.info-box .info-value {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: #323438;
+  margin-top: 4px;
+}
+
+/* Workflow visual */
+.workflow-steps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 4px 0;
+}
+
+.wf-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fafafa;
+  min-width: 140px;
+}
+
+.wf-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ddd;
+  color: #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.wf-dot.primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.wf-label {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.wf-label strong { font-size: 13px; color: #222; }
+.wf-label span { font-size: 12px; color: #999; }
+
+.wf-arrow { font-size: 16px; color: #ccc; flex-shrink: 0; }
+
+.workflow-note {
+  margin: 0;
+  font-size: 13px;
+  color: #888;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+@media (max-width: 992px) {
+  .summary-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .workflow-steps {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .wf-step { width: 100%; }
+  .wf-arrow { display: none; }
+}

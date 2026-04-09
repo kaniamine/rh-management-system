@@ -1,16 +1,16 @@
-import { Component, inject, ViewEncapsulation } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { RouterLink } from '@angular/router';
 import { Conge } from '../../services/conge';
 
 @Component({
   selector: 'app-demande-conge',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './demande-conge.html',
-  styleUrls: ['./demande-conge.css'],
-  encapsulation: ViewEncapsulation.None
+  styleUrls: ['./demande-conge.css']
 })
 export class DemandeConge {
   private readonly congeService = inject(Conge);
@@ -24,31 +24,103 @@ export class DemandeConge {
   modalTitle = '';
   modalMessage = '';
 
-  typesConge = ['Congé annuel', 'Congé maladie', 'Congé exceptionnel'];
-  typesDuree = ['Journée entière', 'Demi-journée'];
+  readonly typesConge = [
+    'Congé annuel',
+    'Congé exceptionnel de courte durée',
+    'Congé maternité',
+    'Congé de décès',
+    'Congé sans solde',
+    'Congé compensatoire'
+  ];
+
+  // Auto-rempli depuis la session
+  readonly employee = {
+    nomComplet: 'Amine Kani',
+    matricule: 'EMP-2026-014',
+    service: 'Comptabilité',
+    direction: 'Direction Finance',
+    superieurHierarchique: 'Ahmed Ben Ali'
+  };
+
+  // Solde actuel (récupéré depuis l'API en production)
+  readonly soldeCongesJours = 12;
+  readonly demandesEnAttente = 2;
 
   form = {
     typeConge: 'Congé annuel',
-    typeDuree: 'Journée entière',
     dateDebut: '',
     dateFin: '',
     motif: '',
     adressePendantConge: '',
     telephone: '',
-    nomComplet: 'Amine Kani',
-    matricule: 'EMP-2026-014',
-    service: 'Production',
-    superieurHierarchique: 'Ahmed Ben Ali',
     pieceJustificativeFichierNom: '' as string
   };
 
-  get soldeCongesJours(): number {
-    return 12;
+  // ─── Calculs automatiques ───────────────────────────────────────────────────
+
+  get dureeJours(): number {
+    if (!this.form.dateDebut || !this.form.dateFin) return 0;
+    const debut = new Date(this.form.dateDebut);
+    const fin = new Date(this.form.dateFin);
+    if (fin < debut) return 0;
+    let jours = 0;
+    const cur = new Date(debut);
+    while (cur <= fin) {
+      const dow = cur.getDay();
+      // Compter tous les jours sauf dimanche (0); le vendredi (5) est compté
+      if (dow !== 0) jours++;
+      cur.setDate(cur.getDate() + 1);
+    }
+    return jours;
   }
 
-  get demandesEnAttente(): number {
-    return 2;
+  get dureeLabel(): string {
+    const j = this.dureeJours;
+    if (j <= 0) return '--';
+    return `${j} jour${j > 1 ? 's' : ''}`;
   }
+
+  // ─── Règles de gestion ──────────────────────────────────────────────────────
+
+  get isMotifObligatoire(): boolean {
+    return this.form.typeConge === 'Congé exceptionnel de courte durée' ||
+           this.form.typeConge === 'Congé de décès';
+  }
+
+  get soldeInsuffisant(): boolean {
+    if (this.form.typeConge === 'Congé sans solde') return false;
+    if (this.form.typeConge === 'Congé maternité') return false;
+    return this.dureeJours > 0 && this.dureeJours > this.soldeCongesJours;
+  }
+
+  get dateTropProche(): boolean {
+    if (!this.form.dateDebut) return false;
+    const debut = new Date(this.form.dateDebut);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Calculer 3 jours ouvrés à partir d'aujourd'hui
+    let joursOuvres = 0;
+    const cur = new Date(today);
+    cur.setDate(cur.getDate() + 1);
+    while (joursOuvres < 3) {
+      const dow = cur.getDay();
+      if (dow !== 0 && dow !== 6) joursOuvres++;
+      if (joursOuvres < 3) cur.setDate(cur.getDate() + 1);
+    }
+    return debut < cur;
+  }
+
+  get dateFinAvantDebut(): boolean {
+    if (!this.form.dateDebut || !this.form.dateFin) return false;
+    return new Date(this.form.dateFin) < new Date(this.form.dateDebut);
+  }
+
+  get peutSoumettre(): boolean {
+    return !this.soldeInsuffisant && !this.dateTropProche && !this.dateFinAvantDebut;
+  }
+
+  // ─── Actions ────────────────────────────────────────────────────────────────
 
   openConfirmModal(action: 'submit' | 'draft'): void {
     this.errorMessage = null;
@@ -56,8 +128,36 @@ export class DemandeConge {
     this.currentAction = action;
 
     if (action === 'submit') {
+      // Validations bloquantes
+      if (!this.form.dateDebut || !this.form.dateFin) {
+        this.errorMessage = 'La date de début et la date de fin sont obligatoires.';
+        return;
+      }
+      if (this.dateFinAvantDebut) {
+        this.errorMessage = 'La date de fin ne peut pas être antérieure à la date de début.';
+        return;
+      }
+      if (this.dateTropProche) {
+        this.errorMessage =
+          'La demande doit être déposée au minimum 3 jours ouvrés avant la date de début.';
+        return;
+      }
+      if (this.soldeInsuffisant) {
+        this.errorMessage =
+          `Solde insuffisant : vous demandez ${this.dureeJours} jours mais votre solde est de ${this.soldeCongesJours} jours.`;
+        return;
+      }
+      if (this.isMotifObligatoire && !this.form.motif.trim()) {
+        this.errorMessage =
+          `Le motif est obligatoire pour un "${this.form.typeConge}".`;
+        return;
+      }
+
       this.modalTitle = 'Confirmer la demande';
-      this.modalMessage = 'Êtes-vous sûr de vouloir soumettre cette demande de congé ?';
+      this.modalMessage =
+        `Vous allez soumettre une demande de "${this.form.typeConge}" ` +
+        `du ${this.form.dateDebut} au ${this.form.dateFin} (${this.dureeLabel}). ` +
+        `Votre supérieur hiérarchique sera notifié.`;
     } else {
       this.modalTitle = 'Enregistrer en brouillon';
       this.modalMessage = 'Voulez-vous enregistrer cette demande comme brouillon ?';
@@ -78,62 +178,32 @@ export class DemandeConge {
   }
 
   confirmAction(): void {
-    if (!this.currentAction) {
-      return;
-    }
+    if (!this.currentAction) return;
 
     const estBrouillon = this.currentAction === 'draft';
-
-    if (!this.form.dateDebut || !this.form.dateFin) {
-      this.errorMessage = 'Indiquez la date de début et la date de fin.';
-      this.closeConfirmModal();
-      return;
-    }
-
-    if (
-      this.form.typeDuree.includes('Demi') &&
-      this.form.dateDebut !== this.form.dateFin
-    ) {
-      this.errorMessage =
-        'Pour une demi-journée, la date de début et de fin doivent être le même jour.';
-      this.closeConfirmModal();
-      return;
-    }
-
-    if (!estBrouillon) {
-      if (!this.form.nomComplet.trim() || !this.form.matricule.trim()) {
-        this.errorMessage = 'Le nom et le matricule sont obligatoires.';
-        this.closeConfirmModal();
-        return;
-      }
-      if (!this.form.motif.trim()) {
-        this.errorMessage = 'Le motif est obligatoire pour soumettre la demande.';
-        this.closeConfirmModal();
-        return;
-      }
-    }
 
     this.submitting = true;
     this.congeService
       .creerDemande({
         typeConge: this.form.typeConge,
-        typeDuree: this.form.typeDuree,
+        typeDuree: `${this.dureeJours} jour(s)`,
         dateDebut: this.form.dateDebut,
         dateFin: this.form.dateFin,
         estBrouillon,
-        nomComplet: this.form.nomComplet.trim(),
-        matricule: this.form.matricule.trim(),
-        service: this.form.service.trim() || null,
-        superieurHierarchique: this.form.superieurHierarchique.trim() || null,
+        nomComplet: this.employee.nomComplet,
+        matricule: this.employee.matricule,
+        service: this.employee.service,
+        superieurHierarchique: this.employee.superieurHierarchique,
         motif: this.form.motif.trim() || null,
         adressePendantConge: this.form.adressePendantConge.trim() || null,
         telephone: this.form.telephone.trim() || null,
-        pieceJustificativeFichierNom:
-          this.form.pieceJustificativeFichierNom.trim() || null
+        pieceJustificativeFichierNom: this.form.pieceJustificativeFichierNom.trim() || null
       })
       .subscribe({
         next: (res) => {
-          this.successMessage = `Enregistré (id ${res.id}) — statut : ${res.statut}.`;
+          this.successMessage = estBrouillon
+            ? `Brouillon enregistré (réf. #${res.id}).`
+            : `Demande soumise avec succès (réf. #${res.id}) — statut : ${res.statut}. Votre supérieur hiérarchique a été notifié.`;
           this.closeConfirmModal();
           this.submitting = false;
         },
@@ -148,7 +218,7 @@ export class DemandeConge {
           this.errorMessage =
             typeof msg === 'string'
               ? msg
-              : 'Échec d’enregistrement (API sur http://localhost:5130 ?).';
+              : "Échec d'enregistrement (API sur http://localhost:5130 indisponible ?).";
           this.closeConfirmModal();
           this.submitting = false;
         }

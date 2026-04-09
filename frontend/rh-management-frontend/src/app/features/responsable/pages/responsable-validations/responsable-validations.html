@@ -1,0 +1,254 @@
+<div class="resp-page">
+
+  <!-- EN-TÊTE -->
+  <header class="page-header">
+    <div class="header-left">
+      <div class="avatar">{{ responsable.nomComplet.charAt(0) }}</div>
+      <div>
+        <h1>Espace Responsable (N+1)</h1>
+        <p class="subtitle">
+          Bonjour <strong>{{ responsable.nomComplet }}</strong> —
+          {{ responsable.service }} · {{ responsable.equipeCount }} collaborateurs
+        </p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="pending-badge" *ngIf="pendingCount > 0">
+        <span class="pending-count">{{ pendingCount }}</span>
+        demande{{ pendingCount > 1 ? 's' : '' }} en attente
+      </div>
+      <button routerLink="/home-employee" class="btn btn-light">Retour</button>
+    </div>
+  </header>
+
+  <!-- KPI RAPIDE -->
+  <section class="kpi-strip">
+    <div class="kpi-card accent">
+      <span class="kpi-label">En attente</span>
+      <span class="kpi-value">{{ pendingCount }}</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Total</span>
+      <span class="kpi-value">{{ totalCount }}</span>
+    </div>
+    <div class="kpi-card conge">
+      <span class="kpi-label">Congés</span>
+      <span class="kpi-value">{{ countByType('conge') }}</span>
+    </div>
+    <div class="kpi-card auto">
+      <span class="kpi-label">Autorisations</span>
+      <span class="kpi-value">{{ countByType('autorisation') }}</span>
+    </div>
+    <div class="kpi-card maladie">
+      <span class="kpi-label">Maladie</span>
+      <span class="kpi-value">{{ countByType('maladie') }}</span>
+    </div>
+  </section>
+
+  <!-- ONGLETS + FILTRE -->
+  <div class="tabs-bar">
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">
+        Toutes ({{ demandes.length }})
+      </button>
+      <button class="tab" [class.active]="activeTab === 'conge'" (click)="activeTab = 'conge'">
+        Congés
+      </button>
+      <button class="tab" [class.active]="activeTab === 'autorisation'" (click)="activeTab = 'autorisation'">
+        Autorisations
+      </button>
+      <button class="tab" [class.active]="activeTab === 'maladie'" (click)="activeTab = 'maladie'">
+        Maladie
+      </button>
+    </div>
+
+    <div class="filter-group">
+      <label for="filterStatut">Statut :</label>
+      <select id="filterStatut" class="filter-select" [(ngModel)]="filterStatut">
+        <option value="">Tous les statuts</option>
+        <option value="En attente de validation N+1">En attente N+1</option>
+        <option value="En attente de validation du supérieur hiérarchique">En attente (Autorisation)</option>
+        <option value="Validée">Validée</option>
+        <option value="Rejetée par le supérieur hiérarchique">Rejetée (Congé)</option>
+        <option value="Rejetée">Rejetée</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- LISTE DES DEMANDES -->
+  <div class="demandes-list" *ngIf="!selectedDemande">
+    <div
+      class="demande-row"
+      *ngFor="let d of filteredDemandes"
+      (click)="selectDemande(d)"
+      [class.pending]="isPendingValidation(d)"
+    >
+      <div class="demande-type" [ngClass]="getTypeClass(d.type)">
+        <span class="type-icon">
+          {{ d.type === 'conge' ? '🏖' : d.type === 'autorisation' ? '🕐' : '🏥' }}
+        </span>
+        <span>{{ d.typeLabel }}</span>
+        <span class="sous-type">{{ d.sousType }}</span>
+      </div>
+
+      <div class="demande-employe">
+        <strong>{{ d.employe }}</strong>
+        <span class="matricule-chip">{{ d.matricule }}</span>
+        <span class="service-chip">{{ d.service }}</span>
+      </div>
+
+      <div class="demande-dates">
+        <span *ngIf="d.dateFin">{{ d.dateDebut }} → {{ d.dateFin }}</span>
+        <span *ngIf="!d.dateFin && d.heureDepart">
+          {{ d.dateDebut }} · {{ d.heureDepart }}–{{ d.heureRetour }}
+        </span>
+        <span class="duree-chip" *ngIf="d.duree">{{ d.duree }}</span>
+      </div>
+
+      <div class="demande-statut">
+        <span class="badge" [ngClass]="getStatutClass(d.statut)">{{ d.statut }}</span>
+      </div>
+
+      <div class="demande-actions" *ngIf="isPendingValidation(d)" (click)="$event.stopPropagation()">
+        <button class="btn btn-success btn-sm" (click)="selectDemande(d); openApproveModal()">
+          Valider
+        </button>
+        <button class="btn btn-secondary btn-sm" (click)="selectDemande(d); openRejectModal()">
+          Rejeter
+        </button>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="filteredDemandes.length === 0">
+      <span>Aucune demande correspondant aux filtres sélectionnés.</span>
+    </div>
+  </div>
+
+  <!-- DÉTAIL DE LA DEMANDE -->
+  <div class="detail-panel" *ngIf="selectedDemande && !showApproveModal && !showRejectModal">
+    <div class="detail-header">
+      <div>
+        <h2>{{ selectedDemande.refNo }} — {{ selectedDemande.typeLabel }}</h2>
+        <p>{{ selectedDemande.employe }} · {{ selectedDemande.service }}</p>
+      </div>
+      <button class="btn btn-light" (click)="closeDetail()">← Retour à la liste</button>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-section">
+        <h3>Informations de la demande</h3>
+        <div class="detail-rows">
+          <div class="detail-row"><span>Type</span><strong>{{ selectedDemande.sousType }}</strong></div>
+          <div class="detail-row"><span>Employé</span><strong>{{ selectedDemande.employe }}</strong></div>
+          <div class="detail-row"><span>Matricule</span><strong>{{ selectedDemande.matricule }}</strong></div>
+          <div class="detail-row"><span>Service</span><strong>{{ selectedDemande.service }}</strong></div>
+          <div class="detail-row" *ngIf="selectedDemande.dateFin">
+            <span>Période</span>
+            <strong>{{ selectedDemande.dateDebut }} → {{ selectedDemande.dateFin }}</strong>
+          </div>
+          <div class="detail-row" *ngIf="selectedDemande.heureDepart">
+            <span>Horaire</span>
+            <strong>{{ selectedDemande.dateDebut }} · {{ selectedDemande.heureDepart }} – {{ selectedDemande.heureRetour }}</strong>
+          </div>
+          <div class="detail-row" *ngIf="selectedDemande.duree">
+            <span>Durée</span><strong>{{ selectedDemande.duree }}</strong>
+          </div>
+          <div class="detail-row">
+            <span>Motif</span><strong>{{ selectedDemande.motif }}</strong>
+          </div>
+          <div class="detail-row">
+            <span>Soumis le</span><strong>{{ selectedDemande.dateCreation }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Statut courant</h3>
+        <div class="detail-rows">
+          <div class="detail-row">
+            <span>Statut</span>
+            <span class="badge" [ngClass]="getStatutClass(selectedDemande.statut)">
+              {{ selectedDemande.statut }}
+            </span>
+          </div>
+        </div>
+
+        <div class="action-block" *ngIf="isPendingValidation(selectedDemande)">
+          <h4>Actions disponibles</h4>
+          <div class="action-btns">
+            <button class="btn btn-success" (click)="openApproveModal()" [disabled]="actionLoading">
+              Valider la demande
+            </button>
+            <button class="btn btn-secondary" (click)="openRejectModal()" [disabled]="actionLoading">
+              Rejeter la demande
+            </button>
+          </div>
+          <p class="action-note">
+            Le rejet nécessite un motif obligatoire qui sera communiqué à l'employé.
+          </p>
+        </div>
+
+        <div class="form-alert success" *ngIf="!isPendingValidation(selectedDemande)">
+          Cette demande a déjà été traitée ({{ selectedDemande.statut }}).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL — CONFIRMER LA VALIDATION -->
+  <div class="confirm-backdrop" *ngIf="showApproveModal && selectedDemande">
+    <div class="confirm-modal">
+      <h3>Confirmer la validation</h3>
+      <p>
+        Vous allez valider la demande <strong>{{ selectedDemande.refNo }}</strong>
+        de <strong>{{ selectedDemande.employe }}</strong>.
+      </p>
+      <p *ngIf="selectedDemande.type === 'conge'">
+        La demande sera transmise à la <strong>Direction Générale</strong> pour validation finale.
+      </p>
+      <p *ngIf="selectedDemande.type === 'autorisation'">
+        La demande sera marquée comme <strong>Validée</strong> et transmise à la RH.
+      </p>
+      <div class="confirm-actions">
+        <button class="btn btn-light" (click)="closeModals()" [disabled]="actionLoading">Annuler</button>
+        <button class="btn btn-success" (click)="approuveDemande()" [disabled]="actionLoading">
+          {{ actionLoading ? 'En cours…' : 'Confirmer la validation' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL — CONFIRMER LE REJET -->
+  <div class="confirm-backdrop" *ngIf="showRejectModal && selectedDemande">
+    <div class="confirm-modal">
+      <h3>Rejeter la demande</h3>
+      <p>
+        Vous allez rejeter la demande <strong>{{ selectedDemande.refNo }}</strong>
+        de <strong>{{ selectedDemande.employe }}</strong>.
+        L'employé sera notifié avec le motif ci-dessous.
+      </p>
+      <div class="field">
+        <label for="rejectMotif">Motif du rejet <span class="required">*</span></label>
+        <textarea
+          id="rejectMotif"
+          class="input textarea"
+          placeholder="Expliquez la raison du rejet (obligatoire)..."
+          [(ngModel)]="rejectMotif"
+          [disabled]="actionLoading"
+          rows="4"
+        ></textarea>
+      </div>
+      <div class="confirm-actions" style="margin-top:16px">
+        <button class="btn btn-light" (click)="closeModals()" [disabled]="actionLoading">Annuler</button>
+        <button
+          class="btn btn-secondary"
+          (click)="rejeteDemande()"
+          [disabled]="actionLoading || !rejectMotif.trim()"
+        >
+          {{ actionLoading ? 'En cours…' : 'Confirmer le rejet' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

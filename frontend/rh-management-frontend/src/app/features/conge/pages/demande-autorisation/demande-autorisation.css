@@ -740,6 +740,131 @@ a.return-link:visited {
   grid-template-columns: repeat(2, minmax(260px, 1fr));
 }
 
+/* TYPE SELECTOR */
+.type-selector {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.type-card {
+  min-height: 44px;
+  border: 1.5px solid rgba(255, 88, 0, 0.35);
+  border-radius: 16px;
+  background: #ffffff;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 16px;
+  cursor: pointer;
+  transition: 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+
+.type-card:hover {
+  border-color: rgba(255, 88, 0, 0.7);
+  transform: translateY(-1px);
+}
+
+.type-card.active {
+  background: rgba(255, 88, 0, 0.10);
+  color: var(--primary);
+  border-color: rgba(255, 88, 0, 0.45);
+}
+
+.type-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.type-ar {
+  display: block;
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 6px;
+  direction: rtl;
+}
+
+.type-desc {
+  display: block;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #7b7d81;
+  font-weight: 400;
+}
+
+/* TITLE AR */
+.title-ar {
+  margin: 10px 0 0;
+  font-size: 16px;
+  color: var(--text);
+  font-weight: 600;
+  direction: rtl;
+}
+
+/* LABEL AR INLINE */
+.label-ar {
+  font-size: 12px;
+  color: #9a9ca1;
+  font-weight: 400;
+  margin-left: 6px;
+  direction: rtl;
+  unicode-bidi: embed;
+}
+
+/* CARD TITLE EXTRAS */
+.card-title-hint {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.card-title-ar {
+  font-size: 14px;
+  font-weight: 400;
+  color: #9a9ca1;
+  direction: rtl;
+}
+
+/* TIME INFO */
+.time-info {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #7b7d81;
+  font-style: italic;
+}
+
+/* OVER LIMIT INPUT */
+.input-over-limit {
+  border-color: var(--danger) !important;
+  background: rgba(198, 12, 48, 0.04) !important;
+  color: var(--danger) !important;
+}
+
+/* INFO SUB */
+.info-sub {
+  display: block;
+  font-size: 13px;
+  color: #7b7d81;
+  margin-top: 6px;
+  font-weight: 400;
+}
+
+/* TEXT DANGER */
+.text-danger {
+  color: var(--danger) !important;
+}
+
+@media (max-width: 768px) {
+  .type-selector {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 900px) {
   .validation-grid {
     grid-template-columns: 1fr;

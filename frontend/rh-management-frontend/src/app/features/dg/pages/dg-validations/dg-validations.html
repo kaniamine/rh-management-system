@@ -1,0 +1,321 @@
+<div class="dg-page">
+
+  <!-- EN-TÊTE -->
+  <header class="page-header">
+    <div class="header-left">
+      <div class="dg-avatar">{{ dg.initiales }}</div>
+      <div>
+        <h1>Espace Direction Générale</h1>
+        <p class="subtitle">
+          Validation finale des demandes de congé approuvées par les supérieurs hiérarchiques.
+        </p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="pending-badge" *ngIf="pendingCount > 0">
+        <span class="pending-count">{{ pendingCount }}</span>
+        demande{{ pendingCount > 1 ? 's' : '' }} à valider
+      </div>
+      <button routerLink="/home-rh" class="btn btn-light">Accueil RH</button>
+    </div>
+  </header>
+
+  <!-- KPI -->
+  <section class="kpi-strip">
+    <div class="kpi-card accent">
+      <span class="kpi-label">En attente DG</span>
+      <span class="kpi-value">{{ pendingCount }}</span>
+    </div>
+    <div class="kpi-card success">
+      <span class="kpi-label">Validées par DG</span>
+      <span class="kpi-value">{{ validatedCount }}</span>
+    </div>
+    <div class="kpi-card danger">
+      <span class="kpi-label">Rejetées par DG</span>
+      <span class="kpi-value">{{ rejectedCount }}</span>
+    </div>
+    <div class="kpi-card neutral">
+      <span class="kpi-label">Total traité</span>
+      <span class="kpi-value">{{ demandes.length }}</span>
+    </div>
+  </section>
+
+  <!-- CIRCUIT DE VALIDATION -->
+  <section class="workflow-banner">
+    <div class="workflow-step done">
+      <span class="wf-num">1</span>
+      <span>Employé soumet</span>
+    </div>
+    <div class="workflow-arrow">→</div>
+    <div class="workflow-step done">
+      <span class="wf-num">2</span>
+      <span>Validation N+1</span>
+    </div>
+    <div class="workflow-arrow">→</div>
+    <div class="workflow-step active">
+      <span class="wf-num">3</span>
+      <span>Validation DG</span>
+      <span class="wf-current">Étape actuelle</span>
+    </div>
+    <div class="workflow-arrow">→</div>
+    <div class="workflow-step">
+      <span class="wf-num">4</span>
+      <span>Traitement RH</span>
+    </div>
+    <div class="workflow-arrow">→</div>
+    <div class="workflow-step">
+      <span class="wf-num">5</span>
+      <span>Clôture</span>
+    </div>
+  </section>
+
+  <!-- LISTE DES DEMANDES -->
+  <section class="card" *ngIf="!selectedDemande">
+    <div class="section-header">
+      <h2>Demandes de congé — Validation DG</h2>
+    </div>
+
+    <!-- FILTRES -->
+    <div class="filters-row">
+      <div class="filter-item">
+        <label>Statut</label>
+        <select class="filter-select" [(ngModel)]="filterStatut">
+          <option value="">Tous</option>
+          <option value="En attente de validation DG">En attente DG</option>
+          <option value="Validée – En traitement RH">Validée</option>
+          <option value="Rejetée par la Direction Générale">Rejetée par DG</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>Employé / Matricule</label>
+        <input
+          class="filter-input"
+          type="text"
+          placeholder="Rechercher..."
+          [(ngModel)]="filterEmploye"
+        />
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Réf.</th>
+            <th>Type de congé</th>
+            <th>Employé</th>
+            <th>Direction</th>
+            <th>Période</th>
+            <th>Durée</th>
+            <th>Validé N+1</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let d of filteredDemandes"
+            (click)="selectDemande(d)"
+            class="row-link"
+            [class.row-pending]="isPending(d)"
+          >
+            <td><strong>{{ d.refNo }}</strong></td>
+            <td>
+              <span class="type-chip">🏖 {{ d.sousType }}</span>
+            </td>
+            <td>
+              <div class="employe-cell">
+                <strong>{{ d.employe }}</strong>
+                <span class="mat-chip">{{ d.matricule }}</span>
+              </div>
+            </td>
+            <td>{{ d.direction }}</td>
+            <td>{{ d.dateDebut }} → {{ d.dateFin }}</td>
+            <td><span class="duree-chip">{{ d.duree }}</span></td>
+            <td>
+              <div class="n1-cell" *ngIf="d.validationN1">
+                <span>{{ d.validationN1.par }}</span>
+                <span class="n1-date">{{ d.validationN1.le }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="getStatutClass(d.statut)">{{ d.statut }}</span>
+            </td>
+            <td (click)="$event.stopPropagation()">
+              <ng-container *ngIf="isPending(d)">
+                <button class="btn btn-success btn-sm" (click)="selectDemande(d); openApproveModal()">
+                  Valider
+                </button>
+                <button class="btn btn-secondary btn-sm" (click)="selectDemande(d); openRejectModal()">
+                  Rejeter
+                </button>
+              </ng-container>
+              <button *ngIf="!isPending(d)" class="btn btn-light btn-sm" (click)="selectDemande(d)">
+                Voir
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredDemandes.length === 0">
+            <td colspan="9" class="empty-cell">Aucune demande trouvée.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- DÉTAIL -->
+  <section class="card detail-panel" *ngIf="selectedDemande && !showApproveModal && !showRejectModal">
+    <div class="detail-header">
+      <div>
+        <h2>{{ selectedDemande.refNo }} — {{ selectedDemande.sousType }}</h2>
+        <p>{{ selectedDemande.employe }} · {{ selectedDemande.direction }}</p>
+      </div>
+      <button class="btn btn-light" (click)="closeDetail()">← Retour</button>
+    </div>
+
+    <div class="detail-grid">
+      <!-- INFOS DEMANDE -->
+      <div class="detail-section">
+        <h3>Informations de la demande</h3>
+        <div class="detail-rows">
+          <div class="detail-row"><span>Type</span><strong>{{ selectedDemande.sousType }}</strong></div>
+          <div class="detail-row"><span>Employé</span><strong>{{ selectedDemande.employe }}</strong></div>
+          <div class="detail-row"><span>Matricule</span><strong>{{ selectedDemande.matricule }}</strong></div>
+          <div class="detail-row"><span>Direction / Service</span><strong>{{ selectedDemande.direction }} / {{ selectedDemande.service }}</strong></div>
+          <div class="detail-row"><span>Période</span><strong>{{ selectedDemande.dateDebut }} → {{ selectedDemande.dateFin }}</strong></div>
+          <div class="detail-row"><span>Durée</span><strong>{{ selectedDemande.duree }}</strong></div>
+          <div class="detail-row"><span>Motif</span><strong>{{ selectedDemande.motif }}</strong></div>
+          <div class="detail-row" *ngIf="selectedDemande.adresse">
+            <span>Adresse pendant congé</span><strong>{{ selectedDemande.adresse }}</strong>
+          </div>
+          <div class="detail-row" *ngIf="selectedDemande.telephone">
+            <span>Téléphone alternatif</span><strong>{{ selectedDemande.telephone }}</strong>
+          </div>
+          <div class="detail-row"><span>Soumis le</span><strong>{{ selectedDemande.dateCreation }}</strong></div>
+        </div>
+      </div>
+
+      <!-- VALIDATION N+1 + ACTIONS DG -->
+      <div class="detail-section">
+        <h3>Décision du N+1</h3>
+        <div class="detail-rows" *ngIf="selectedDemande.validationN1">
+          <div class="detail-row">
+            <span>Validé par</span>
+            <strong>{{ selectedDemande.validationN1.par }}</strong>
+          </div>
+          <div class="detail-row">
+            <span>Date validation N+1</span>
+            <strong>{{ selectedDemande.validationN1.le }}</strong>
+          </div>
+          <div class="detail-row" *ngIf="selectedDemande.validationN1.commentaire">
+            <span>Commentaire N+1</span>
+            <strong>{{ selectedDemande.validationN1.commentaire }}</strong>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 24px">Statut &amp; Actions DG</h3>
+        <div class="detail-rows">
+          <div class="detail-row">
+            <span>Statut courant</span>
+            <span class="badge" [ngClass]="getStatutClass(selectedDemande.statut)">
+              {{ selectedDemande.statut }}
+            </span>
+          </div>
+        </div>
+
+        <div class="action-block" *ngIf="isPending(selectedDemande)">
+          <h4>Décision de la Direction Générale</h4>
+          <p class="action-desc">
+            Cette demande a été approuvée par le supérieur hiérarchique N+1
+            <strong>{{ selectedDemande.superieurN1 }}</strong>.
+            Votre décision sera finale avant transmission à la RH.
+          </p>
+          <div class="action-btns">
+            <button class="btn btn-success" (click)="openApproveModal()" [disabled]="actionLoading">
+              Approuver et transmettre à la RH
+            </button>
+            <button class="btn btn-secondary" (click)="openRejectModal()" [disabled]="actionLoading">
+              Rejeter la demande
+            </button>
+          </div>
+          <p class="action-note">
+            En cas de rejet, un motif obligatoire sera communiqué à l'employé et au N+1.
+          </p>
+        </div>
+
+        <div class="form-alert success" *ngIf="selectedDemande.statut === 'Validée – En traitement RH'">
+          Demande approuvée par la Direction Générale — en cours de traitement RH.
+        </div>
+        <div class="form-alert error" *ngIf="selectedDemande.statut === 'Rejetée par la Direction Générale'">
+          Demande rejetée par la Direction Générale. L'employé et le N+1 ont été notifiés.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODAL — APPROUVER -->
+  <div class="confirm-backdrop" *ngIf="showApproveModal && selectedDemande">
+    <div class="confirm-modal">
+      <h3>Approuver la demande</h3>
+      <p>
+        Vous approuvez la demande <strong>{{ selectedDemande.refNo }}</strong>
+        de <strong>{{ selectedDemande.employe }}</strong>
+        ({{ selectedDemande.dateDebut }} → {{ selectedDemande.dateFin }}, {{ selectedDemande.duree }}).
+      </p>
+      <p>
+        La demande sera transmise à la <strong>Direction RH</strong> pour traitement final.
+        L'employé sera notifié.
+      </p>
+      <div class="field">
+        <label for="approveComment">Commentaire (optionnel)</label>
+        <textarea
+          id="approveComment"
+          class="input textarea"
+          placeholder="Observations de la Direction Générale..."
+          [(ngModel)]="approveComment"
+          rows="3"
+        ></textarea>
+      </div>
+      <div class="confirm-actions">
+        <button class="btn btn-light" (click)="closeModals()" [disabled]="actionLoading">Annuler</button>
+        <button class="btn btn-success" (click)="approuver()" [disabled]="actionLoading">
+          {{ actionLoading ? 'En cours…' : 'Confirmer l\'approbation' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL — REJETER -->
+  <div class="confirm-backdrop" *ngIf="showRejectModal && selectedDemande">
+    <div class="confirm-modal">
+      <h3>Rejeter la demande</h3>
+      <p>
+        Vous rejetez la demande <strong>{{ selectedDemande.refNo }}</strong>
+        de <strong>{{ selectedDemande.employe }}</strong>.
+        L'employé et le supérieur hiérarchique <strong>{{ selectedDemande.superieurN1 }}</strong>
+        seront notifiés.
+      </p>
+      <div class="field">
+        <label for="rejectMotif">Motif du rejet <span class="required">*</span></label>
+        <textarea
+          id="rejectMotif"
+          class="input textarea"
+          placeholder="Expliquez la raison du rejet (obligatoire)..."
+          [(ngModel)]="rejectMotif"
+          rows="4"
+        ></textarea>
+      </div>
+      <div class="confirm-actions" style="margin-top: 16px">
+        <button class="btn btn-light" (click)="closeModals()" [disabled]="actionLoading">Annuler</button>
+        <button
+          class="btn btn-secondary"
+          (click)="rejeter()"
+          [disabled]="actionLoading || !rejectMotif.trim()"
+        >
+          {{ actionLoading ? 'En cours…' : 'Confirmer le rejet' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

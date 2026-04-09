@@ -1,63 +1,171 @@
 <div class="dashboard-page">
-  <div class="dashboard-header">
-    <h1>Tableau de bord employé</h1>
-    <p>Consultez vos demandes et accédez rapidement aux formulaires RH.</p>
-  </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <h3>Congés restants</h3>
-      <p>12 jours</p>
+  <!-- EN-TÊTE -->
+  <header class="page-header">
+    <div>
+      <h1>Mon tableau de bord</h1>
+      <p class="subtitle">Suivez vos demandes RH et accédez rapidement aux formulaires.</p>
+    </div>
+    <div class="header-actions">
+      <button routerLink="/home-employee" class="btn btn-light">Accueil</button>
+    </div>
+  </header>
+
+  <!-- STATISTIQUES -->
+  <section class="stats-grid">
+    <div class="stat-card primary">
+      <span class="stat-icon">🏖</span>
+      <span class="stat-label">Solde congés restant</span>
+      <strong class="stat-value">{{ stats.soldeConges }} jours</strong>
+    </div>
+    <div class="stat-card warning">
+      <span class="stat-icon">⏳</span>
+      <span class="stat-label">Demandes en attente</span>
+      <strong class="stat-value">{{ stats.enAttente }}</strong>
+    </div>
+    <div class="stat-card success">
+      <span class="stat-icon">✅</span>
+      <span class="stat-label">Demandes validées</span>
+      <strong class="stat-value">{{ stats.validees }}</strong>
+    </div>
+    <div class="stat-card danger">
+      <span class="stat-icon">❌</span>
+      <span class="stat-label">Demandes rejetées</span>
+      <strong class="stat-value">{{ stats.rejetees }}</strong>
+    </div>
+  </section>
+
+  <!-- RACCOURCIS -->
+  <section class="shortcuts-grid">
+    <a routerLink="/conge" class="shortcut-card primary">
+      <span class="shortcut-icon">🏖</span>
+      <span>Demande de congé</span>
+    </a>
+    <a routerLink="/conge/demande-autorisation" class="shortcut-card success">
+      <span class="shortcut-icon">🕐</span>
+      <span>Autorisation de sortie</span>
+    </a>
+    <a routerLink="/conge/demande-maladie" class="shortcut-card maladie">
+      <span class="shortcut-icon">🏥</span>
+      <span>Congé maladie</span>
+    </a>
+  </section>
+
+  <!-- LISTE DES DEMANDES -->
+  <section class="card table-section" *ngIf="!selectedDemande">
+    <div class="section-header">
+      <h2>Mes demandes</h2>
     </div>
 
-    <div class="stat-card">
-      <h3>Demandes en attente</h3>
-      <p>3</p>
+    <!-- ONGLETS + FILTRE -->
+    <div class="tabs-bar">
+      <div class="tabs">
+        <button class="tab" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">
+          Toutes ({{ demandes.length }})
+        </button>
+        <button class="tab" [class.active]="activeTab === 'conge'" (click)="activeTab = 'conge'">
+          Congés ({{ countByType('conge') }})
+        </button>
+        <button class="tab" [class.active]="activeTab === 'autorisation'" (click)="activeTab = 'autorisation'">
+          Autorisations ({{ countByType('autorisation') }})
+        </button>
+        <button class="tab" [class.active]="activeTab === 'maladie'" (click)="activeTab = 'maladie'">
+          Maladie ({{ countByType('maladie') }})
+        </button>
+      </div>
+      <div class="filter-group">
+        <select class="filter-select" [(ngModel)]="filterStatut">
+          <option value="">Tous les statuts</option>
+          <option value="En attente de validation N+1">En attente</option>
+          <option value="Validée">Validée</option>
+          <option value="Rejetée par le supérieur hiérarchique">Rejetée</option>
+        </select>
+      </div>
     </div>
 
-    <div class="stat-card">
-      <h3>Demandes validées</h3>
-      <p>8</p>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Référence</th>
+            <th>Type</th>
+            <th>Période / Durée</th>
+            <th>Soumis le</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of filteredDemandes" (click)="openDetail(d)" class="row-link">
+            <td><strong>{{ d.refNo }}</strong></td>
+            <td>
+              <span class="type-chip" [ngClass]="'chip-' + d.type">
+                {{ getTypeIcon(d.type) }} {{ d.sousType }}
+              </span>
+            </td>
+            <td>
+              <span *ngIf="d.dateFin">{{ d.dateDebut }} → {{ d.dateFin }}</span>
+              <span *ngIf="!d.dateFin">{{ d.dateDebut }}</span>
+              <span class="duree-badge">{{ d.duree }}</span>
+            </td>
+            <td>{{ d.dateCreation }}</td>
+            <td>
+              <span class="badge" [ngClass]="getStatutClass(d.statut)">
+                {{ d.statut }}
+              </span>
+            </td>
+            <td (click)="$event.stopPropagation()">
+              <button class="btn btn-light btn-sm" (click)="openDetail(d)">Détail</button>
+              <button
+                class="btn btn-secondary btn-sm"
+                *ngIf="canCancel(d)"
+                disabled
+              >Annuler</button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredDemandes.length === 0">
+            <td colspan="6" class="empty-cell">Aucune demande trouvée.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- DÉTAIL D'UNE DEMANDE -->
+  <section class="card detail-panel" *ngIf="selectedDemande">
+    <div class="detail-header">
+      <div>
+        <h2>{{ selectedDemande.refNo }}</h2>
+        <p>{{ selectedDemande.sousType }}</p>
+      </div>
+      <button class="btn btn-light" (click)="closeDetail()">← Retour à la liste</button>
     </div>
 
-    <div class="stat-card">
-      <h3>Demandes rejetées</h3>
-      <p>1</p>
+    <div class="detail-grid">
+      <div class="detail-rows">
+        <div class="detail-row"><span>Type</span><strong>{{ selectedDemande.sousType }}</strong></div>
+        <div class="detail-row"><span>Soumis le</span><strong>{{ selectedDemande.dateCreation }}</strong></div>
+        <div class="detail-row">
+          <span>Période</span>
+          <strong>
+            {{ selectedDemande.dateDebut }}
+            <span *ngIf="selectedDemande.dateFin"> → {{ selectedDemande.dateFin }}</span>
+          </strong>
+        </div>
+        <div class="detail-row"><span>Durée</span><strong>{{ selectedDemande.duree }}</strong></div>
+        <div class="detail-row"><span>Motif</span><strong>{{ selectedDemande.motif }}</strong></div>
+        <div class="detail-row">
+          <span>Statut</span>
+          <span class="badge" [ngClass]="getStatutClass(selectedDemande.statut)">
+            {{ selectedDemande.statut }}
+          </span>
+        </div>
+      </div>
     </div>
-  </div>
 
+    <div class="form-alert warning" *ngIf="canCancel(selectedDemande)">
+      Vous pouvez encore annuler cette demande tant qu'elle n'a pas été validée.
+    </div>
+  </section>
 
-
-  <div class="table-section">
-    <h2>Mes demandes récentes</h2>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Date</th>
-          <th>Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Congé annuel</td>
-          <td>08/03/2026</td>
-          <td><span class="badge pending">En attente</span></td>
-        </tr>
-        <tr>
-          <td>Autorisation personnelle</td>
-          <td>06/03/2026</td>
-          <td><span class="badge approved">Validée</span></td>
-        </tr>
-        <tr>
-          <td>Congé exceptionnel</td>
-          <td>02/03/2026</td>
-          <td><span class="badge rejected">Rejetée</span></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-
-
+</div>

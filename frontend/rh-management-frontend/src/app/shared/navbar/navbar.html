@@ -1,0 +1,104 @@
+<nav class="navbar">
+  <div class="navbar-inner">
+
+    <!-- LOGO / MARQUE -->
+    <a class="navbar-brand" [routerLink]="homeRoute">
+      <div class="brand-logo">AB</div>
+      <div class="brand-text">
+        <span class="brand-name">Al Baraka Assurances</span>
+        <span class="brand-sub">Intranet RH</span>
+      </div>
+    </a>
+
+    <!-- NAVIGATION DESKTOP -->
+    <div class="navbar-links">
+      <a
+        *ngFor="let item of navItems"
+        class="nav-link"
+        [routerLink]="item.route"
+        [class.active]="isActive(item.route)"
+      >
+        <span class="nav-icon">{{ item.icon }}</span>
+        <span>{{ item.label }}</span>
+      </a>
+    </div>
+
+    <!-- ACTIONS DROITE -->
+    <div class="navbar-right">
+      <!-- NOTIFICATIONS -->
+      <button class="notif-btn" title="Notifications">
+        <span class="notif-icon">🔔</span>
+        <span class="notif-badge" *ngIf="notifCount > 0">{{ notifCount }}</span>
+      </button>
+
+      <!-- RÔLE DEMO (à remplacer par AuthService) -->
+      <div class="role-switcher">
+        <select class="role-select" [ngModel]="currentRole" (ngModelChange)="switchRole($any($event))">
+          <option value="employe">Employé</option>
+          <option value="n1">Responsable N+1</option>
+          <option value="dg">Direction Générale</option>
+          <option value="rh">Direction RH</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      <!-- AVATAR UTILISATEUR -->
+      <div class="user-chip">
+        <div class="user-avatar">{{ currentUser.initiales }}</div>
+        <div class="user-info">
+          <span class="user-name">{{ currentUser.nom }}</span>
+          <span class="user-role">{{ roleLabel }}</span>
+        </div>
+      </div>
+
+      <!-- DÉCONNEXION -->
+      <button class="logout-btn" (click)="logout()" title="Se déconnecter">
+        <span>⎋</span>
+      </button>
+    </div>
+
+    <!-- HAMBURGER MOBILE -->
+    <button class="navbar-mobile-toggle" (click)="toggleMobile()" [class.open]="mobileOpen">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+
+  <!-- MENU MOBILE -->
+  <div class="navbar-mobile-menu" [class.open]="mobileOpen">
+    <div class="mobile-user">
+      <div class="user-avatar">{{ currentUser.initiales }}</div>
+      <div>
+        <strong>{{ currentUser.nom }}</strong>
+        <span>{{ roleLabel }}</span>
+      </div>
+    </div>
+
+    <div class="mobile-role-switch">
+      <label>Rôle (démo)</label>
+      <select class="role-select" [ngModel]="currentRole" (ngModelChange)="switchRole($any($event))">
+        <option value="employe">Employé</option>
+        <option value="n1">Responsable N+1</option>
+        <option value="dg">Direction Générale</option>
+        <option value="rh">Direction RH</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+
+    <a
+      *ngFor="let item of navItems"
+      class="mobile-nav-link"
+      [routerLink]="item.route"
+      [class.active]="isActive(item.route)"
+      (click)="closeMobile()"
+    >
+      <span class="nav-icon">{{ item.icon }}</span>
+      <span>{{ item.label }}</span>
+    </a>
+
+    <button class="mobile-logout" (click)="logout()">
+      ⎋ Se déconnecter
+    </button>
+  </div>
+</nav>

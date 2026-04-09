@@ -1,26 +1,32 @@
 <div class="authorization-page">
+
+  <!-- EN-TÊTE -->
   <header class="page-header">
     <div>
-      <h1>Demande d’autorisation</h1>
+      <h1>Demande d'autorisation de sortie</h1>
       <p class="subtitle">
-        Saisissez votre demande d’autorisation temporaire selon le type choisi,
+        Saisissez votre demande d'autorisation temporaire selon le type choisi,
         puis transmettez-la pour validation hiérarchique.
       </p>
     </div>
-
     <div class="header-actions">
       <button routerLink="/home-employee" class="btn btn-light">Retour</button>
-      
       <button routerLink="/dashboard-employee" class="btn btn-light">Historique</button>
     </div>
   </header>
 
+  <!-- MESSAGES GLOBAUX -->
+  <p class="form-alert success" *ngIf="successMessage">{{ successMessage }}</p>
+  <p class="form-alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <!-- INDICATEUR DE PROGRESSION -->
   <div class="progress-bar">
     <div class="step done">Informations</div>
     <div class="step active">Détails</div>
     <div class="step">Confirmation</div>
   </div>
 
+  <!-- RÉSUMÉ RAPIDE -->
   <section class="summary-strip">
     <div class="summary-card">
       <span class="label">Statut</span>
@@ -28,71 +34,137 @@
     </div>
     <div class="summary-card">
       <span class="label">Type sélectionné</span>
-      <span class="value">Personnelle</span>
+      <span class="value">{{ selectedTypeLabel }}</span>
     </div>
     <div class="summary-card">
       <span class="label">Durée calculée</span>
-      <span class="value">01h 15</span>
+      <span class="value" [class.text-danger]="isOverLimit">{{ dureeCalculee }}</span>
     </div>
   </section>
 
+  <!-- TITRE DU FORMULAIRE -->
   <section class="card title-card">
     <div class="document-title">
       <span class="doc-badge">Formulaire RH</span>
-      <h2>Demande d’autorisation d’absence temporaire</h2>
+      <h2>Demande d'autorisation d'absence temporaire</h2>
       <span class="badge waiting">En préparation</span>
     </div>
+    <p class="title-ar" dir="rtl">{{ selectedTypeLabelAr }}</p>
   </section>
 
-  
+  <!-- SÉLECTEUR DE TYPE -->
+  <div class="type-selector">
+    <button
+      *ngFor="let t of typeOptions"
+      type="button"
+      class="type-card"
+      [class.active]="selectedType === t.value"
+      (click)="selectType(t.value)"
+    >
+      <span class="type-title">{{ t.label }}</span>
+      <span class="type-ar" dir="rtl">{{ t.labelAr }}</span>
+      <span class="type-desc">{{ t.desc }}</span>
+    </button>
+  </div>
 
+  <!-- INFORMATIONS DE LA DEMANDE -->
   <section class="card form-card">
     <div class="card-title">Informations de la demande</div>
     <p class="card-subtitle">
-      Complétez les informations obligatoires. La durée est contrôlée selon les règles RH.
+      Complétez les informations obligatoires. La durée est calculée et contrôlée automatiquement selon les règles RH.
     </p>
 
     <div class="form-grid">
       <div class="field">
-        <label for="type">Type d’autorisation <span class="required">*</span></label>
-        <select id="type" class="input">
-          <option>Autorisation personnelle</option>
-          <option>Autorisation professionnelle</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="date">Date <span class="required">*</span></label>
-        <input id="date" class="input" type="date" />
+        <label for="date">Date de l'autorisation <span class="required">*</span></label>
+        <input
+          id="date"
+          name="date"
+          class="input"
+          type="date"
+          [(ngModel)]="form.date"
+          [disabled]="submitting"
+        />
       </div>
 
       <div class="field">
         <label for="matricule">Matricule</label>
-        <input id="matricule" class="input readonly" type="text" value="EMP-2026-014" readonly />
+        <input
+          id="matricule"
+          class="input readonly"
+          type="text"
+          [value]="employee.matricule"
+          readonly
+        />
+      </div>
+
+      <div class="field">
+        <label for="nomComplet">Nom de l'employé</label>
+        <input
+          id="nomComplet"
+          class="input readonly"
+          type="text"
+          [value]="employee.nomComplet"
+          readonly
+        />
       </div>
 
       <div class="field">
         <label for="service">Direction / Service</label>
-        <input id="service" class="input readonly" type="text" value="Direction Finance / Comptabilité" readonly />
+        <input
+          id="service"
+          class="input readonly"
+          type="text"
+          [value]="employee.direction + ' / ' + employee.service"
+          readonly
+        />
       </div>
     </div>
   </section>
 
+  <!-- PLAGE HORAIRE -->
   <section class="card">
-    <div class="card-title">Plage horaire</div>
+    <div class="card-title">
+      Plage horaire
+      <span class="card-title-hint" *ngIf="selectedType === 'personnel'">
+        — maximum 1h30 par jour pour les autorisations personnelles
+      </span>
+    </div>
 
     <div class="time-grid">
       <div class="time-box">
-        <h3>Heures de l’autorisation</h3>
+        <h3>Heures de l'autorisation</h3>
         <div class="mini-grid">
           <div class="field">
-            <label for="heureDebut">Heure de début <span class="required">*</span></label>
-            <input id="heureDebut" class="input" type="time" />
+            <label for="heureDepart">
+              Heure de départ
+              <span dir="rtl" class="label-ar">ساعة المغادرة</span>
+              <span class="required">*</span>
+            </label>
+            <input
+              id="heureDepart"
+              name="heureDepart"
+              class="input"
+              type="time"
+              [(ngModel)]="form.heureDepart"
+              [disabled]="submitting"
+            />
           </div>
 
           <div class="field">
-            <label for="heureFin">Heure de fin <span class="required">*</span></label>
-            <input id="heureFin" class="input" type="time" />
+            <label for="heureRetour">
+              Heure de retour
+              <span dir="rtl" class="label-ar">ساعة العودة</span>
+              <span class="required">*</span>
+            </label>
+            <input
+              id="heureRetour"
+              name="heureRetour"
+              class="input"
+              type="time"
+              [(ngModel)]="form.heureRetour"
+              [disabled]="submitting"
+            />
           </div>
         </div>
       </div>
@@ -102,28 +174,54 @@
         <div class="mini-grid">
           <div class="field">
             <label for="duree">Durée calculée</label>
-            <input id="duree" class="input readonly" type="text" value="01h 15" readonly />
+            <input
+              id="duree"
+              class="input readonly"
+              [class.input-over-limit]="isOverLimit"
+              type="text"
+              [value]="dureeCalculee"
+              readonly
+            />
+            <span class="field-error" *ngIf="isOverLimit">
+              Durée dépassant 1h30 — soumission bloquée
+            </span>
           </div>
 
           <div class="field">
-            <label for="solde">Cumul mensuel</label>
-            <input id="solde" class="input readonly" type="text" value="03h 20" readonly />
+            <label for="cumul">Cumul mensuel utilisé</label>
+            <input
+              id="cumul"
+              class="input readonly"
+              type="text"
+              [value]="cumulMensuel"
+              readonly
+            />
           </div>
         </div>
+        <p class="time-info">
+          La période 12h00–13h00 (pause déjeuner) est automatiquement exclue du calcul.
+        </p>
       </div>
     </div>
   </section>
 
+  <!-- JUSTIFICATION -->
   <section class="card">
-    <div class="card-title">Justification</div>
+    <div class="card-title">
+      Justification
+      <span dir="rtl" class="card-title-ar">سبب المغادرة</span>
+    </div>
 
     <div class="form-grid">
       <div class="field field-full">
         <label for="motif">Motif <span class="required">*</span></label>
         <textarea
           id="motif"
+          name="motif"
           class="input textarea"
-          placeholder="Décrivez le motif de votre demande..."
+          placeholder="Décrivez le motif de votre demande d'autorisation..."
+          [(ngModel)]="form.motif"
+          [disabled]="submitting"
         ></textarea>
       </div>
 
@@ -131,87 +229,129 @@
         <label for="commentaire">Commentaire complémentaire</label>
         <textarea
           id="commentaire"
+          name="commentaire"
           class="input textarea"
           placeholder="Informations additionnelles si nécessaire..."
+          [(ngModel)]="form.commentaire"
+          [disabled]="submitting"
         ></textarea>
       </div>
     </div>
   </section>
+
+  <!-- PIÈCES JOINTES -->
   <section class="card">
-  <div class="card-title">Pièces jointes</div>
-  <p class="card-subtitle">
-    Vous pouvez joindre des documents justificatifs : PDF, Word, PNG, JPG, etc.
-  </p>
+    <div class="card-title">Pièces jointes</div>
+    <p class="card-subtitle">
+      Vous pouvez joindre des documents justificatifs : convocation, bon de déplacement, etc.
+    </p>
 
-  <div class="form-grid">
-    <div class="field field-full">
-      <label for="attachments">Ajouter un ou plusieurs fichiers</label>
-      <input
-        id="attachments"
-        type="file"
-        class="input file-input"
-        multiple
-        accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
-      />
-      <small class="field-hint">
-        Formats autorisés : PDF, DOC, DOCX, PNG, JPG, JPEG, WEBP
-      </small>
+    <div class="form-grid">
+      <div class="field field-full">
+        <label for="attachments">Ajouter un ou plusieurs fichiers</label>
+        <input
+          id="attachments"
+          type="file"
+          class="input file-input"
+          multiple
+          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
+          (change)="onFileChange($event)"
+          [disabled]="submitting"
+        />
+        <small class="field-hint">Formats autorisés : PDF, DOC, DOCX, PNG, JPG, JPEG, WEBP</small>
+      </div>
     </div>
+
+    <div class="uploaded-files" *ngIf="uploadedFiles.length > 0">
+      <div class="uploaded-file" *ngFor="let f of uploadedFiles; let i = index">
+        <span class="file-name">{{ f.name }}</span>
+        <button type="button" class="file-remove-btn" (click)="removeFile(i)" [disabled]="submitting">
+          Retirer
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CIRCUIT DE VALIDATION -->
+  <section class="card">
+    <div class="card-title">Circuit de validation</div>
+
+    <div class="info-grid validation-grid">
+      <div class="info-box">
+        <span class="info-label">Étape 1 — Validation</span>
+        <span class="info-value">Supérieur hiérarchique (N+1)</span>
+        <span class="info-sub">{{ employee.superieurHierarchique }}</span>
+      </div>
+
+      <div class="info-box">
+        <span class="info-label">Étape 2 — Transmission</span>
+        <span class="info-value">Direction des Ressources Humaines</span>
+        <span class="info-sub">Suivi et archivage</span>
+      </div>
+
+      <div class="info-box">
+        <span class="info-label">Statut courant</span>
+        <span class="badge waiting">Brouillon</span>
+
+        
+      </div>
+
+      <div class="info-box field-full">
+        <span class="info-label">Notification prévue</span>
+        <span class="info-value">
+          À la soumission, votre supérieur hiérarchique direct sera notifié.
+          Après validation, la demande sera transmise à la Direction RH.
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALERTE RÈGLE HORAIRE -->
+  <div class="form-alert warning" *ngIf="selectedType === 'personnel'">
+    Règle RH : pour une autorisation personnelle, la durée maximale autorisée est de
+    <strong>1h30 par jour</strong>.
+    La période de pause déjeuner (12h00–13h00) est exclue du calcul.
   </div>
 
-  
-  <div class="uploaded-files">
-    <div class="uploaded-file">
-      <span class="file-name">justificatif-rdv.pdf</span>
-      <button type="button" class="file-remove-btn">Retirer</button>
-    </div>
-
-    <div class="uploaded-file">
-      <span class="file-name">capture-horaire.png</span>
-      <button type="button" class="file-remove-btn">Retirer</button>
-    </div>
-  </div>
-</section>
-
- <section class="card">
-  <div class="card-title">Circuit de validation</div>
-
-  <div class="info-grid validation-grid">
-    <div class="info-box">
-      <span class="info-label">Étape 1</span>
-      <span class="info-value">Supérieur hiérarchique</span>
-    </div>
-
-    <div class="info-box">
-      <span class="info-label">Étape 2</span>
-      <span class="info-value">Direction Générale</span>
-    </div>
-
-    <div class="info-box">
-      <span class="info-label">Étape 3</span>
-      <span class="info-value">Ressources Humaines</span>
-    </div>
-
-    <div class="info-box">
-      <span class="info-label">Statut courant</span>
-      <span class="info-value">Brouillon</span>
-    </div>
-
-    <div class="info-box field-full">
-      <span class="info-label">Notification prévue</span>
-      <span class="info-value">
-        Après soumission, la demande sera envoyée au supérieur hiérarchique, puis à la Direction Générale, puis à la Direction des Ressources Humaines.
-      </span>
-    </div>
-  </div>
-</section>
-  <div class="form-alert warning">
-    Attention : pour une autorisation personnelle, la durée maximale autorisée est de 1h30 par jour.
-  </div>
-
+  <!-- PIED DE PAGE / ACTIONS -->
   <footer class="page-footer">
-    <button class="btn btn-light" type="button">Annuler</button>
-    <button class="btn btn-outline-primary" type="button">Enregistrer brouillon</button>
-    <button class="btn btn-success" type="submit">Soumettre</button>
+    <button class="btn btn-secondary" type="button" routerLink="/home-employee" [disabled]="submitting">
+      Annuler
+    </button>
+    <button class="btn btn-outline-primary" type="button" (click)="saveDraft()" [disabled]="submitting">
+      Enregistrer brouillon
+    </button>
+    <button
+      class="btn btn-success"
+      type="button"
+      (click)="openConfirm()"
+      [disabled]="submitting || isOverLimit"
+    >
+      {{ submitting ? 'Envoi…' : 'Soumettre la demande' }}
+    </button>
   </footer>
+
+  <!-- MODAL DE CONFIRMATION -->
+  <div class="confirm-backdrop" *ngIf="showConfirm">
+    <div class="confirm-modal">
+      <h3>Confirmer la soumission</h3>
+      <p>
+        Vous allez soumettre une demande d'autorisation de sortie
+        <strong>{{ selectedTypeLabel }}</strong>
+        pour le <strong>{{ form.date }}</strong>
+        de <strong>{{ form.heureDepart }}</strong> à <strong>{{ form.heureRetour }}</strong>
+        (durée : <strong>{{ dureeCalculee }}</strong>).
+      </p>
+      <p>Votre supérieur hiérarchique <strong>{{ employee.superieurHierarchique }}</strong> sera notifié.</p>
+      <div class="confirm-actions">
+        <button class="btn btn-light" type="button" (click)="closeConfirm()" [disabled]="submitting">
+          Retour
+        </button>
+        <button class="btn btn-success" type="button" (click)="submitDemande()" [disabled]="submitting">
+          {{ submitting ? 'Envoi en cours…' : 'Confirmer et envoyer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
 </div>
