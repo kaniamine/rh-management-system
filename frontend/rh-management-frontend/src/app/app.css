@@ -1,4 +1,8 @@
+main {
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
 main.with-navbar {
-  /* La navbar est sticky à 60px, le contenu n'a pas besoin de padding-top supplémentaire */
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - 64px);
 }

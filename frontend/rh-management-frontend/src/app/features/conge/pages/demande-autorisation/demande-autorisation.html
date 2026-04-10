@@ -1,573 +1,268 @@
-<div class="authorization-page">
+<div class="form-page">
 
-  <!-- EN-TÊTE -->
-  <header class="page-header">
-    <div>
-      <h1>Demande d'autorisation de sortie</h1>
-      <p class="subtitle">
-        Saisissez votre demande d'autorisation temporaire selon le type choisi,
-        puis transmettez-la pour validation hiérarchique.
-      </p>
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <img src="assets/logo.png" alt="Al Baraka Assurances" class="page-logo" />
+      <div class="page-logo-sep"></div>
+      <div>
+        <a routerLink="/home-employee" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Retour à l'accueil
+        </a>
+        <h1>Autorisation de sortie</h1>
+        <p>Saisissez votre demande d'autorisation temporaire selon le type choisi.</p>
+      </div>
     </div>
-    <div class="header-actions">
-<<<<<<< HEAD
-      <button routerLink="/home-employee" class="btn btn-light">Retour</button>
-      <button routerLink="/dashboard-employee" class="btn btn-light">Historique</button>
-    </div>
-  </header>
-
-  <!-- MESSAGES GLOBAUX -->
-  <p class="form-alert success" *ngIf="successMessage">{{ successMessage }}</p>
-  <p class="form-alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
-
-  <!-- INDICATEUR DE PROGRESSION -->
-=======
-      <button routerLink="/home-employee" type="button" class="btn btn-light">Retour</button>
-      <button routerLink="/dashboard-employee" type="button" class="btn btn-light">Historique</button>
-    </div>
-  </header>
-
-  <p class="form-alert success" *ngIf="successMessage">{{ successMessage }}</p>
-  <p class="form-alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
-
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
-  <div class="progress-bar">
-    <div class="step done">Informations</div>
-    <div class="step active">Détails</div>
-    <div class="step">Confirmation</div>
+    <a routerLink="/dashboard-employee" class="header-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/></svg>
+      Mes demandes
+    </a>
   </div>
 
-  <!-- RÉSUMÉ RAPIDE -->
-  <section class="summary-strip">
-    <div class="summary-card">
-      <span class="label">Statut</span>
-      <span class="value">Formulaire</span>
+  <!-- ALERTS -->
+  @if (successMessage) {
+    <div class="alert alert-success">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      {{ successMessage }}
     </div>
-    <div class="summary-card">
-      <span class="label">Type sélectionné</span>
-      <span class="value">{{ selectedTypeLabel }}</span>
+  }
+  @if (errorMessage) {
+    <div class="alert alert-error">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ errorMessage }}
     </div>
-    <div class="summary-card">
-      <span class="label">Durée calculée</span>
-<<<<<<< HEAD
-      <span class="value" [class.text-danger]="isOverLimit">{{ dureeCalculee }}</span>
-=======
-      <span class="value">{{ dureeLabel }}</span>
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
-    </div>
-  </section>
+  }
 
-  <!-- TITRE DU FORMULAIRE -->
-  <section class="card title-card">
-    <div class="document-title">
-      <span class="doc-badge">Formulaire RH</span>
-      <h2>Demande d'autorisation d'absence temporaire</h2>
-      <span class="badge waiting">En préparation</span>
+  <!-- SUMMARY STRIP -->
+  <div class="summary-strip">
+    <div class="scard">
+      <span class="scard-label">Statut</span>
+      <strong class="scard-value">Brouillon</strong>
     </div>
-    <p class="title-ar" dir="rtl">{{ selectedTypeLabelAr }}</p>
-  </section>
-
-<<<<<<< HEAD
-  <!-- SÉLECTEUR DE TYPE -->
-  <div class="type-selector">
-    <button
-      *ngFor="let t of typeOptions"
-      type="button"
-      class="type-card"
-      [class.active]="selectedType === t.value"
-      (click)="selectType(t.value)"
-    >
-      <span class="type-title">{{ t.label }}</span>
-      <span class="type-ar" dir="rtl">{{ t.labelAr }}</span>
-      <span class="type-desc">{{ t.desc }}</span>
-    </button>
+    <div class="scard">
+      <span class="scard-label">Type</span>
+      <strong class="scard-value scard-truncate">{{ selectedTypeLabel }}</strong>
+    </div>
+    <div class="scard" [class.scard-danger]="isOverLimit">
+      <span class="scard-label">Durée calculée</span>
+      <strong class="scard-value" [class.danger]="isOverLimit">{{ dureeCalculee }}</strong>
+    </div>
+    <div class="scard">
+      <span class="scard-label">Cumul mensuel</span>
+      <strong class="scard-value">{{ cumulMensuel }}</strong>
+    </div>
   </div>
 
-  <!-- INFORMATIONS DE LA DEMANDE -->
-=======
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
-  <section class="card form-card">
-    <div class="card-title">Informations de la demande</div>
-    <p class="card-subtitle">
-      Complétez les informations obligatoires. La durée est calculée et contrôlée automatiquement selon les règles RH.
-    </p>
-
-    <div class="form-grid">
-      <div class="field field-full">
-        <label for="nomComplet">Nom complet <span class="required">*</span></label>
-        <input
-          id="nomComplet"
-          class="input"
-          type="text"
-          name="nomComplet"
-          [(ngModel)]="form.nomComplet"
-          [disabled]="submitting"
-        />
-      </div>
-
-      <div class="field">
-<<<<<<< HEAD
-        <label for="date">Date de l'autorisation <span class="required">*</span></label>
-        <input
-          id="date"
-          name="date"
-          class="input"
-          type="date"
-          [(ngModel)]="form.date"
-=======
-        <label for="type">Type d’autorisation <span class="required">*</span></label>
-        <select
-          id="type"
-          class="input"
-          name="typeAutorisation"
-          [(ngModel)]="form.typeAutorisation"
-          [disabled]="submitting"
-        >
-          <option *ngFor="let t of typesAutorisation" [value]="t">{{ t }}</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="date">Date <span class="required">*</span></label>
-        <input
-          id="date"
-          class="input"
-          type="date"
-          name="dateDemande"
-          [(ngModel)]="form.dateDemande"
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
-          [disabled]="submitting"
-        />
-      </div>
-
-      <div class="field">
-<<<<<<< HEAD
-        <label for="matricule">Matricule</label>
-        <input
-          id="matricule"
-          class="input readonly"
-          type="text"
-          [value]="employee.matricule"
-          readonly
-        />
-      </div>
-
-      <div class="field">
-        <label for="nomComplet">Nom de l'employé</label>
-        <input
-          id="nomComplet"
-          class="input readonly"
-          type="text"
-          [value]="employee.nomComplet"
-          readonly
-        />
-      </div>
-
-      <div class="field">
-        <label for="service">Direction / Service</label>
-        <input
-          id="service"
-          class="input readonly"
-          type="text"
-          [value]="employee.direction + ' / ' + employee.service"
-          readonly
-=======
-        <label for="matricule">Matricule <span class="required">*</span></label>
-        <input
-          id="matricule"
-          class="input"
-          type="text"
-          name="matricule"
-          [(ngModel)]="form.matricule"
-          [disabled]="submitting"
-        />
-      </div>
-
-      <div class="field field-full">
-        <label for="gradeFonction">Direction / Service</label>
-        <input
-          id="gradeFonction"
-          class="input"
-          type="text"
-          name="gradeFonction"
-          [(ngModel)]="form.gradeFonction"
-          [disabled]="submitting"
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
-        />
-      </div>
+  @if (isOverLimit) {
+    <div class="alert alert-error">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Durée dépassant 1h30 — soumission bloquée pour les autorisations personnelles.
     </div>
-  </section>
+  }
 
-  <!-- PLAGE HORAIRE -->
-  <section class="card">
-    <div class="card-title">
-      Plage horaire
-      <span class="card-title-hint" *ngIf="selectedType === 'personnel'">
-        — maximum 1h30 par jour pour les autorisations personnelles
-      </span>
-    </div>
+  <!-- TYPE SELECTOR -->
+  <div class="type-grid">
+    @for (t of typeOptions; track t.value) {
+      <button type="button" class="type-btn" [class.active]="selectedType === t.value" (click)="selectType(t.value)">
+        <span class="type-btn-label">{{ t.label }}</span>
+        <span class="type-btn-ar" dir="rtl">{{ t.labelAr }}</span>
+        <span class="type-btn-desc">{{ t.desc }}</span>
+      </button>
+    }
+  </div>
 
-    <div class="time-grid">
-      <div class="time-box">
-        <h3>Heures de l'autorisation</h3>
-        <div class="mini-grid">
-          <div class="field">
-<<<<<<< HEAD
-            <label for="heureDepart">
-              Heure de départ
-              <span dir="rtl" class="label-ar">ساعة المغادرة</span>
-              <span class="required">*</span>
-            </label>
-            <input
-              id="heureDepart"
-              name="heureDepart"
-              class="input"
-              type="time"
-              [(ngModel)]="form.heureDepart"
-=======
-            <label for="heureDebut">Heure de début <span class="required">*</span> (soumission)</label>
-            <input
-              id="heureDebut"
-              class="input"
-              type="time"
-              name="heureSortie"
-              [(ngModel)]="form.heureSortie"
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
-              [disabled]="submitting"
-            />
+  <div class="form-layout">
+    <div class="form-main">
+
+      <!-- Informations de la demande -->
+      <div class="fcard">
+        <div class="fcard-head">
+          <span class="fcard-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </span>
+          <div>
+            <h2>Informations de la demande</h2>
+            <p>Date et coordonnées employé. La durée est calculée automatiquement.</p>
           </div>
+        </div>
 
-          <div class="field">
-<<<<<<< HEAD
-            <label for="heureRetour">
-              Heure de retour
-              <span dir="rtl" class="label-ar">ساعة العودة</span>
-              <span class="required">*</span>
-            </label>
-            <input
-              id="heureRetour"
-              name="heureRetour"
-              class="input"
-              type="time"
-=======
-            <label for="heureFin">Heure de fin <span class="required">*</span> (soumission)</label>
-            <input
-              id="heureFin"
-              class="input"
-              type="time"
-              name="heureRetour"
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
-              [(ngModel)]="form.heureRetour"
-              [disabled]="submitting"
-            />
+        <div class="fg">
+          <div class="ff">
+            <label class="fl">Date <span class="req">*</span></label>
+            <input type="date" class="fi" name="date" [(ngModel)]="form.date" [disabled]="submitting" />
+          </div>
+          <div class="ff">
+            <label class="fl">Matricule</label>
+            <input class="fi readonly" type="text" [value]="employee.matricule" readonly />
+          </div>
+          <div class="ff">
+            <label class="fl">Nom de l'employé</label>
+            <input class="fi readonly" type="text" [value]="employee.nomComplet" readonly />
+          </div>
+          <div class="ff">
+            <label class="fl">Direction / Service</label>
+            <input class="fi readonly" type="text" [value]="employee.direction + ' / ' + employee.service" readonly />
           </div>
         </div>
       </div>
 
-      <div class="time-box">
-        <h3>Calcul automatique</h3>
-        <div class="mini-grid">
-          <div class="field">
-            <label for="duree">Durée calculée</label>
-<<<<<<< HEAD
-            <input
-              id="duree"
-              class="input readonly"
-              [class.input-over-limit]="isOverLimit"
-              type="text"
-              [value]="dureeCalculee"
-              readonly
-            />
-            <span class="field-error" *ngIf="isOverLimit">
-              Durée dépassant 1h30 — soumission bloquée
-            </span>
-          </div>
-
-          <div class="field">
-            <label for="cumul">Cumul mensuel utilisé</label>
-            <input
-              id="cumul"
-              class="input readonly"
-              type="text"
-              [value]="cumulMensuel"
-              readonly
-=======
-            <input id="duree" class="input readonly" type="text" [value]="dureeLabel" readonly />
-          </div>
-
-          <div class="field">
-            <label for="telephone">Téléphone</label>
-            <input
-              id="telephone"
-              class="input"
-              type="text"
-              name="telephone"
-              [(ngModel)]="form.telephone"
-              [disabled]="submitting"
-              placeholder="Optionnel"
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
-            />
+      <!-- Plage horaire -->
+      <div class="fcard">
+        <div class="fcard-head">
+          <span class="fcard-icon teal">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </span>
+          <div>
+            <h2>
+              Plage horaire
+              @if (selectedType === 'personnel') {
+                <span class="head-hint"> — max 1h30 par jour</span>
+              }
+            </h2>
+            <p>La pause déjeuner (12h–13h) est exclue du calcul.</p>
           </div>
         </div>
-        <p class="time-info">
-          La période 12h00–13h00 (pause déjeuner) est automatiquement exclue du calcul.
-        </p>
-      </div>
-    </div>
-  </section>
 
-  <!-- JUSTIFICATION -->
-  <section class="card">
-    <div class="card-title">
-      Justification
-      <span dir="rtl" class="card-title-ar">سبب المغادرة</span>
-    </div>
-
-    <div class="form-grid">
-      <div class="field field-full">
-        <label for="motif">Motif <span class="required">*</span> (soumission)</label>
-        <textarea
-          id="motif"
-          name="motif"
-          class="input textarea"
-<<<<<<< HEAD
-          placeholder="Décrivez le motif de votre demande d'autorisation..."
-=======
-          name="motif"
-          placeholder="Décrivez le motif de votre demande..."
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
-          [(ngModel)]="form.motif"
-          [disabled]="submitting"
-        ></textarea>
+        <div class="fg">
+          <div class="ff">
+            <label class="fl">Heure de départ <span class="req">*</span></label>
+            <input type="time" class="fi" name="heureDepart" [(ngModel)]="form.heureDepart" [disabled]="submitting" />
+          </div>
+          <div class="ff">
+            <label class="fl">Heure de retour <span class="req">*</span></label>
+            <input type="time" class="fi" name="heureRetour" [(ngModel)]="form.heureRetour" [disabled]="submitting" />
+          </div>
+          <div class="ff">
+            <label class="fl">Durée calculée</label>
+            <input class="fi readonly" [class.fi-error]="isOverLimit" type="text" [value]="dureeCalculee" readonly />
+            @if (isOverLimit) { <span class="fe">Dépasse la limite de 1h30</span> }
+          </div>
+          <div class="ff">
+            <label class="fl">Cumul mensuel utilisé</label>
+            <input class="fi readonly" type="text" [value]="cumulMensuel" readonly />
+          </div>
+        </div>
       </div>
 
-      <div class="field field-full">
-        <label for="destination">Destination / commentaire</label>
-        <textarea
-<<<<<<< HEAD
-          id="commentaire"
-          name="commentaire"
-          class="input textarea"
-          placeholder="Informations additionnelles si nécessaire..."
-          [(ngModel)]="form.commentaire"
-=======
-          id="destination"
-          class="input textarea"
-          name="destination"
-          placeholder="Lieu, détails complémentaires..."
-          [(ngModel)]="form.destination"
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
-          [disabled]="submitting"
-        ></textarea>
+      <!-- Justification -->
+      <div class="fcard">
+        <div class="fcard-head">
+          <span class="fcard-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </span>
+          <div><h2>Justification</h2><p>Motif et commentaires complémentaires.</p></div>
+        </div>
+        <div class="fg">
+          <div class="ff ff-full">
+            <label class="fl">Motif <span class="req">*</span></label>
+            <textarea class="fi" style="min-height:80px;resize:vertical;" name="motif"
+              placeholder="Décrivez le motif de votre demande..." [(ngModel)]="form.motif" [disabled]="submitting"></textarea>
+          </div>
+          <div class="ff ff-full">
+            <label class="fl">Commentaire <span class="fl-opt">(optionnel)</span></label>
+            <textarea class="fi" style="min-height:60px;resize:vertical;" name="commentaire"
+              placeholder="Informations additionnelles..." [(ngModel)]="form.commentaire" [disabled]="submitting"></textarea>
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
 
-<<<<<<< HEAD
-  <!-- PIÈCES JOINTES -->
-  <section class="card">
-    <div class="card-title">Pièces jointes</div>
-    <p class="card-subtitle">
-      Vous pouvez joindre des documents justificatifs : convocation, bon de déplacement, etc.
-=======
-  <section class="card">
-    <div class="card-title">Pièces jointes</div>
-    <p class="card-subtitle">
-      Vous pouvez joindre des documents justificatifs : PDF, Word, PNG, JPG, etc. (nom du fichier transmis à titre informatif)
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
-    </p>
-
-    <div class="form-grid">
-      <div class="field field-full">
-<<<<<<< HEAD
-        <label for="attachments">Ajouter un ou plusieurs fichiers</label>
-=======
-        <label for="attachments">Ajouter un fichier</label>
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
-        <input
-          id="attachments"
-          type="file"
-          class="input file-input"
-<<<<<<< HEAD
-          multiple
-          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
-          (change)="onFileChange($event)"
-          [disabled]="submitting"
-        />
-        <small class="field-hint">Formats autorisés : PDF, DOC, DOCX, PNG, JPG, JPEG, WEBP</small>
+      <!-- Pièces jointes -->
+      <div class="fcard">
+        <div class="fcard-head">
+          <span class="fcard-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          </span>
+          <div><h2>Pièces jointes</h2><p>Convocation, bon de déplacement, etc.</p></div>
+        </div>
+        <div class="fg">
+          <div class="ff ff-full">
+            <input type="file" class="fi fi-file" multiple accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
+              (change)="onFileChange($event)" [disabled]="submitting" />
+            <span class="fl-opt">Formats acceptés : PDF, DOC, PNG, JPG, WEBP</span>
+          </div>
+          @if (uploadedFiles.length > 0) {
+            <div class="ff ff-full">
+              <div class="file-list">
+                @for (f of uploadedFiles; track f.name; let i = $index) {
+                  <div class="file-item">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span>{{ f.name }}</span>
+                    <button type="button" class="file-remove" (click)="removeFile(i)" [disabled]="submitting">×</button>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
       </div>
+
     </div>
 
-    <div class="uploaded-files" *ngIf="uploadedFiles.length > 0">
-      <div class="uploaded-file" *ngFor="let f of uploadedFiles; let i = index">
-        <span class="file-name">{{ f.name }}</span>
-        <button type="button" class="file-remove-btn" (click)="removeFile(i)" [disabled]="submitting">
-          Retirer
-        </button>
-=======
-          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
-          (change)="onPieceJointeChange($event)"
-          [disabled]="submitting"
-        />
-        <small class="field-hint" *ngIf="form.pieceJointeNom">{{ form.pieceJointeNom }}</small>
-      </div>
-    </div>
-  </section>
-
-  <section class="card">
-    <div class="card-title">Circuit de validation</div>
-
-    <div class="info-grid">
-      <div class="info-box">
-        <span class="info-label">Supérieur hiérarchique</span>
-        <span class="info-value">Responsable Service Finance</span>
+    <!-- SIDEBAR -->
+    <aside class="form-sidebar">
+      <div class="fcard">
+        <div class="sidebar-head">
+          <div class="emp-avatar">{{ employee.nomComplet.charAt(0) }}</div>
+          <div>
+            <strong>{{ employee.nomComplet }}</strong>
+            <span>{{ employee.matricule }}</span>
+          </div>
+        </div>
+        <div class="emp-details">
+          <div class="emp-row"><span>Direction</span><strong>{{ employee.direction }}</strong></div>
+          <div class="emp-row"><span>Service</span><strong>{{ employee.service }}</strong></div>
+          <div class="emp-row"><span>Responsable N+1</span><strong>{{ employee.superieurHierarchique }}</strong></div>
+        </div>
       </div>
 
-      <div class="info-box">
-        <span class="info-label">Suivi RH</span>
-        <span class="info-value">Direction Ressources Humaines</span>
-      </div>
-
-      <div class="info-box">
-        <span class="info-label">Statut courant</span>
-        <span class="info-value">À soumettre</span>
-      </div>
-
-      <div class="info-box">
-        <span class="info-label">Notification prévue</span>
-        <span class="info-value">Envoi au supérieur hiérarchique après soumission</span>
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
-      </div>
-    </div>
-  </section>
-
-<<<<<<< HEAD
-  <!-- CIRCUIT DE VALIDATION -->
-  <section class="card">
-    <div class="card-title">Circuit de validation</div>
-
-    <div class="info-grid validation-grid">
-      <div class="info-box">
-        <span class="info-label">Étape 1 — Validation</span>
-        <span class="info-value">Supérieur hiérarchique (N+1)</span>
-        <span class="info-sub">{{ employee.superieurHierarchique }}</span>
-      </div>
-
-      <div class="info-box">
-        <span class="info-label">Étape 2 — Transmission</span>
-        <span class="info-value">Direction des Ressources Humaines</span>
-        <span class="info-sub">Suivi et archivage</span>
-      </div>
-
-      <div class="info-box">
-        <span class="info-label">Statut courant</span>
-        <span class="badge waiting">Brouillon</span>
-
-        
-      </div>
-
-      <div class="info-box field-full">
-        <span class="info-label">Notification prévue</span>
-        <span class="info-value">
-          À la soumission, votre supérieur hiérarchique direct sera notifié.
-          Après validation, la demande sera transmise à la Direction RH.
-        </span>
-      </div>
-    </div>
-  </section>
-
-  <!-- ALERTE RÈGLE HORAIRE -->
-  <div class="form-alert warning" *ngIf="selectedType === 'personnel'">
-    Règle RH : pour une autorisation personnelle, la durée maximale autorisée est de
-    <strong>1h30 par jour</strong>.
-    La période de pause déjeuner (12h00–13h00) est exclue du calcul.
-=======
-  <div class="form-alert warning">
-    Attention : pour une autorisation personnelle, la durée maximale autorisée est de 1h30 par jour. Pour soumettre, remplissez date, nom, matricule, type, heures et motif. Le brouillon exige moins de champs.
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
+      @if (selectedType === 'personnel') {
+        <div class="fcard" style="margin-top:16px; border-color: rgba(255,88,0,0.25);">
+          <div style="font-size:13px; color:#c44200; font-weight:600; line-height:1.5;">
+            <strong>Règle RH :</strong> pour une autorisation personnelle, la durée maximale est de <strong>1h30 par jour</strong>.
+            La pause déjeuner (12h–13h) est automatiquement exclue.
+          </div>
+        </div>
+      }
+    </aside>
   </div>
 
-  <!-- PIED DE PAGE / ACTIONS -->
-  <footer class="page-footer">
-<<<<<<< HEAD
-    <button class="btn btn-secondary" type="button" routerLink="/home-employee" [disabled]="submitting">
-      Annuler
+  <!-- FOOTER ACTIONS -->
+  <div class="form-footer">
+    <a routerLink="/home-employee" class="fbtn fbtn-ghost" [class.disabled]="submitting">Annuler</a>
+    <button class="fbtn fbtn-outline" type="button" (click)="saveDraft()" [disabled]="submitting">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+      Brouillon
     </button>
-    <button class="btn btn-outline-primary" type="button" (click)="saveDraft()" [disabled]="submitting">
-      Enregistrer brouillon
-=======
-    <button class="btn btn-light" type="button" (click)="onAnnuler()" [disabled]="submitting">Annuler</button>
-    <button
-      class="btn btn-outline-primary"
-      type="button"
-      (click)="openConfirmModal('draft')"
-      [disabled]="submitting"
-    >
-      {{ submitting ? 'Envoi…' : 'Enregistrer brouillon' }}
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
-    </button>
-    <button
-      class="btn btn-success"
-      type="button"
-<<<<<<< HEAD
-      (click)="openConfirm()"
-      [disabled]="submitting || isOverLimit"
-    >
+    <button class="fbtn fbtn-primary" type="button" (click)="openConfirm()" [disabled]="submitting || isOverLimit">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       {{ submitting ? 'Envoi…' : 'Soumettre la demande' }}
     </button>
-  </footer>
+  </div>
 
-  <!-- MODAL DE CONFIRMATION -->
-  <div class="confirm-backdrop" *ngIf="showConfirm">
-    <div class="confirm-modal">
-      <h3>Confirmer la soumission</h3>
-      <p>
-        Vous allez soumettre une demande d'autorisation de sortie
-        <strong>{{ selectedTypeLabel }}</strong>
-        pour le <strong>{{ form.date }}</strong>
-        de <strong>{{ form.heureDepart }}</strong> à <strong>{{ form.heureRetour }}</strong>
-        (durée : <strong>{{ dureeCalculee }}</strong>).
-      </p>
-      <p>Votre supérieur hiérarchique <strong>{{ employee.superieurHierarchique }}</strong> sera notifié.</p>
-      <div class="confirm-actions">
-        <button class="btn btn-light" type="button" (click)="closeConfirm()" [disabled]="submitting">
-          Retour
-        </button>
-        <button class="btn btn-success" type="button" (click)="submitDemande()" [disabled]="submitting">
-          {{ submitting ? 'Envoi en cours…' : 'Confirmer et envoyer' }}
-=======
-      (click)="openConfirmModal('submit')"
-      [disabled]="submitting"
-    >
-      {{ submitting ? 'Envoi…' : 'Soumettre' }}
-    </button>
-  </footer>
-
-  <div
-    class="confirm-backdrop"
-    *ngIf="showConfirmModal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="autorisation-confirm-title"
-    (click)="onConfirmBackdropClick($event)"
-  >
-    <div class="confirm-modal" (click)="$event.stopPropagation()">
-      <h3 id="autorisation-confirm-title">{{ modalTitle }}</h3>
-      <p>{{ modalMessage }}</p>
-
-      <div class="confirm-actions">
-        <button type="button" class="btn btn-light" (click)="closeConfirmModal()">
-          Retour
-        </button>
-        <button type="button" class="btn btn-success" (click)="confirmAction()" [disabled]="submitting">
-          {{ submitting ? 'Envoi…' : 'Confirmer' }}
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
-        </button>
+  <!-- MODAL -->
+  @if (showConfirm) {
+    <div class="modal-back" (click)="$event.target === $event.currentTarget && closeConfirm()">
+      <div class="modal-box">
+        <div class="modal-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <h3>Confirmer la soumission</h3>
+        <p>
+          Autorisation <strong>{{ selectedTypeLabel }}</strong> le <strong>{{ form.date }}</strong>,
+          de <strong>{{ form.heureDepart }}</strong> à <strong>{{ form.heureRetour }}</strong>
+          (durée : <strong>{{ dureeCalculee }}</strong>).
+          <br><br>
+          Votre supérieur hiérarchique <strong>{{ employee.superieurHierarchique }}</strong> sera notifié.
+        </p>
+        <div class="modal-actions">
+          <button class="fbtn fbtn-ghost" type="button" (click)="closeConfirm()" [disabled]="submitting">Annuler</button>
+          <button class="fbtn fbtn-primary" type="button" (click)="submitDemande()" [disabled]="submitting">
+            {{ submitting ? 'Envoi…' : 'Confirmer et envoyer' }}
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-<<<<<<< HEAD
+  }
 
-=======
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
 </div>

@@ -1,333 +1,238 @@
-<div class="maladie-page">
+<div class="form-page">
 
-  <!-- EN-TÊTE -->
-  <header class="page-header">
-    <div>
-      <h1>Demande de congé de maladie</h1>
-      <p class="subtitle">
-        Déclarez votre arrêt maladie et joignez votre certificat médical.
-        La demande sera transmise à la Direction RH pour validation.
-      </p>
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <img src="assets/logo.png" alt="Al Baraka Assurances" class="page-logo" />
+      <div class="page-logo-sep"></div>
+      <div>
+        <a routerLink="/home-employee" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Retour à l'accueil
+        </a>
+        <h1>Congé de maladie</h1>
+        <p>Déclarez votre arrêt maladie et joignez votre certificat médical.</p>
+      </div>
     </div>
-    <div class="header-actions">
-      <button routerLink="/home-employee" class="btn btn-light">Retour</button>
-      <button routerLink="/dashboard-employee" class="btn btn-light">Historique</button>
-    </div>
-  </header>
-
-  <!-- MESSAGES GLOBAUX -->
-  <p class="form-alert success" *ngIf="successMessage">{{ successMessage }}</p>
-  <p class="form-alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
-
-  <!-- INDICATEUR DE PROGRESSION -->
-  <div class="progress-bar">
-    <div class="step done">Informations</div>
-    <div class="step active">Déclaration</div>
-    <div class="step">Confirmation</div>
+    <a routerLink="/dashboard-employee" class="header-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/></svg>
+      Mes demandes
+    </a>
   </div>
 
-  <!-- RÉSUMÉ RAPIDE -->
-  <section class="summary-strip">
-    <div class="summary-card">
-      <span class="label">Type</span>
-      <span class="value">{{ selectedTypeInfo.label }}</span>
+  <!-- ALERTS -->
+  @if (successMessage) {
+    <div class="alert alert-success">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      {{ successMessage }}
     </div>
-    <div class="summary-card">
-      <span class="label">Durée</span>
-      <span class="value">{{ nombreJoursLabel }}</span>
+  }
+  @if (errorMessage) {
+    <div class="alert alert-error">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ errorMessage }}
     </div>
-    <div class="summary-card">
-      <span class="label">Impact assiduité</span>
-      <span class="value" [class.exempt]="selectedTypeInfo.exempteAssiduity">
-        {{ trancheAssiduity }}
-      </span>
-    </div>
-  </section>
+  }
 
-  <!-- TITRE DU FORMULAIRE -->
-  <section class="card title-card">
-    <div class="document-title">
-      <span class="doc-badge">Formulaire RH</span>
-      <h2>Déclaration de congé de maladie</h2>
-      <span
-        class="badge"
-        [ngClass]="{
-          'badge-exempt': selectedTypeInfo.exempteAssiduity,
-          'waiting': !selectedTypeInfo.exempteAssiduity
-        }"
-      >
-        {{ selectedTypeInfo.exempteAssiduity ? 'Exempté assiduité' : 'Inclus assiduité' }}
-      </span>
+  <!-- SUMMARY STRIP -->
+  <div class="summary-strip">
+    <div class="scard">
+      <span class="scard-label">Type</span>
+      <strong class="scard-value scard-truncate">{{ selectedTypeInfo.label }}</strong>
     </div>
-  </section>
-
-  <!-- TYPE DE MALADIE -->
-  <div class="type-selector">
-    <button
-      *ngFor="let t of typesMaladie"
-      type="button"
-      class="type-card"
-      [class.active]="form.typeMaladie === t.value"
-      [class.exempt]="t.exempteAssiduity"
-      (click)="form.typeMaladie = t.value"
-    >
-      <span class="type-title">{{ t.label }}</span>
-      <span class="type-desc">{{ t.desc }}</span>
-      <span class="type-tag" *ngIf="t.exempteAssiduity">Exempté assiduité</span>
-    </button>
+    <div class="scard">
+      <span class="scard-label">Durée</span>
+      <strong class="scard-value">{{ nombreJoursLabel }}</strong>
+    </div>
+    <div class="scard" [class.scard-teal]="selectedTypeInfo.exempteAssiduity">
+      <span class="scard-label">Impact assiduité</span>
+      <strong class="scard-value" [class.teal]="selectedTypeInfo.exempteAssiduity">{{ trancheAssiduity }}</strong>
+    </div>
+    <div class="scard" [class.scard-danger]="!certificatNom">
+      <span class="scard-label">Certificat médical</span>
+      <strong class="scard-value" [class.danger]="!certificatNom">{{ certificatNom ? '✓ Joint' : 'Manquant' }}</strong>
+    </div>
   </div>
 
-  <!-- INFORMATIONS EMPLOYÉ -->
-  <section class="card form-card">
-    <div class="card-title">Informations de l'employé</div>
-    <p class="card-subtitle">Ces informations sont auto-remplies depuis votre dossier RH.</p>
+  <!-- TYPE SELECTOR -->
+  <div class="type-grid">
+    @for (t of typesMaladie; track t.value) {
+      <button type="button" class="type-btn" [class.active]="form.typeMaladie === t.value" [class.teal]="t.exempteAssiduity" (click)="form.typeMaladie = t.value">
+        <span class="type-btn-label">{{ t.label }}</span>
+        <span class="type-btn-desc">{{ t.desc }}</span>
+        @if (t.exempteAssiduity) {
+          <span class="type-exempt-tag">Exempté assiduité</span>
+        }
+      </button>
+    }
+  </div>
 
-    <div class="form-grid">
-      <div class="field">
-        <label>Nom complet</label>
-        <input class="input readonly" type="text" [value]="employee.nomComplet" readonly />
+  <div class="form-layout">
+    <div class="form-main">
+
+      <!-- Période d'arrêt -->
+      <div class="fcard">
+        <div class="fcard-head">
+          <span class="fcard-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+          </span>
+          <div><h2>Période d'arrêt</h2><p>Indiquez la durée de votre arrêt maladie.</p></div>
+        </div>
+        <div class="fg">
+          <div class="ff">
+            <label class="fl">Date de début <span class="req">*</span></label>
+            <input type="date" class="fi" name="dateDebut" [(ngModel)]="form.dateDebut" [disabled]="submitting" />
+          </div>
+          <div class="ff">
+            <label class="fl">Date de fin <span class="req">*</span></label>
+            <input type="date" class="fi" name="dateFin" [(ngModel)]="form.dateFin" [disabled]="submitting" />
+          </div>
+          <div class="ff">
+            <label class="fl">Nombre de jours</label>
+            <input class="fi readonly" type="text" [value]="nombreJoursLabel" readonly />
+          </div>
+          <div class="ff">
+            <label class="fl">Impact sur l'assiduité</label>
+            <input class="fi readonly" type="text" [value]="trancheAssiduity" readonly />
+          </div>
+        </div>
       </div>
 
-      <div class="field">
-        <label>Matricule</label>
-        <input class="input readonly" type="text" [value]="employee.matricule" readonly />
+      <!-- Certificat médical -->
+      <div class="fcard" [class.fcard-required]="!certificatNom">
+        <div class="fcard-head">
+          <span class="fcard-icon" [class.danger]="!certificatNom">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          </span>
+          <div>
+            <h2>Certificat médical <span class="req">*</span></h2>
+            <p>Indispensable pour la validation de votre demande.</p>
+          </div>
+        </div>
+        <div class="fg">
+          <div class="ff ff-full">
+            <input type="file" class="fi fi-file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
+              (change)="onCertificatChange($event)" [disabled]="submitting" />
+            <span class="fl-opt">Formats : PDF, DOC, PNG, JPG — max 5 Mo</span>
+          </div>
+          @if (certificatNom) {
+            <div class="ff ff-full">
+              <div class="cert-preview">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span>{{ certificatNom }}</span>
+                <span class="cert-ok">Prêt à envoyer</span>
+                <button type="button" class="cert-remove" (click)="removeCertificat()" [disabled]="submitting">Retirer</button>
+              </div>
+            </div>
+          }
+          @if (!certificatNom) {
+            <div class="ff ff-full">
+              <div class="alert alert-warning" style="margin:0;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Aucun certificat joint. La soumission sera bloquée sans ce document.
+              </div>
+            </div>
+          }
+        </div>
       </div>
 
-      <div class="field">
-        <label>Direction / Service</label>
-        <input
-          class="input readonly"
-          type="text"
-          [value]="employee.direction + ' / ' + employee.service"
-          readonly
-        />
+      <!-- Commentaire -->
+      <div class="fcard">
+        <div class="fcard-head">
+          <span class="fcard-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </span>
+          <div><h2>Commentaire <span class="fl-opt">(optionnel)</span></h2><p>Précisions complémentaires.</p></div>
+        </div>
+        <div class="fg">
+          <div class="ff ff-full">
+            <textarea class="fi" style="min-height:80px;resize:vertical;" name="commentaire"
+              placeholder="Précisions supplémentaires si nécessaire..."
+              [(ngModel)]="form.commentaire" [disabled]="submitting"></textarea>
+          </div>
+        </div>
       </div>
 
-      <div class="field">
-        <label>Supérieur hiérarchique</label>
-        <input class="input readonly" type="text" [value]="employee.superieurHierarchique" readonly />
-      </div>
-    </div>
-  </section>
+      <!-- Barème assiduité -->
+      @if (!selectedTypeInfo.exempteAssiduity) {
+        <div class="fcard">
+          <div class="fcard-head">
+            <span class="fcard-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </span>
+            <div><h2>Barème d'assiduité</h2><p>Déductions appliquées selon la durée de l'arrêt.</p></div>
+          </div>
+          <div class="bareme">
+            <div class="bareme-row bareme-head"><span>Durée cumulée</span><span>Déduction</span></div>
+            <div class="bareme-row" [class.bareme-active]="nombreJours >= 0 && nombreJours <= 10"><span>0 – 10 jours</span><span>0 point</span></div>
+            <div class="bareme-row" [class.bareme-active]="nombreJours >= 11 && nombreJours <= 15"><span>11 – 15 jours</span><span>0,5 point</span></div>
+            <div class="bareme-row" [class.bareme-active]="nombreJours >= 16 && nombreJours <= 20"><span>16 – 20 jours</span><span>1 point</span></div>
+            <div class="bareme-row" [class.bareme-active]="nombreJours >= 21 && nombreJours <= 30"><span>21 – 30 jours</span><span>2 points</span></div>
+            <div class="bareme-row" [class.bareme-active]="nombreJours > 30"><span>> 30 jours</span><span>3 points</span></div>
+          </div>
+        </div>
+      }
 
-  <!-- PÉRIODE D'ARRÊT -->
-  <section class="card">
-    <div class="card-title">Période d'arrêt</div>
-
-    <div class="form-grid">
-      <div class="field">
-        <label for="dateDebut">Date de début <span class="required">*</span></label>
-        <input
-          id="dateDebut"
-          name="dateDebut"
-          class="input"
-          type="date"
-          [(ngModel)]="form.dateDebut"
-          [disabled]="submitting"
-        />
-      </div>
-
-      <div class="field">
-        <label for="dateFin">Date de fin <span class="required">*</span></label>
-        <input
-          id="dateFin"
-          name="dateFin"
-          class="input"
-          type="date"
-          [(ngModel)]="form.dateFin"
-          [disabled]="submitting"
-        />
-      </div>
-
-      <div class="field">
-        <label>Nombre de jours</label>
-        <input
-          class="input readonly"
-          type="text"
-          [value]="nombreJoursLabel"
-          readonly
-        />
-      </div>
-
-      <div class="field">
-        <label>Impact sur l'assiduité</label>
-        <input
-          class="input readonly"
-          type="text"
-          [value]="trancheAssiduity"
-          readonly
-        />
-      </div>
-    </div>
-  </section>
-
-  <!-- CERTIFICAT MÉDICAL -->
-  <section class="card">
-    <div class="card-title">Certificat médical <span class="required-badge">Obligatoire</span></div>
-    <p class="card-subtitle">
-      Le certificat médical est indispensable pour la validation de votre demande.
-      La demande ne peut pas être soumise sans ce document.
-    </p>
-
-    <div class="form-grid">
-      <div class="field field-full">
-        <label for="certificat">
-          Joindre le certificat médical <span class="required">*</span>
-        </label>
-        <input
-          id="certificat"
-          type="file"
-          class="input file-input"
-          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
-          (change)="onCertificatChange($event)"
-          [disabled]="submitting"
-        />
-        <small class="field-hint">
-          Formats autorisés : PDF, DOC, DOCX, PNG, JPG. Taille maximale recommandée : 5 Mo.
-        </small>
-      </div>
-    </div>
-
-    <div class="certificat-preview" *ngIf="certificatNom">
-      <div class="uploaded-file">
-        <div class="file-icon">📄</div>
-        <span class="file-name">{{ certificatNom }}</span>
-        <span class="file-status">Prêt à envoyer</span>
-        <button
-          type="button"
-          class="file-remove-btn"
-          (click)="removeCertificat()"
-          [disabled]="submitting"
-        >
-          Retirer
-        </button>
-      </div>
     </div>
 
-    <div class="form-alert warning" *ngIf="!certificatNom">
-      Aucun certificat médical joint. La soumission sera bloquée sans ce document.
-    </div>
-  </section>
+    <!-- SIDEBAR -->
+    <aside class="form-sidebar">
+      <div class="fcard">
+        <div class="sidebar-head">
+          <div class="emp-avatar">{{ employee.nomComplet.charAt(0) }}</div>
+          <div>
+            <strong>{{ employee.nomComplet }}</strong>
+            <span>{{ employee.matricule }}</span>
+          </div>
+        </div>
+        <div class="emp-details">
+          <div class="emp-row"><span>Direction</span><strong>{{ employee.direction }}</strong></div>
+          <div class="emp-row"><span>Service</span><strong>{{ employee.service }}</strong></div>
+          <div class="emp-row"><span>Responsable N+1</span><strong>{{ employee.superieurHierarchique }}</strong></div>
+        </div>
+        <div class="circuit-note">
+          <strong>Circuit :</strong> La demande de congé maladie est directement traitée par la <strong>Direction RH</strong>.
+        </div>
+      </div>
+    </aside>
+  </div>
 
-  <!-- COMMENTAIRE -->
-  <section class="card">
-    <div class="card-title">Commentaire</div>
-
-    <div class="form-grid">
-      <div class="field field-full">
-        <label for="commentaire">Informations complémentaires</label>
-        <textarea
-          id="commentaire"
-          name="commentaire"
-          class="input textarea"
-          placeholder="Précisions supplémentaires si nécessaire..."
-          [(ngModel)]="form.commentaire"
-          [disabled]="submitting"
-        ></textarea>
-      </div>
-    </div>
-  </section>
-
-  <!-- CIRCUIT DE VALIDATION -->
-  <section class="card">
-    <div class="card-title">Circuit de validation</div>
-
-    <div class="info-grid validation-grid">
-      <div class="info-box">
-        <span class="info-label">Étape 1 — Validation</span>
-        <span class="info-value">Direction des Ressources Humaines</span>
-        <span class="info-sub">Vérification du certificat médical</span>
-      </div>
-
-      <div class="info-box">
-        <span class="info-label">Étape 2 — Information</span>
-        <span class="info-value">Supérieur hiérarchique (N+1)</span>
-        <span class="info-sub">Notification informationnelle uniquement</span>
-      </div>
-
-      <div class="info-box">
-        <span class="info-label">Statut courant</span>
-        <span class="badge waiting">En préparation</span>
-      </div>
-
-      <div class="info-box">
-        <span class="info-label">Impact assiduité</span>
-        <span class="info-value">
-          {{ selectedTypeInfo.exempteAssiduity
-             ? 'Aucun impact (type exempté)'
-             : 'Calculé après validation RH selon le barème' }}
-        </span>
-      </div>
-    </div>
-  </section>
-
-  <!-- BARÈME D'ASSIDUITÉ -->
-  <section class="card" *ngIf="!selectedTypeInfo.exempteAssiduity">
-    <div class="card-title">Barème d'assiduité de référence</div>
-    <div class="bareme-grid">
-      <div class="bareme-row header">
-        <span>Jours cumulés</span>
-        <span>Déduction</span>
-      </div>
-      <div class="bareme-row" [class.active]="nombreJours >= 0 && nombreJours <= 10">
-        <span>0 – 10 jours</span><span>0 point</span>
-      </div>
-      <div class="bareme-row" [class.active]="nombreJours >= 11 && nombreJours <= 15">
-        <span>11 – 15 jours</span><span>0,5 point</span>
-      </div>
-      <div class="bareme-row" [class.active]="nombreJours >= 16 && nombreJours <= 20">
-        <span>16 – 20 jours</span><span>1 point</span>
-      </div>
-      <div class="bareme-row" [class.active]="nombreJours >= 21 && nombreJours <= 30">
-        <span>21 – 30 jours</span><span>2 points</span>
-      </div>
-      <div class="bareme-row" [class.active]="nombreJours > 30">
-        <span>> 30 jours</span><span>3 points</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- PIED DE PAGE / ACTIONS -->
-  <footer class="page-footer">
-    <button class="btn btn-secondary" type="button" routerLink="/home-employee" [disabled]="submitting">
-      Annuler
+  <!-- FOOTER ACTIONS -->
+  <div class="form-footer">
+    <a routerLink="/home-employee" class="fbtn fbtn-ghost" [class.disabled]="submitting">Annuler</a>
+    <button class="fbtn fbtn-outline" type="button" (click)="saveDraft()" [disabled]="submitting">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+      Brouillon
     </button>
-    <button class="btn btn-outline-primary" type="button" (click)="saveDraft()" [disabled]="submitting">
-      Enregistrer brouillon
-    </button>
-    <button
-      class="btn btn-success"
-      type="button"
-      (click)="openConfirm()"
-      [disabled]="submitting || !certificatNom"
-    >
+    <button class="fbtn fbtn-primary" type="button" (click)="openConfirm()" [disabled]="submitting || !certificatNom">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       {{ submitting ? 'Envoi…' : 'Soumettre la demande' }}
     </button>
-  </footer>
+  </div>
 
-  <!-- MODAL DE CONFIRMATION -->
-  <div class="confirm-backdrop" *ngIf="showConfirm">
-    <div class="confirm-modal">
-      <h3>Confirmer la soumission</h3>
-      <p>
-        Vous allez soumettre une demande de congé
-        <strong>{{ selectedTypeInfo.label }}</strong>
-        du <strong>{{ form.dateDebut }}</strong> au <strong>{{ form.dateFin }}</strong>
-        (<strong>{{ nombreJoursLabel }}</strong>).
-      </p>
-      <p>
-        Certificat joint : <strong>{{ certificatNom }}</strong><br />
-        La Direction RH sera notifiée immédiatement.
-      </p>
-      <div class="confirm-actions">
-        <button class="btn btn-light" type="button" (click)="closeConfirm()" [disabled]="submitting">
-          Retour
-        </button>
-        <button class="btn btn-success" type="button" (click)="submitDemande()" [disabled]="submitting">
-          {{ submitting ? 'Envoi en cours…' : 'Confirmer et envoyer' }}
-        </button>
+  <!-- MODAL -->
+  @if (showConfirm) {
+    <div class="modal-back" (click)="$event.target === $event.currentTarget && closeConfirm()">
+      <div class="modal-box">
+        <div class="modal-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <h3>Confirmer la soumission</h3>
+        <p>
+          Congé <strong>{{ selectedTypeInfo.label }}</strong>
+          du <strong>{{ form.dateDebut }}</strong> au <strong>{{ form.dateFin }}</strong>
+          (<strong>{{ nombreJoursLabel }}</strong>).<br><br>
+          Certificat : <strong>{{ certificatNom }}</strong><br>
+          La Direction RH sera notifiée immédiatement.
+        </p>
+        <div class="modal-actions">
+          <button class="fbtn fbtn-ghost" type="button" (click)="closeConfirm()" [disabled]="submitting">Annuler</button>
+          <button class="fbtn fbtn-primary" type="button" (click)="submitDemande()" [disabled]="submitting">
+            {{ submitting ? 'Envoi…' : 'Confirmer et envoyer' }}
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
 </div>

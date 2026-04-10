@@ -1,171 +1,157 @@
-<div class="dashboard-page">
+<div class="dash-page">
 
-  <!-- EN-TÊTE -->
-  <header class="page-header">
-    <div>
-      <h1>Mon tableau de bord</h1>
-      <p class="subtitle">Suivez vos demandes RH et accédez rapidement aux formulaires.</p>
+  <!-- HEADER -->
+  <div class="dash-header">
+    <div class="dash-header-brand">
+      <img src="assets/logo.png" alt="Al Baraka Assurances" class="page-logo" />
+      <div class="page-logo-divider"></div>
+      <div>
+        <h1>Mon tableau de bord</h1>
+        <p>Suivez vos demandes RH et accédez rapidement aux formulaires.</p>
+      </div>
     </div>
-    <div class="header-actions">
-      <button routerLink="/home-employee" class="btn btn-light">Accueil</button>
-    </div>
-  </header>
+    <a routerLink="/home-employee" class="header-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Accueil
+    </a>
+  </div>
 
-  <!-- STATISTIQUES -->
-  <section class="stats-grid">
-    <div class="stat-card primary">
-      <span class="stat-icon">🏖</span>
-      <span class="stat-label">Solde congés restant</span>
-      <strong class="stat-value">{{ stats.soldeConges }} jours</strong>
+  <!-- KPI STRIP -->
+  <div class="kpi-strip">
+    <div class="kpi-card kpi-teal">
+      <span class="kpi-lbl">Solde congés</span>
+      <strong class="kpi-val">{{ stats.soldeConges }} <span class="kpi-unit">jours</span></strong>
     </div>
-    <div class="stat-card warning">
-      <span class="stat-icon">⏳</span>
-      <span class="stat-label">Demandes en attente</span>
-      <strong class="stat-value">{{ stats.enAttente }}</strong>
+    <div class="kpi-card kpi-orange">
+      <span class="kpi-lbl">En attente</span>
+      <strong class="kpi-val">{{ stats.enAttente }}</strong>
     </div>
-    <div class="stat-card success">
-      <span class="stat-icon">✅</span>
-      <span class="stat-label">Demandes validées</span>
-      <strong class="stat-value">{{ stats.validees }}</strong>
+    <div class="kpi-card kpi-green">
+      <span class="kpi-lbl">Validées</span>
+      <strong class="kpi-val">{{ stats.validees }}</strong>
     </div>
-    <div class="stat-card danger">
-      <span class="stat-icon">❌</span>
-      <span class="stat-label">Demandes rejetées</span>
-      <strong class="stat-value">{{ stats.rejetees }}</strong>
+    <div class="kpi-card kpi-red">
+      <span class="kpi-lbl">Rejetées</span>
+      <strong class="kpi-val">{{ stats.rejetees }}</strong>
     </div>
-  </section>
+  </div>
 
-  <!-- RACCOURCIS -->
-  <section class="shortcuts-grid">
-    <a routerLink="/conge" class="shortcut-card primary">
-      <span class="shortcut-icon">🏖</span>
+  <!-- QUICK ACTIONS -->
+  <div class="quick-actions">
+    <a routerLink="/conge" class="qa-card qa-orange">
+      <div class="qa-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+      </div>
       <span>Demande de congé</span>
     </a>
-    <a routerLink="/conge/demande-autorisation" class="shortcut-card success">
-      <span class="shortcut-icon">🕐</span>
+    <a routerLink="/conge/demande-autorisation" class="qa-card qa-teal">
+      <div class="qa-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
       <span>Autorisation de sortie</span>
     </a>
-    <a routerLink="/conge/demande-maladie" class="shortcut-card maladie">
-      <span class="shortcut-icon">🏥</span>
+    <a routerLink="/conge/demande-maladie" class="qa-card qa-red">
+      <div class="qa-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
       <span>Congé maladie</span>
     </a>
-  </section>
+  </div>
 
-  <!-- LISTE DES DEMANDES -->
-  <section class="card table-section" *ngIf="!selectedDemande">
-    <div class="section-header">
-      <h2>Mes demandes</h2>
+  <!-- TABS + FILTER -->
+  <div class="toolbar">
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">
+        Toutes ({{ demandes.length }})
+      </button>
+      <button class="tab" [class.active]="activeTab === 'conge'" (click)="activeTab = 'conge'">
+        Congés ({{ countByType('conge') }})
+      </button>
+      <button class="tab" [class.active]="activeTab === 'autorisation'" (click)="activeTab = 'autorisation'">
+        Autorisations ({{ countByType('autorisation') }})
+      </button>
+      <button class="tab" [class.active]="activeTab === 'maladie'" (click)="activeTab = 'maladie'">
+        Maladies ({{ countByType('maladie') }})
+      </button>
     </div>
+    <select class="filter-select" [(ngModel)]="filterStatut">
+      <option value="">Tous les statuts</option>
+      <option value="En attente de validation N+1">En attente</option>
+      <option value="Validée">Validée</option>
+      <option value="Rejetée par le supérieur hiérarchique">Rejetée</option>
+    </select>
+  </div>
 
-    <!-- ONGLETS + FILTRE -->
-    <div class="tabs-bar">
-      <div class="tabs">
-        <button class="tab" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">
-          Toutes ({{ demandes.length }})
-        </button>
-        <button class="tab" [class.active]="activeTab === 'conge'" (click)="activeTab = 'conge'">
-          Congés ({{ countByType('conge') }})
-        </button>
-        <button class="tab" [class.active]="activeTab === 'autorisation'" (click)="activeTab = 'autorisation'">
-          Autorisations ({{ countByType('autorisation') }})
-        </button>
-        <button class="tab" [class.active]="activeTab === 'maladie'" (click)="activeTab = 'maladie'">
-          Maladie ({{ countByType('maladie') }})
+  <!-- DEMANDES LIST -->
+  @if (!selectedDemande) {
+    <div class="demande-list">
+      @for (d of filteredDemandes; track d.id) {
+        <div class="demande-row" (click)="openDetail(d)">
+          <div class="drow-type" [ngClass]="'type-' + d.type">
+            @if (d.type === 'conge') {
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+            } @else if (d.type === 'autorisation') {
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            } @else {
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            }
+          </div>
+          <div class="drow-info">
+            <strong>{{ d.sousType }}</strong>
+            <span>{{ d.dateDebut }}{{ d.dateFin ? ' → ' + d.dateFin : '' }} · {{ d.duree }}</span>
+          </div>
+          <div class="drow-date">{{ d.dateCreation }}</div>
+          <div class="drow-meta">
+            <span class="drow-ref">{{ d.refNo }}</span>
+            <span class="drow-statut" [ngClass]="'st-' + getStatutClass(d.statut)">{{ d.statut }}</span>
+          </div>
+          <div class="drow-arrow">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+      }
+      @if (filteredDemandes.length === 0) {
+        <div class="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#a7a9ac" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <p>Aucune demande correspondant à ce filtre.</p>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- DETAIL PANEL -->
+  @if (selectedDemande) {
+    <div class="detail-panel">
+      <div class="detail-head">
+        <div>
+          <h3>{{ selectedDemande.refNo }}</h3>
+          <p>{{ selectedDemande.sousType }}</p>
+        </div>
+        <button class="close-btn" (click)="closeDetail()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
-      <div class="filter-group">
-        <select class="filter-select" [(ngModel)]="filterStatut">
-          <option value="">Tous les statuts</option>
-          <option value="En attente de validation N+1">En attente</option>
-          <option value="Validée">Validée</option>
-          <option value="Rejetée par le supérieur hiérarchique">Rejetée</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Référence</th>
-            <th>Type</th>
-            <th>Période / Durée</th>
-            <th>Soumis le</th>
-            <th>Statut</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let d of filteredDemandes" (click)="openDetail(d)" class="row-link">
-            <td><strong>{{ d.refNo }}</strong></td>
-            <td>
-              <span class="type-chip" [ngClass]="'chip-' + d.type">
-                {{ getTypeIcon(d.type) }} {{ d.sousType }}
-              </span>
-            </td>
-            <td>
-              <span *ngIf="d.dateFin">{{ d.dateDebut }} → {{ d.dateFin }}</span>
-              <span *ngIf="!d.dateFin">{{ d.dateDebut }}</span>
-              <span class="duree-badge">{{ d.duree }}</span>
-            </td>
-            <td>{{ d.dateCreation }}</td>
-            <td>
-              <span class="badge" [ngClass]="getStatutClass(d.statut)">
-                {{ d.statut }}
-              </span>
-            </td>
-            <td (click)="$event.stopPropagation()">
-              <button class="btn btn-light btn-sm" (click)="openDetail(d)">Détail</button>
-              <button
-                class="btn btn-secondary btn-sm"
-                *ngIf="canCancel(d)"
-                disabled
-              >Annuler</button>
-            </td>
-          </tr>
-          <tr *ngIf="filteredDemandes.length === 0">
-            <td colspan="6" class="empty-cell">Aucune demande trouvée.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- DÉTAIL D'UNE DEMANDE -->
-  <section class="card detail-panel" *ngIf="selectedDemande">
-    <div class="detail-header">
-      <div>
-        <h2>{{ selectedDemande.refNo }}</h2>
-        <p>{{ selectedDemande.sousType }}</p>
-      </div>
-      <button class="btn btn-light" (click)="closeDetail()">← Retour à la liste</button>
-    </div>
-
-    <div class="detail-grid">
-      <div class="detail-rows">
+      <div class="detail-grid">
         <div class="detail-row"><span>Type</span><strong>{{ selectedDemande.sousType }}</strong></div>
         <div class="detail-row"><span>Soumis le</span><strong>{{ selectedDemande.dateCreation }}</strong></div>
         <div class="detail-row">
           <span>Période</span>
-          <strong>
-            {{ selectedDemande.dateDebut }}
-            <span *ngIf="selectedDemande.dateFin"> → {{ selectedDemande.dateFin }}</span>
-          </strong>
+          <strong>{{ selectedDemande.dateDebut }}@if (selectedDemande.dateFin) { → {{ selectedDemande.dateFin }}}</strong>
         </div>
         <div class="detail-row"><span>Durée</span><strong>{{ selectedDemande.duree }}</strong></div>
-        <div class="detail-row"><span>Motif</span><strong>{{ selectedDemande.motif }}</strong></div>
-        <div class="detail-row">
+        <div class="detail-row detail-row-full"><span>Motif</span><strong>{{ selectedDemande.motif }}</strong></div>
+        <div class="detail-row detail-row-full">
           <span>Statut</span>
-          <span class="badge" [ngClass]="getStatutClass(selectedDemande.statut)">
-            {{ selectedDemande.statut }}
-          </span>
+          <span class="drow-statut" [ngClass]="'st-' + getStatutClass(selectedDemande.statut)">{{ selectedDemande.statut }}</span>
         </div>
       </div>
+      @if (canCancel(selectedDemande)) {
+        <div class="detail-alert">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Vous pouvez encore annuler cette demande tant qu'elle n'a pas été validée.
+        </div>
+      }
     </div>
-
-    <div class="form-alert warning" *ngIf="canCancel(selectedDemande)">
-      Vous pouvez encore annuler cette demande tant qu'elle n'a pas été validée.
-    </div>
-  </section>
+  }
 
 </div>

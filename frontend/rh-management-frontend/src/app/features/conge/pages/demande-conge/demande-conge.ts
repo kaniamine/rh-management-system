@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { Component, inject } from '@angular/core';
-=======
-import { Component, HostListener, inject, ViewEncapsulation } from '@angular/core';
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
+import { Component, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -37,7 +33,6 @@ export class DemandeConge {
     'Congé compensatoire'
   ];
 
-  // Auto-rempli depuis la session
   readonly employee = {
     nomComplet: 'Amine Kani',
     matricule: 'EMP-2026-014',
@@ -46,7 +41,6 @@ export class DemandeConge {
     superieurHierarchique: 'Ahmed Ben Ali'
   };
 
-  // Solde actuel (récupéré depuis l'API en production)
   readonly soldeCongesJours = 12;
   readonly demandesEnAttente = 2;
 
@@ -71,7 +65,6 @@ export class DemandeConge {
     const cur = new Date(debut);
     while (cur <= fin) {
       const dow = cur.getDay();
-      // Compter tous les jours sauf dimanche (0); le vendredi (5) est compté
       if (dow !== 0) jours++;
       cur.setDate(cur.getDate() + 1);
     }
@@ -84,7 +77,6 @@ export class DemandeConge {
     return `${j} jour${j > 1 ? 's' : ''}`;
   }
 
-<<<<<<< HEAD
   // ─── Règles de gestion ──────────────────────────────────────────────────────
 
   get isMotifObligatoire(): boolean {
@@ -103,8 +95,6 @@ export class DemandeConge {
     const debut = new Date(this.form.dateDebut);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
-    // Calculer 3 jours ouvrés à partir d'aujourd'hui
     let joursOuvres = 0;
     const cur = new Date(today);
     cur.setDate(cur.getDate() + 1);
@@ -127,19 +117,12 @@ export class DemandeConge {
 
   // ─── Actions ────────────────────────────────────────────────────────────────
 
-=======
-  get isCongeMaladie(): boolean {
-    return this.form.typeConge.toLowerCase().includes('maladie');
-  }
-
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
   openConfirmModal(action: 'submit' | 'draft'): void {
     this.errorMessage = null;
     this.successMessage = null;
     this.currentAction = action;
 
     if (action === 'submit') {
-      // Validations bloquantes
       if (!this.form.dateDebut || !this.form.dateFin) {
         this.errorMessage = 'La date de début et la date de fin sont obligatoires.';
         return;
@@ -149,21 +132,17 @@ export class DemandeConge {
         return;
       }
       if (this.dateTropProche) {
-        this.errorMessage =
-          'La demande doit être déposée au minimum 3 jours ouvrés avant la date de début.';
+        this.errorMessage = 'La demande doit être déposée au minimum 3 jours ouvrés avant la date de début.';
         return;
       }
       if (this.soldeInsuffisant) {
-        this.errorMessage =
-          `Solde insuffisant : vous demandez ${this.dureeJours} jours mais votre solde est de ${this.soldeCongesJours} jours.`;
+        this.errorMessage = `Solde insuffisant : vous demandez ${this.dureeJours} jours mais votre solde est de ${this.soldeCongesJours} jours.`;
         return;
       }
       if (this.isMotifObligatoire && !this.form.motif.trim()) {
-        this.errorMessage =
-          `Le motif est obligatoire pour un "${this.form.typeConge}".`;
+        this.errorMessage = `Le motif est obligatoire pour un "${this.form.typeConge}".`;
         return;
       }
-
       this.modalTitle = 'Confirmer la demande';
       this.modalMessage =
         `Vous allez soumettre une demande de "${this.form.typeConge}" ` +
@@ -182,7 +161,6 @@ export class DemandeConge {
     this.currentAction = null;
   }
 
-  /** Clic sur le fond assombri : fermer (comme Retour). */
   onConfirmBackdropClick(event: MouseEvent): void {
     if ((event.target as HTMLElement).classList.contains('confirm-backdrop')) {
       this.closeConfirmModal();
@@ -191,16 +169,11 @@ export class DemandeConge {
 
   @HostListener('document:keydown.escape')
   onEscapeCloseModal(): void {
-    if (this.showConfirmModal) {
-      this.closeConfirmModal();
-    }
+    if (this.showConfirmModal) this.closeConfirmModal();
   }
 
-  /** Bouton Annuler : ferme la modale si elle est ouverte. */
   onAnnuler(): void {
-    if (this.showConfirmModal) {
-      this.closeConfirmModal();
-    }
+    if (this.showConfirmModal) this.closeConfirmModal();
   }
 
   onJustificatifChange(event: Event): void {
@@ -211,54 +184,7 @@ export class DemandeConge {
 
   confirmAction(): void {
     if (!this.currentAction) return;
-
     const estBrouillon = this.currentAction === 'draft';
-
-<<<<<<< HEAD
-=======
-    if (!this.form.dateDebut || !this.form.dateFin) {
-      this.errorMessage = 'Indiquez la date de début et la date de fin.';
-      this.closeConfirmModal();
-      return;
-    }
-
-    if (this.form.dateFin < this.form.dateDebut) {
-      this.errorMessage =
-        'La date de fin doit être postérieure ou égale à la date de début.';
-      this.closeConfirmModal();
-      return;
-    }
-
-    if (
-      this.form.typeDuree.includes('Demi') &&
-      this.form.dateDebut !== this.form.dateFin
-    ) {
-      this.errorMessage =
-        'Pour une demi-journée, la date de début et de fin doivent être le même jour.';
-      this.closeConfirmModal();
-      return;
-    }
-
-    if (!estBrouillon) {
-      if (!this.form.nomComplet.trim() || !this.form.matricule.trim()) {
-        this.errorMessage = 'Le nom et le matricule sont obligatoires.';
-        this.closeConfirmModal();
-        return;
-      }
-      if (!this.form.motif.trim()) {
-        this.errorMessage = 'Le motif est obligatoire pour soumettre la demande.';
-        this.closeConfirmModal();
-        return;
-      }
-      if (this.isCongeMaladie && !this.form.pieceJustificativeFichierNom.trim()) {
-        this.errorMessage =
-          'Une pièce justificative est obligatoire pour un congé maladie.';
-        this.closeConfirmModal();
-        return;
-      }
-    }
-
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
     this.submitting = true;
     this.congeService
       .creerDemande({
@@ -295,11 +221,7 @@ export class DemandeConge {
           this.errorMessage =
             typeof msg === 'string'
               ? msg
-<<<<<<< HEAD
               : "Échec d'enregistrement (API sur http://localhost:5130 indisponible ?).";
-=======
-              : 'Échec d’enregistrement : lancez l’API (`dotnet run` sur le port 5130) et le front avec `ng serve` (proxy /api).';
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
           this.closeConfirmModal();
           this.submitting = false;
         }

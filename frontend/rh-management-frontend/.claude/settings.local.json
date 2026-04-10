@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(npx ng:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\natal\\\\rh-management-system\\\\frontend\\\\rh-management-frontend\\\\src\\\\assets\")",
+      "Bash(cp \"C:\\\\Users\\\\natal\\\\Downloads\\\\logo.png\" \"C:\\\\Users\\\\natal\\\\rh-management-system\\\\frontend\\\\rh-management-frontend\\\\src\\\\assets\\\\logo.png\")",
+      "Bash(mv /tmp/dg.css \"C:/Users/natal/rh-management-system/frontend/rh-management-frontend/src/app/features/dg/pages/dg-validations/dg-validations.css\")",
+      "Bash(cp /tmp/emp.css \"C:/Users/natal/rh-management-system/frontend/rh-management-frontend/src/app/features/dashboard-employee/pages/employee-dashboard/employee-dashboard.css\")",
+      "Bash(cp /tmp/rh.css \"C:/Users/natal/rh-management-system/frontend/rh-management-frontend/src/app/features/dashboard-rh/pages/rh-dashboard/rh-dashboard.css\")"
     ]
   }
 }

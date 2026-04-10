@@ -1,15 +1,8 @@
+// Legacy file kept for compatibility — route now uses Login from login.ts
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.html',
-  styleUrl: './login.css'
+  selector: 'app-login-module-legacy',
+  template: ''
 })
-export class LoginModule {
-  constructor(private router: Router) {}
-
-  onLogin(): void {
-    this.router.navigate(['/home-employee']);
-  }
-}
+export class LoginModule {}

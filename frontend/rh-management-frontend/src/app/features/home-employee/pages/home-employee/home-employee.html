@@ -1,181 +1,167 @@
 <div class="home-page">
-  <section class="hero-section">
-    <div class="hero-left">
-      <div class="avatar-circle">
-        {{ employee.nom.charAt(0) }}
-      </div>
 
+  <!-- WELCOME HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <img src="assets/logo.png" alt="Al Baraka Assurances" class="hero-logo" />
+      <div class="hero-avatar">{{ employee.nom.charAt(0) }}</div>
       <div class="hero-text">
-        <h1>Bonjour, {{ employee.nom }}</h1>
-        <p>
-          Bienvenue sur votre espace RH. Sélectionnez l’action que vous souhaitez effectuer.
-        </p>
-
-        <div class="employee-meta">
-          <span>Matricule : {{ employee.matricule }}</span>
-          <span>Poste : {{ employee.poste }}</span>
-          <span>Service : {{ employee.service }}</span>
+        <p class="hero-greeting">Bonjour,</p>
+        <h1 class="hero-name">{{ employee.nom }}</h1>
+        <div class="hero-meta">
+          <span class="meta-chip">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            {{ employee.poste }}
+          </span>
+          <span class="meta-chip">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            {{ employee.service }}
+          </span>
+          <span class="meta-chip muted">{{ employee.matricule }}</span>
         </div>
       </div>
     </div>
-
-    <div class="hero-right">
-      <div class="status-box">
-        <span class="status-label">Résumé</span>
-        <strong>2 demandes en attente</strong>
-        <small>Dernière activité : aujourd’hui</small>
+    <div class="hero-side">
+      <div class="hero-stat-card">
+        <span class="hsc-label">Solde de congés</span>
+        <span class="hsc-value">12 <small>jours</small></span>
+        <span class="hsc-sub">Mis à jour aujourd'hui</span>
       </div>
     </div>
   </section>
 
- 
-
-  <div class="actions-section">
-  <div class="flip-card primary">
-    <div class="flip-card-inner">
-      
-      <div class="flip-face flip-front">
-        <h3>Demande de congé</h3>
+  <!-- KPI STRIP -->
+  <div class="kpi-strip stagger-children">
+    @for (stat of stats; track stat.label) {
+      <div class="kpi-card" [ngClass]="'kpi-' + stat.tone">
+        <span class="kpi-label">{{ stat.label }}</span>
+        <strong class="kpi-value">{{ stat.value }}</strong>
       </div>
-      <div class="flip-face flip-back">
-        <h4>Congé</h4>
-        <p>Créer et suivre vos demandes de congé.</p>
-        <a class="action-card primary" routerLink="/conge">
-        <button class="card-btn">Accéder</button></a>
-      </div>
-      
-    </div>
+    }
   </div>
 
-  <div class="flip-card secondary">
-    <div class="flip-card-inner">
-      <div class="flip-face flip-front">
-        <h3>Demande d’autorisation</h3>
-      </div>
-      <div class="flip-face flip-back">
-        <h4>Autorisation</h4>
-        <p>Soumettre une autorisation personnelle ou professionnelle.</p>
-          <a class="action-card success" routerLink="/conge/demande-autorisation">
-        <button class="card-btn">Accéder</button></a>
-      </div>
+  <!-- QUICK ACTIONS -->
+  <section class="section">
+    <div class="section-head">
+      <h2>Actions rapides</h2>
+      <p>Soumettez ou suivez une demande en un clic</p>
     </div>
-  </div>
+    <div class="actions-grid stagger-children">
 
-  <div class="flip-card maladie">
-    <div class="flip-card-inner">
-      <div class="flip-face flip-front">
-        <h3>Congé maladie</h3>
-      </div>
-      <div class="flip-face flip-back">
-        <h4>Maladie</h4>
-        <p>Déclarer un arrêt maladie et joindre votre certificat médical.</p>
-        <a class="action-card danger" routerLink="/conge/demande-maladie">
-          <button class="card-btn">Accéder</button>
-        </a>
-      </div>
-    </div>
-  </div>
+      <a routerLink="/conge" class="action-card action-primary">
+        <div class="action-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <div class="action-text">
+          <h3>Demande de congé</h3>
+          <p>Annuel, exceptionnel, maternité…</p>
+        </div>
+        <span class="action-arrow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+      </a>
 
-  <div class="flip-card neutral">
-    <div class="flip-card-inner">
-      <div class="flip-face flip-front">
-        <h3>Mon profil</h3>
-      </div>
-      <div class="flip-face flip-back">
-        <h4>Profil</h4>
-        <p>Modifier vos informations personnelles et professionnelles.</p>
-        <a class="action-card success" routerLink="/home-employee">
-          <button class="card-btn">Modifier</button>
-        </a>
-      </div>
-    </div>
-  </div>
+      <a routerLink="/conge/demande-autorisation" class="action-card action-teal">
+        <div class="action-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="action-text">
+          <h3>Autorisation de sortie</h3>
+          <p>Personnelle, professionnelle, formation</p>
+        </div>
+        <span class="action-arrow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+      </a>
 
-  <div class="flip-card success">
-    <div class="flip-card-inner">
-      <div class="flip-face flip-front">
-        <h3>Tableau de bord</h3>
-      </div>
-      <div class="flip-face flip-back">
-        <h4>Suivi</h4>
-        <p>Consultez vos demandes récentes et vos statuts.</p>
-        <a class="action-card neutral" routerLink="/dashboard-employee">
-          <button class="card-btn">Voir</button>
-        </a>
-      </div>
-    </div>
-  </div>
+      <a routerLink="/conge/demande-maladie" class="action-card action-danger">
+        <div class="action-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="action-text">
+          <h3>Congé maladie</h3>
+          <p>Arrêt maladie avec certificat médical</p>
+        </div>
+        <span class="action-arrow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+      </a>
 
-</div>
+      <a routerLink="/dashboard-employee" class="action-card action-neutral">
+        <div class="action-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+        </div>
+        <div class="action-text">
+          <h3>Mes demandes</h3>
+          <p>Historique et suivi en temps réel</p>
+        </div>
+        <span class="action-arrow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+      </a>
 
-  <section class="stats-section">
-    <div class="section-header">
-      <h3>Résumé rapide</h3>
-      <p>Vue synthétique de votre situation RH</p>
-    </div>
-
-    <div class="stats-grid">
-      <div
-        class="stat-card"
-        *ngFor="let stat of stats"
-        [ngClass]="stat.tone"
-      >
-        <span>{{ stat.label }}</span>
-        <strong>{{ stat.value }}</strong>
-      </div>
     </div>
   </section>
 
-  <section class="content-grid">
-    <div class="panel-card">
-      <div class="section-header">
-        <h3>Mes demandes récentes</h3>
-        <p>Historique de vos dernières actions</p>
-      </div>
+  <!-- BOTTOM GRID -->
+  <div class="bottom-grid">
 
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Date</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let request of recentRequests">
-              <td>{{ request.type }}</td>
-              <td>{{ request.date }}</td>
-              <td>
-                <span
-                  class="badge"
-                  [ngClass]="{
-                    'badge-pending': request.statut === 'En attente',
-                    'badge-approved': request.statut === 'Validée',
-                    'badge-rejected': request.statut === 'Rejetée'
-                  }"
-                >
-                  {{ request.statut }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <!-- Recent requests -->
+    <section class="panel">
+      <div class="panel-head">
+        <h3>Demandes récentes</h3>
+        <a routerLink="/dashboard-employee" class="panel-link">Voir tout →</a>
       </div>
-    </div>
+      <div class="request-list">
+        @for (req of recentRequests; track req.type) {
+          <div class="request-row">
+            <div class="req-icon" [ngClass]="'icon-' + (req.statut === 'Validée' ? 'approved' : req.statut === 'Rejetée' ? 'rejected' : 'pending')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <div class="req-info">
+              <span class="req-type">{{ req.type }}</span>
+              <span class="req-date">{{ req.date }}</span>
+            </div>
+            <span class="req-badge"
+              [ngClass]="{
+                'badge-approved': req.statut === 'Validée',
+                'badge-rejected': req.statut === 'Rejetée',
+                'badge-pending': req.statut === 'En attente'
+              }">
+              {{ req.statut }}
+            </span>
+          </div>
+        }
+      </div>
+    </section>
 
-    <div class="panel-card">
-      <div class="section-header">
+    <!-- Notifications -->
+    <section class="panel">
+      <div class="panel-head">
         <h3>Notifications</h3>
-        <p>Informations importantes liées à vos demandes</p>
+        <span class="notif-count">{{ notifications.length }}</span>
       </div>
+      <div class="notif-list">
+        @for (notif of notifications; track notif) {
+          <div class="notif-item">
+            <span class="notif-dot"></span>
+            <p>{{ notif }}</p>
+          </div>
+        }
+      </div>
+    </section>
 
-      <div class="notification-list">
-        <div class="notification-item" *ngFor="let notification of notifications">
-          <div class="notification-dot"></div>
-          <p>{{ notification }}</p>
-        </div>
-      </div>
-    </div>
-  </section>
+  </div>
+
 </div>
