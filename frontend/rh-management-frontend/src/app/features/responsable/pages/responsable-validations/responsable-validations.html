@@ -152,7 +152,7 @@
     </div>
   }
 
-  <!-- APPROVE MODAL -->
+  <!-- APPROVE MODAL (autorisations & maladies — no signature required) -->
   @if (showApproveModal) {
     <div class="modal-back">
       <div class="modal-box">
@@ -169,6 +169,17 @@
         </div>
       </div>
     </div>
+  }
+
+  <!-- SIGNATURE PAD (congés only) -->
+  @if (showSignaturePad && signatureRequest) {
+    <app-signature-pad
+      [request]="signatureRequest"
+      [signatoryName]="responsable.nomComplet"
+      (signed)="onSigned($event)"
+      (rejected)="onSignatureRejected()"
+      (cancelled)="onSignatureCancelled()">
+    </app-signature-pad>
   }
 
   <!-- REJECT MODAL -->

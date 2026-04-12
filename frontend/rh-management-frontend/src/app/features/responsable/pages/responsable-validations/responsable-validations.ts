@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { SignaturePad, LeaveRequestSummary, SignatureResult } from '../../../../shared/components/signature-pad/signature-pad';
 
 type StatutDemande =
   | 'En attente de validation N+1'
@@ -40,7 +41,7 @@ interface Demande {
 @Component({
   selector: 'app-responsable-validations',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, SignaturePad],
   templateUrl: './responsable-validations.html',
   styleUrls: ['./responsable-validations.css']
 })
@@ -55,11 +56,13 @@ export class ResponsableValidations {
 
   activeTab: TypeDemande | 'all' = 'all';
   selectedDemande: Demande | null = null;
-  showRejectModal = false;
+  showRejectModal  = false;
   showApproveModal = false;
-  rejectMotif = '';
-  actionLoading = false;
-  filterStatut = '';
+  showSignaturePad = false;
+  rejectMotif      = '';
+  actionLoading    = false;
+  filterStatut     = '';
+  signatureRequest: LeaveRequestSummary | null = null;
 
   // Données de démonstration — seront remplacées par des appels API
   demandes: Demande[] = [
@@ -167,8 +170,41 @@ export class ResponsableValidations {
   }
 
   openApproveModal(): void {
-    this.showApproveModal = true;
+    if (!this.selectedDemande) return;
+    // Congé requests go through the signature pad; others use the simple modal
+    if (this.selectedDemande.type === 'conge') {
+      this.signatureRequest = {
+        refNo:        this.selectedDemande.refNo,
+        employeeNom:  this.selectedDemande.employe,
+        type:         this.selectedDemande.sousType,
+        dateDebut:    this.selectedDemande.dateDebut,
+        dateFin:      this.selectedDemande.dateFin ?? '—',
+        motif:        this.selectedDemande.motif
+      };
+      this.showSignaturePad = true;
+      this.showApproveModal = false;
+    } else {
+      this.showApproveModal = true;
+      this.showSignaturePad = false;
+    }
     this.showRejectModal = false;
+  }
+
+  onSigned(_result: SignatureResult): void {
+    this.showSignaturePad = false;
+    this.signatureRequest = null;
+    this.approuveDemande();
+  }
+
+  onSignatureRejected(): void {
+    this.showSignaturePad = false;
+    this.signatureRequest = null;
+    this.openRejectModal();
+  }
+
+  onSignatureCancelled(): void {
+    this.showSignaturePad = false;
+    this.signatureRequest = null;
   }
 
   openRejectModal(): void {
@@ -178,9 +214,11 @@ export class ResponsableValidations {
   }
 
   closeModals(): void {
-    this.showApproveModal = false;
-    this.showRejectModal = false;
-    this.rejectMotif = '';
+    this.showApproveModal  = false;
+    this.showRejectModal   = false;
+    this.showSignaturePad  = false;
+    this.signatureRequest  = null;
+    this.rejectMotif       = '';
   }
 
   approuveDemande(): void {

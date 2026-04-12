@@ -48,6 +48,16 @@ export const routes: Routes = [
       import('./features/dg/dg-module').then(m => m.DgModule)
   },
   {
+    path: 'parametrage',
+    loadChildren: () =>
+      import('./features/parametrage/parametrage-module').then(m => m.ParametrageModule)
+  },
+  {
+    path: 'pointage',
+    loadChildren: () =>
+      import('./features/pointage/pointage-module').then(m => m.PointageModule)
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/login/login').then(m => m.Login)

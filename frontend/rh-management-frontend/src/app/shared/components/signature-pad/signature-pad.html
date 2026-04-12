@@ -1,0 +1,66 @@
+<div class="sigpad-overlay">
+  <div class="sigpad-box">
+
+    <!-- Header -->
+    <div class="sigpad-head">
+      <div>
+        <h2>Signature électronique</h2>
+        <p>Vérifiez la demande puis apposez votre signature.</p>
+      </div>
+      <button class="sigpad-close" type="button" (click)="cancelled.emit()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Request summary -->
+    <div class="sigpad-summary">
+      <div class="summary-title">Récapitulatif de la demande</div>
+      <div class="summary-grid">
+        <div class="srow"><span>Référence</span><strong>{{ request.refNo }}</strong></div>
+        <div class="srow"><span>Employé</span><strong>{{ request.employeeNom }}</strong></div>
+        <div class="srow"><span>Type de congé</span><strong>{{ request.type }}</strong></div>
+        <div class="srow"><span>Période</span><strong>{{ request.dateDebut }} → {{ request.dateFin }}</strong></div>
+        <div class="srow srow-full"><span>Motif</span><strong>{{ request.motif }}</strong></div>
+      </div>
+    </div>
+
+    <!-- Signature pad -->
+    <div class="sigpad-area">
+      <div class="pad-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Signature du responsable — {{ signatoryName }}
+      </div>
+      <div class="canvas-wrap">
+        <canvas #canvas class="sig-canvas"
+          (mousedown)="onPointerDown($event)"
+          (mousemove)="onPointerMove($event)"
+          (mouseup)="onPointerUp()"
+          (mouseleave)="onPointerUp()"
+          (touchstart)="onPointerDown($event)"
+          (touchmove)="onPointerMove($event)"
+          (touchend)="onPointerUp()">
+        </canvas>
+        @if (isEmpty) {
+          <div class="canvas-hint">Signez ici avec la souris ou le doigt</div>
+        }
+      </div>
+      <button class="clear-btn" type="button" (click)="clearSignature()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+        Recommencer
+      </button>
+    </div>
+
+    <!-- Footer actions -->
+    <div class="sigpad-footer">
+      <button class="spbtn spbtn-reject" type="button" (click)="rejectRequest()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        Refuser
+      </button>
+      <button class="spbtn spbtn-confirm" type="button" [disabled]="isEmpty" (click)="confirmSignature()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Signer et valider
+      </button>
+    </div>
+
+  </div>
+</div>
