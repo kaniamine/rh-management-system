@@ -522,7 +522,9 @@ textarea.input:focus {
   .step {
     width: 100%;
   }
-  .confirm-actions .btn-success {
+}
+
+.confirm-actions .btn-success {
   background: #0D776E !important;
   color: #ffffff !important;
   border: none !important;

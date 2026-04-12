@@ -10,18 +10,6 @@
       </p>
     </div>
     <div class="header-actions">
-<<<<<<< HEAD
-      <button routerLink="/home-employee" class="btn btn-light">Retour</button>
-      <button routerLink="/dashboard-employee" class="btn btn-light">Historique</button>
-    </div>
-  </header>
-
-  <!-- MESSAGES GLOBAUX -->
-  <p class="form-alert success" *ngIf="successMessage">{{ successMessage }}</p>
-  <p class="form-alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
-
-  <!-- INDICATEUR DE PROGRESSION -->
-=======
       <button routerLink="/home-employee" type="button" class="btn btn-light">Retour</button>
       <button routerLink="/dashboard-employee" type="button" class="btn btn-light">Historique</button>
     </div>
@@ -30,7 +18,6 @@
   <p class="form-alert success" *ngIf="successMessage">{{ successMessage }}</p>
   <p class="form-alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
 
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
   <div class="progress-bar">
     <div class="step done">Informations</div>
     <div class="step active">Détails</div>
@@ -49,11 +36,7 @@
     </div>
     <div class="summary-card">
       <span class="label">Durée calculée</span>
-<<<<<<< HEAD
-      <span class="value" [class.text-danger]="isOverLimit">{{ dureeCalculee }}</span>
-=======
       <span class="value">{{ dureeLabel }}</span>
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
     </div>
   </section>
 
@@ -64,28 +47,8 @@
       <h2>Demande d'autorisation d'absence temporaire</h2>
       <span class="badge waiting">En préparation</span>
     </div>
-    <p class="title-ar" dir="rtl">{{ selectedTypeLabelAr }}</p>
   </section>
 
-<<<<<<< HEAD
-  <!-- SÉLECTEUR DE TYPE -->
-  <div class="type-selector">
-    <button
-      *ngFor="let t of typeOptions"
-      type="button"
-      class="type-card"
-      [class.active]="selectedType === t.value"
-      (click)="selectType(t.value)"
-    >
-      <span class="type-title">{{ t.label }}</span>
-      <span class="type-ar" dir="rtl">{{ t.labelAr }}</span>
-      <span class="type-desc">{{ t.desc }}</span>
-    </button>
-  </div>
-
-  <!-- INFORMATIONS DE LA DEMANDE -->
-=======
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
   <section class="card form-card">
     <div class="card-title">Informations de la demande</div>
     <p class="card-subtitle">
@@ -106,16 +69,7 @@
       </div>
 
       <div class="field">
-<<<<<<< HEAD
-        <label for="date">Date de l'autorisation <span class="required">*</span></label>
-        <input
-          id="date"
-          name="date"
-          class="input"
-          type="date"
-          [(ngModel)]="form.date"
-=======
-        <label for="type">Type d’autorisation <span class="required">*</span></label>
+        <label for="type">Type d'autorisation <span class="required">*</span></label>
         <select
           id="type"
           class="input"
@@ -135,43 +89,11 @@
           type="date"
           name="dateDemande"
           [(ngModel)]="form.dateDemande"
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
           [disabled]="submitting"
         />
       </div>
 
       <div class="field">
-<<<<<<< HEAD
-        <label for="matricule">Matricule</label>
-        <input
-          id="matricule"
-          class="input readonly"
-          type="text"
-          [value]="employee.matricule"
-          readonly
-        />
-      </div>
-
-      <div class="field">
-        <label for="nomComplet">Nom de l'employé</label>
-        <input
-          id="nomComplet"
-          class="input readonly"
-          type="text"
-          [value]="employee.nomComplet"
-          readonly
-        />
-      </div>
-
-      <div class="field">
-        <label for="service">Direction / Service</label>
-        <input
-          id="service"
-          class="input readonly"
-          type="text"
-          [value]="employee.direction + ' / ' + employee.service"
-          readonly
-=======
         <label for="matricule">Matricule <span class="required">*</span></label>
         <input
           id="matricule"
@@ -192,7 +114,6 @@
           name="gradeFonction"
           [(ngModel)]="form.gradeFonction"
           [disabled]="submitting"
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
         />
       </div>
     </div>
@@ -200,31 +121,13 @@
 
   <!-- PLAGE HORAIRE -->
   <section class="card">
-    <div class="card-title">
-      Plage horaire
-      <span class="card-title-hint" *ngIf="selectedType === 'personnel'">
-        — maximum 1h30 par jour pour les autorisations personnelles
-      </span>
-    </div>
+    <div class="card-title">Plage horaire</div>
 
     <div class="time-grid">
       <div class="time-box">
         <h3>Heures de l'autorisation</h3>
         <div class="mini-grid">
           <div class="field">
-<<<<<<< HEAD
-            <label for="heureDepart">
-              Heure de départ
-              <span dir="rtl" class="label-ar">ساعة المغادرة</span>
-              <span class="required">*</span>
-            </label>
-            <input
-              id="heureDepart"
-              name="heureDepart"
-              class="input"
-              type="time"
-              [(ngModel)]="form.heureDepart"
-=======
             <label for="heureDebut">Heure de début <span class="required">*</span> (soumission)</label>
             <input
               id="heureDebut"
@@ -232,31 +135,17 @@
               type="time"
               name="heureSortie"
               [(ngModel)]="form.heureSortie"
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
               [disabled]="submitting"
             />
           </div>
 
           <div class="field">
-<<<<<<< HEAD
-            <label for="heureRetour">
-              Heure de retour
-              <span dir="rtl" class="label-ar">ساعة العودة</span>
-              <span class="required">*</span>
-            </label>
-            <input
-              id="heureRetour"
-              name="heureRetour"
-              class="input"
-              type="time"
-=======
             <label for="heureFin">Heure de fin <span class="required">*</span> (soumission)</label>
             <input
               id="heureFin"
               class="input"
               type="time"
               name="heureRetour"
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
               [(ngModel)]="form.heureRetour"
               [disabled]="submitting"
             />
@@ -269,29 +158,6 @@
         <div class="mini-grid">
           <div class="field">
             <label for="duree">Durée calculée</label>
-<<<<<<< HEAD
-            <input
-              id="duree"
-              class="input readonly"
-              [class.input-over-limit]="isOverLimit"
-              type="text"
-              [value]="dureeCalculee"
-              readonly
-            />
-            <span class="field-error" *ngIf="isOverLimit">
-              Durée dépassant 1h30 — soumission bloquée
-            </span>
-          </div>
-
-          <div class="field">
-            <label for="cumul">Cumul mensuel utilisé</label>
-            <input
-              id="cumul"
-              class="input readonly"
-              type="text"
-              [value]="cumulMensuel"
-              readonly
-=======
             <input id="duree" class="input readonly" type="text" [value]="dureeLabel" readonly />
           </div>
 
@@ -305,7 +171,6 @@
               [(ngModel)]="form.telephone"
               [disabled]="submitting"
               placeholder="Optionnel"
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
             />
           </div>
         </div>
@@ -330,12 +195,7 @@
           id="motif"
           name="motif"
           class="input textarea"
-<<<<<<< HEAD
-          placeholder="Décrivez le motif de votre demande d'autorisation..."
-=======
-          name="motif"
           placeholder="Décrivez le motif de votre demande..."
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
           [(ngModel)]="form.motif"
           [disabled]="submitting"
         ></textarea>
@@ -344,67 +204,30 @@
       <div class="field field-full">
         <label for="destination">Destination / commentaire</label>
         <textarea
-<<<<<<< HEAD
-          id="commentaire"
-          name="commentaire"
-          class="input textarea"
-          placeholder="Informations additionnelles si nécessaire..."
-          [(ngModel)]="form.commentaire"
-=======
           id="destination"
           class="input textarea"
           name="destination"
           placeholder="Lieu, détails complémentaires..."
           [(ngModel)]="form.destination"
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
           [disabled]="submitting"
         ></textarea>
       </div>
     </div>
   </section>
 
-<<<<<<< HEAD
-  <!-- PIÈCES JOINTES -->
-  <section class="card">
-    <div class="card-title">Pièces jointes</div>
-    <p class="card-subtitle">
-      Vous pouvez joindre des documents justificatifs : convocation, bon de déplacement, etc.
-=======
   <section class="card">
     <div class="card-title">Pièces jointes</div>
     <p class="card-subtitle">
       Vous pouvez joindre des documents justificatifs : PDF, Word, PNG, JPG, etc. (nom du fichier transmis à titre informatif)
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
     </p>
 
     <div class="form-grid">
       <div class="field field-full">
-<<<<<<< HEAD
-        <label for="attachments">Ajouter un ou plusieurs fichiers</label>
-=======
         <label for="attachments">Ajouter un fichier</label>
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
         <input
           id="attachments"
           type="file"
           class="input file-input"
-<<<<<<< HEAD
-          multiple
-          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
-          (change)="onFileChange($event)"
-          [disabled]="submitting"
-        />
-        <small class="field-hint">Formats autorisés : PDF, DOC, DOCX, PNG, JPG, JPEG, WEBP</small>
-      </div>
-    </div>
-
-    <div class="uploaded-files" *ngIf="uploadedFiles.length > 0">
-      <div class="uploaded-file" *ngFor="let f of uploadedFiles; let i = index">
-        <span class="file-name">{{ f.name }}</span>
-        <button type="button" class="file-remove-btn" (click)="removeFile(i)" [disabled]="submitting">
-          Retirer
-        </button>
-=======
           accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
           (change)="onPieceJointeChange($event)"
           [disabled]="submitting"
@@ -436,66 +259,18 @@
       <div class="info-box">
         <span class="info-label">Notification prévue</span>
         <span class="info-value">Envoi au supérieur hiérarchique après soumission</span>
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
       </div>
     </div>
   </section>
 
-<<<<<<< HEAD
-  <!-- CIRCUIT DE VALIDATION -->
-  <section class="card">
-    <div class="card-title">Circuit de validation</div>
-
-    <div class="info-grid validation-grid">
-      <div class="info-box">
-        <span class="info-label">Étape 1 — Validation</span>
-        <span class="info-value">Supérieur hiérarchique (N+1)</span>
-        <span class="info-sub">{{ employee.superieurHierarchique }}</span>
-      </div>
-
-      <div class="info-box">
-        <span class="info-label">Étape 2 — Transmission</span>
-        <span class="info-value">Direction des Ressources Humaines</span>
-        <span class="info-sub">Suivi et archivage</span>
-      </div>
-
-      <div class="info-box">
-        <span class="info-label">Statut courant</span>
-        <span class="badge waiting">Brouillon</span>
-
-        
-      </div>
-
-      <div class="info-box field-full">
-        <span class="info-label">Notification prévue</span>
-        <span class="info-value">
-          À la soumission, votre supérieur hiérarchique direct sera notifié.
-          Après validation, la demande sera transmise à la Direction RH.
-        </span>
-      </div>
-    </div>
-  </section>
-
-  <!-- ALERTE RÈGLE HORAIRE -->
-  <div class="form-alert warning" *ngIf="selectedType === 'personnel'">
-    Règle RH : pour une autorisation personnelle, la durée maximale autorisée est de
-    <strong>1h30 par jour</strong>.
-    La période de pause déjeuner (12h00–13h00) est exclue du calcul.
-=======
   <div class="form-alert warning">
-    Attention : pour une autorisation personnelle, la durée maximale autorisée est de 1h30 par jour. Pour soumettre, remplissez date, nom, matricule, type, heures et motif. Le brouillon exige moins de champs.
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
+    Attention : pour une autorisation personnelle, la durée maximale autorisée est de 1h30 par jour.
+    Pour soumettre, remplissez date, nom, matricule, type, heures et motif.
+    Le brouillon exige moins de champs.
   </div>
 
   <!-- PIED DE PAGE / ACTIONS -->
   <footer class="page-footer">
-<<<<<<< HEAD
-    <button class="btn btn-secondary" type="button" routerLink="/home-employee" [disabled]="submitting">
-      Annuler
-    </button>
-    <button class="btn btn-outline-primary" type="button" (click)="saveDraft()" [disabled]="submitting">
-      Enregistrer brouillon
-=======
     <button class="btn btn-light" type="button" (click)="onAnnuler()" [disabled]="submitting">Annuler</button>
     <button
       class="btn btn-outline-primary"
@@ -504,38 +279,10 @@
       [disabled]="submitting"
     >
       {{ submitting ? 'Envoi…' : 'Enregistrer brouillon' }}
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
     </button>
     <button
       class="btn btn-success"
       type="button"
-<<<<<<< HEAD
-      (click)="openConfirm()"
-      [disabled]="submitting || isOverLimit"
-    >
-      {{ submitting ? 'Envoi…' : 'Soumettre la demande' }}
-    </button>
-  </footer>
-
-  <!-- MODAL DE CONFIRMATION -->
-  <div class="confirm-backdrop" *ngIf="showConfirm">
-    <div class="confirm-modal">
-      <h3>Confirmer la soumission</h3>
-      <p>
-        Vous allez soumettre une demande d'autorisation de sortie
-        <strong>{{ selectedTypeLabel }}</strong>
-        pour le <strong>{{ form.date }}</strong>
-        de <strong>{{ form.heureDepart }}</strong> à <strong>{{ form.heureRetour }}</strong>
-        (durée : <strong>{{ dureeCalculee }}</strong>).
-      </p>
-      <p>Votre supérieur hiérarchique <strong>{{ employee.superieurHierarchique }}</strong> sera notifié.</p>
-      <div class="confirm-actions">
-        <button class="btn btn-light" type="button" (click)="closeConfirm()" [disabled]="submitting">
-          Retour
-        </button>
-        <button class="btn btn-success" type="button" (click)="submitDemande()" [disabled]="submitting">
-          {{ submitting ? 'Envoi en cours…' : 'Confirmer et envoyer' }}
-=======
       (click)="openConfirmModal('submit')"
       [disabled]="submitting"
     >
@@ -561,13 +308,8 @@
         </button>
         <button type="button" class="btn btn-success" (click)="confirmAction()" [disabled]="submitting">
           {{ submitting ? 'Envoi…' : 'Confirmer' }}
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
         </button>
       </div>
     </div>
   </div>
-<<<<<<< HEAD
-
-=======
->>>>>>> b1d4b8fa1af0e43a646a7e82cf4937261ea6b753
 </div>
