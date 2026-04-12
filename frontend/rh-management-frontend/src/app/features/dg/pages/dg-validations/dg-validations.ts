@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../../../core/auth.service';
 
 interface DemandeConge {
   id: number;
@@ -31,6 +32,8 @@ interface DemandeConge {
   styleUrls: ['./dg-validations.css']
 })
 export class DgValidations {
+  private readonly auth = inject(AuthService);
+
   filterStatut = '';
   filterEmploye = '';
   selectedDemande: DemandeConge | null = null;
@@ -40,10 +43,12 @@ export class DgValidations {
   approveComment = '';
   actionLoading = false;
 
-  readonly dg = {
-    nom: 'Directeur Général',
-    initiales: 'DG'
-  };
+  get dg() {
+    return {
+      nom:       this.auth.session?.nomComplet ?? '',
+      initiales: this.auth.session?.initiales  ?? ''
+    };
+  }
 
   demandes: DemandeConge[] = [
     {

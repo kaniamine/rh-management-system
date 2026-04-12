@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { AuthService } from '../../../../core/auth.service';
 
 type TypeMaladie = 'simple' | 'maternite' | 'chirurgie';
 
@@ -15,6 +16,7 @@ type TypeMaladie = 'simple' | 'maternite' | 'chirurgie';
 })
 export class DemandeCongeArrMaladie {
   private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
 
   showConfirm = false;
   submitting = false;
@@ -23,14 +25,16 @@ export class DemandeCongeArrMaladie {
   certificatFile: File | null = null;
   certificatNom: string | null = null;
 
-  // Auto-rempli depuis la session
-  readonly employee = {
-    nomComplet: 'Amine Kani',
-    matricule: 'EMP-2026-014',
-    direction: 'Direction Finance',
-    service: 'Comptabilité',
-    superieurHierarchique: 'Ahmed Ben Ali'
-  };
+  get employee() {
+    const s = this.auth.session;
+    return {
+      nomComplet:            s?.nomComplet                     ?? '',
+      matricule:             s?.matricule                      ?? '',
+      direction:             s?.direction                      ?? '',
+      service:               s?.service                        ?? '',
+      superieurHierarchique: s?.superieurHierarchiqueMatricule ?? ''
+    };
+  }
 
   form = {
     typeMaladie: 'simple' as TypeMaladie,
@@ -140,9 +144,9 @@ export class DemandeCongeArrMaladie {
 
     const formData = new FormData();
     formData.append('typeMaladie', this.form.typeMaladie);
-    formData.append('matricule', this.employee.matricule);
-    formData.append('direction', this.employee.direction);
-    formData.append('service', this.employee.service);
+    formData.append('matricule', this.auth.session?.matricule ?? '');
+    formData.append('direction', this.auth.session?.direction ?? '');
+    formData.append('service',   this.auth.session?.service   ?? '');
     formData.append('dateDebut', this.form.dateDebut);
     formData.append('dateFin', this.form.dateFin);
     formData.append('nombreJours', this.nombreJours.toString());

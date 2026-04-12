@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { Conge } from '../../services/conge';
+import { AuthService } from '../../../../core/auth.service';
 
 @Component({
   selector: 'app-demande-conge',
@@ -14,6 +15,7 @@ import { Conge } from '../../services/conge';
 })
 export class DemandeConge {
   private readonly congeService = inject(Conge);
+  private readonly auth = inject(AuthService);
 
   showConfirmModal = false;
   currentAction: 'submit' | 'draft' | null = null;
@@ -33,13 +35,17 @@ export class DemandeConge {
     'Congé compensatoire'
   ];
 
-  readonly employee = {
-  nomComplet: 'Amine Kani',
-  matricule: 'EMP-2026-014',
-  direction: 'Direction Finance',
-  service: 'Comptabilité',
-  superieurHierarchique: 'Ahmed Ben Ali'
-  };
+  get employee() {
+    const s = this.auth.session;
+    return {
+      nomComplet:            s?.nomComplet                     ?? '',
+      matricule:             s?.matricule                      ?? '',
+      direction:             s?.direction                      ?? '',
+      service:               s?.service                        ?? '',
+      fonction:              s?.fonction                       ?? '',
+      superieurHierarchique: s?.superieurHierarchiqueMatricule ?? ''
+    };
+  }
 
   readonly soldeCongesJours = 12;
   readonly demandesEnAttente = 2;
@@ -198,10 +204,10 @@ export class DemandeConge {
         dateDebut: this.form.dateDebut,
         dateFin: this.form.dateFin,
         estBrouillon,
-        nomComplet: this.employee.nomComplet,
-        matricule: this.employee.matricule,
-        service: this.employee.service,
-        superieurHierarchique: this.employee.superieurHierarchique,
+        nomComplet: this.auth.session?.nomComplet ?? '',
+        matricule: this.auth.session?.matricule ?? '',
+        service: this.auth.session?.service ?? '',
+        superieurHierarchique: this.auth.session?.superieurHierarchiqueMatricule ?? '',
         motif: this.form.motif.trim() || null,
         adressePendantConge: this.form.adressePendantConge.trim() || null,
         telephone: this.form.telephone.trim() || null,

@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../../../core/auth.service';
 
 @Component({
   selector: 'app-home-employee',
@@ -10,12 +11,17 @@ import { RouterLink } from '@angular/router';
   styleUrl: './home-employee.css'
 })
 export class HomeEmployee {
-  employee = {
-    nom: 'Amine Kani',
-    matricule: 'EMP-2026-014',
-    poste: 'Ingénieur',
-    service: 'Production'
-  };
+  private readonly auth = inject(AuthService);
+
+  get employee() {
+    return {
+      nom:       this.auth.session?.nomComplet ?? '',
+      matricule: this.auth.session?.matricule  ?? '',
+      poste:     this.auth.session?.fonction   ?? '',
+      service:   this.auth.session?.service    ?? '',
+      direction: this.auth.session?.direction  ?? ''
+    };
+  }
 
   stats = [
     { label: 'Solde de congés', value: '12 j', tone: 'orange' },

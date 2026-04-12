@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { AuthService } from '../../../../core/auth.service';
 
 type AutorisationType = 'personnel' | 'professionnel' | 'formation';
 
@@ -22,6 +23,7 @@ interface TypeOption {
 })
 export class DemandeAutorisation {
   private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
 
   selectedType: AutorisationType = 'personnel';
   showConfirm = false;
@@ -30,13 +32,16 @@ export class DemandeAutorisation {
   successMessage: string | null = null;
   uploadedFiles: { name: string; file: File }[] = [];
 
-  readonly employee = {
-    nomComplet: 'Amine Kani',
-    matricule: 'EMP-2026-014',
-    direction: 'Direction Finance',
-    service: 'Comptabilité',
-    superieurHierarchique: 'Ahmed Ben Ali'
-  };
+  get employee() {
+    const s = this.auth.session;
+    return {
+      nomComplet:            s?.nomComplet                     ?? '',
+      matricule:             s?.matricule                      ?? '',
+      direction:             s?.direction                      ?? '',
+      service:               s?.service                        ?? '',
+      superieurHierarchique: s?.superieurHierarchiqueMatricule ?? ''
+    };
+  }
 
   form = {
     date: '',
@@ -176,10 +181,10 @@ export class DemandeAutorisation {
 
     const payload = {
       type: this.selectedType,
-      matricule: this.employee.matricule,
-      direction: this.employee.direction,
-      service: this.employee.service,
-      superieurHierarchique: this.employee.superieurHierarchique,
+      matricule: this.auth.session?.matricule ?? '',
+      direction: this.auth.session?.direction ?? '',
+      service: this.auth.session?.service ?? '',
+      superieurHierarchique: this.auth.session?.superieurHierarchiqueMatricule ?? '',
       date: this.form.date,
       heureDepart: this.form.heureDepart,
       heureRetour: this.form.heureRetour,
