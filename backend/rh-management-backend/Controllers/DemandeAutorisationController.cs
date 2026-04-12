@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace rh_management_backend.Controllers;
 
 [ApiController]
-[Route("api/DemandeAutorisation")]
+[Route("api/conge/demande-autorisation")]
 public class DemandeAutorisationController : ControllerBase
 {
     private readonly RhDbContext _db;
@@ -34,7 +34,7 @@ public class DemandeAutorisationController : ControllerBase
             return BadRequest(new { message = "Le type d'autorisation est obligatoire." });
 
         if (dto.DateDemande == default)
-            return BadRequest(new { message = "La date de la demande est obligatoire." });
+            return BadRequest(new { message = "La date de la demande est obligatoire ya m3alem." });
 
         // Validation téléphone (si renseigné)
         if (!string.IsNullOrWhiteSpace(dto.Telephone))

@@ -1,0 +1,176 @@
+<div class="pt-page">
+
+  <!-- HEADER -->
+  <div class="pt-header">
+    <div class="pt-header-left">
+      <img src="assets/logo.png" alt="Al Baraka Assurances" class="page-logo" />
+      <div class="page-logo-divider"></div>
+      <div>
+        <h1>Pointage</h1>
+        <p>Enregistrement des entrées / sorties et suivi de présence.</p>
+      </div>
+    </div>
+    <a routerLink="/home-employee" class="pt-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Retour
+    </a>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="pt-grid">
+
+    <!-- LEFT: ACTION PANEL -->
+    <div class="pt-action-col">
+
+      <!-- LIVE CLOCK -->
+      <div class="clock-card">
+        <div class="clock-time">{{ liveClock }}</div>
+        <div class="clock-date">{{ todayLabel }}</div>
+      </div>
+
+      <!-- VALIDATION STATUS -->
+      <div class="validation-card" [class.vcard-ok]="validation?.allowed" [class.vcard-err]="validation && !validation.allowed">
+        @if (validating) {
+          <div class="vcard-loading">
+            <div class="spinner"></div>
+            <span>Vérification de la localisation…</span>
+          </div>
+        } @else if (validation) {
+          <div class="vcard-result">
+            <span class="vbadge" [class.vbadge-ok]="validation.allowed" [class.vbadge-err]="!validation.allowed">
+              {{ validation.label }}
+            </span>
+            <p class="vdetail">{{ validation.detail }}</p>
+          </div>
+        }
+        <button class="recheck-btn" type="button" (click)="runValidation()" [disabled]="validating">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Revérifier
+        </button>
+      </div>
+
+      <!-- CHECK-IN / CHECK-OUT BUTTON -->
+      @if (!activeSession) {
+        <button class="pt-btn pt-btn-checkin" type="button"
+                [disabled]="!canCheckIn || validating"
+                (click)="checkIn()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          POINTER ENTRÉE
+        </button>
+        @if (!validation?.allowed && !validating) {
+          <p class="block-msg">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Pointage impossible : vous n'êtes pas dans les locaux ni sur le réseau de l'entreprise.
+          </p>
+        }
+      } @else {
+
+        <!-- ACTIVE SESSION CARD -->
+        <div class="session-card">
+          <div class="session-row">
+            <span class="slbl">Heure d'entrée</span>
+            <strong>{{ formatTime(activeSession.checkIn) }}</strong>
+          </div>
+          <div class="session-row">
+            <span class="slbl">Durée travaillée</span>
+            <strong class="live-worked">{{ liveWorked }}</strong>
+          </div>
+          <div class="session-row">
+            <span class="slbl">Méthode</span>
+            <span class="method-badge">{{ activeSession.method }}</span>
+          </div>
+          <div class="session-row">
+            <span class="slbl">Statut</span>
+            @if (isLate) {
+              <span class="status-badge badge-late">Retard {{ formatMinutes(lateMinutes) }}</span>
+            } @else {
+              <span class="status-badge badge-ok">À l'heure</span>
+            }
+          </div>
+        </div>
+
+        <button class="pt-btn pt-btn-checkout" type="button" (click)="checkOut()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          POINTER SORTIE
+        </button>
+      }
+
+    </div>
+
+    <!-- RIGHT: HISTORY -->
+    <div class="pt-history-col">
+
+      <div class="hist-toolbar">
+        <div class="hist-tabs">
+          <button class="htab" [class.active]="historyView === 'day'"   (click)="historyView = 'day'"   type="button">Aujourd'hui</button>
+          <button class="htab" [class.active]="historyView === 'week'"  (click)="historyView = 'week'"  type="button">7 jours</button>
+          <button class="htab" [class.active]="historyView === 'month'" (click)="historyView = 'month'" type="button">30 jours</button>
+        </div>
+        <div class="export-group">
+          <select class="exp-sel" [(ngModel)]="exportFormat" name="fmt">
+            <option value="pdf">PDF</option>
+            <option value="csv">CSV</option>
+          </select>
+          <button class="exp-btn" type="button" (click)="exportReport()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exporter
+          </button>
+        </div>
+      </div>
+
+      <div class="hist-table-wrap">
+        <table class="hist-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Entrée</th>
+              <th>Sortie</th>
+              <th>Durée</th>
+              <th>H. Supp</th>
+              <th>Retard</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of filteredSessions; track s.id) {
+              <tr [ngClass]="rowClass(s)">
+                <td>{{ formatDateLabel(s.date) }}</td>
+                <td>{{ formatTime(s.checkIn) }}</td>
+                <td>{{ formatTime(s.checkOut) }}</td>
+                <td>{{ formatMinutes(s.workedMinutes) }}</td>
+                <td>
+                  @if (s.overtimeMinutes > 0) {
+                    <span class="ot-chip">+{{ formatMinutes(s.overtimeMinutes) }}</span>
+                  } @else { — }
+                </td>
+                <td>
+                  @if (s.lateMinutes > 0) {
+                    <span class="late-chip">{{ formatMinutes(s.lateMinutes) }}</span>
+                  } @else { — }
+                </td>
+                <td>
+                  @if (s.status === 'missing-checkout') {
+                    <span class="st-chip st-missing">Sortie manquante</span>
+                  } @else if (s.lateMinutes > 0) {
+                    <span class="st-chip st-late">En retard</span>
+                  } @else if (s.overtimeMinutes > 0) {
+                    <span class="st-chip st-overtime">Heures sup.</span>
+                  } @else {
+                    <span class="st-chip st-ok">Normal</span>
+                  }
+                </td>
+              </tr>
+            }
+            @if (filteredSessions.length === 0) {
+              <tr>
+                <td colspan="7" class="empty-row">Aucun pointage sur cette période.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+</div>

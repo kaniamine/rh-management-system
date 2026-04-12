@@ -1,187 +1,107 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using rh_management_backend.Data;
-using rh_management_backend.Models;
-using System.Text.RegularExpressions;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using rh_management_backend.DTOs.Conge;
+using rh_management_backend.Services;
 
 namespace rh_management_backend.Controllers;
 
 [ApiController]
-[Route("api/conge")]
+[Route("api/demandes-conge")]
+[Authorize]
 public class DemandeCongeController : ControllerBase
 {
-    private readonly RhDbContext _db;
+    private readonly IDemandeCongeService _svc;
+    public DemandeCongeController(IDemandeCongeService svc) => _svc = svc;
 
-    public DemandeCongeController(RhDbContext db)
-    {
-        _db = db;
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<DemandeCongeResponse>> Create([FromBody] CreateDemandeCongeDto? dto)
-    {
-        if (dto == null)
-            return BadRequest(new { message = "Requête invalide." });
-
-        // --- Champs obligatoires ---
-        if (string.IsNullOrWhiteSpace(dto.TypeConge))
-            return BadRequest(new { message = "Le type de congé est obligatoire." });
-
-        if (string.IsNullOrWhiteSpace(dto.NomComplet))
-            return BadRequest(new { message = "Le nom complet est obligatoire." });
-
-        if (string.IsNullOrWhiteSpace(dto.Matricule))
-            return BadRequest(new { message = "Le matricule est obligatoire." });
-
-        if (dto.DateDebut == default || dto.DateFin == default)
-            return BadRequest(new { message = "Les dates de début et de fin sont obligatoires." });
-
-        // --- RÈGLE 1 : date début >= aujourd'hui + 3 jours ouvrés ---
-        if (!dto.EstBrouillon)
-        {
-            var minDateDebut = AjouterJoursOuvres(DateOnly.FromDateTime(DateTime.Today), 3);
-            if (dto.DateDebut < minDateDebut)
-                return BadRequest(new
-                {
-                    message = $"La date de début doit être au minimum le {minDateDebut:dd/MM/yyyy} (3 jours ouvrés à partir d'aujourd'hui)."
-                });
-        }
-
-        // --- RÈGLE 2 : cohérence dates ---
-        if (dto.DateFin < dto.DateDebut)
-            return BadRequest(new { message = "La date de fin doit être postérieure ou égale à la date de début." });
-
-        // --- RÈGLE 3 : validation téléphone (si renseigné) ---
-        if (!string.IsNullOrWhiteSpace(dto.Telephone))
-        {
-            var telNormalise = Regex.Replace(dto.Telephone.Trim(), @"[\s\-\.]", "");
-            if (!Regex.IsMatch(telNormalise, @"^\+?[0-9]{8,15}$"))
-                return BadRequest(new { message = "Le numéro de téléphone est invalide. Saisissez uniquement des chiffres (8 à 15 chiffres, le + international est accepté)." });
-        }
-
-        // --- RÈGLE 4 : validation email (si renseigné) ---
-        if (!string.IsNullOrWhiteSpace(dto.Email))
-        {
-            if (!Regex.IsMatch(dto.Email.Trim(), @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
-                return BadRequest(new { message = "L'adresse email est invalide. Elle doit contenir un @." });
-        }
-
-        var typeDuree = string.IsNullOrWhiteSpace(dto.TypeDuree) ? "Journée entière" : dto.TypeDuree.Trim();
-        var demiJournee = typeDuree.Contains("Demi", StringComparison.OrdinalIgnoreCase);
-
-        if (demiJournee && dto.DateDebut != dto.DateFin)
-            return BadRequest(new { message = "Pour une demi-journée, la date de début et de fin doivent être le même jour." });
-
-        // --- RÈGLE 5 : motif obligatoire si congé exceptionnel ---
-        if (!dto.EstBrouillon)
-        {
-            bool estExceptionnel = dto.TypeConge.Contains("exceptionnel", StringComparison.OrdinalIgnoreCase)
-                                || dto.TypeConge.Contains("courte durée", StringComparison.OrdinalIgnoreCase);
-            if (estExceptionnel && string.IsNullOrWhiteSpace(dto.Motif))
-                return BadRequest(new { message = "Le motif est obligatoire pour un congé exceptionnel de courte durée." });
-
-            if (IsCongeMaladie(dto.TypeConge) && string.IsNullOrWhiteSpace(dto.PieceJustificativeFichierNom))
-                return BadRequest(new { message = "Une pièce justificative est obligatoire pour un congé maladie." });
-        }
-
-        var dureeJours = ComputeDureeJours(dto.DateDebut, dto.DateFin, demiJournee);
-        if (dureeJours < 1)
-            return BadRequest(new { message = "Durée invalide : la durée calculée est inférieure à 1 jour." });
-
-        var statut = dto.EstBrouillon ? "Brouillon" : "En attente de validation N+1";
-
-        var entity = new DemandeConge
-        {
-            NomComplet = dto.NomComplet.Trim(),
-            Matricule = dto.Matricule.Trim(),
-            Service = NullIfWhiteSpace(dto.Service),
-            SuperieurHierarchique = NullIfWhiteSpace(dto.SuperieurHierarchique),
-            GradeFonction = NullIfWhiteSpace(dto.GradeFonction),
-            TypeConge = dto.TypeConge.Trim(),
-            TypeDuree = typeDuree,
-            DateDebut = dto.DateDebut,
-            DateFin = dto.DateFin,
-            DureeJours = dureeJours,
-            Motif = NullIfWhiteSpace(dto.Motif),
-            AdressePendantConge = NullIfWhiteSpace(dto.AdressePendantConge),
-            Telephone = NullIfWhiteSpace(dto.Telephone),
-            PieceJustificativeFichierNom = NullIfWhiteSpace(dto.PieceJustificativeFichierNom),
-            EstBrouillon = dto.EstBrouillon,
-            Statut = statut,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _db.DemandesConges.Add(entity);
-        await _db.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetById), new { id = entity.Id },
-            new DemandeCongeResponse(entity.Id, entity.Statut));
-    }
-
+    // GET /api/demandes-conge?matricule=EMP001&statut=En+attente+de+validation+N%2B1
     [HttpGet]
-    public async Task<ActionResult<List<DemandeConge>>> GetAll()
-        => await _db.DemandesConges.AsNoTracking().ToListAsync();
-
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<DemandeConge>> GetById(int id)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] string? matricule,
+        [FromQuery] string? statut)
     {
-        var d = await _db.DemandesConges.FindAsync(id);
+        var list = await _svc.GetAllAsync(matricule, statut);
+        return Ok(list);
+    }
+
+    // GET /api/demandes-conge/{id}
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var d = await _svc.GetByIdAsync(id);
         return d == null ? NotFound() : Ok(d);
     }
 
-    // ── Helpers ───────────────────────────────────────────────
-
-    private static DateOnly AjouterJoursOuvres(DateOnly date, int jours)
+    // POST /api/demandes-conge — Créer/brouillon (Employé)
+    [HttpPost]
+    [Authorize(Roles = "employe,n1")]
+    public async Task<IActionResult> Create([FromBody] CreateCongeDto dto)
     {
-        int ajoutes = 0;
-        while (ajoutes < jours)
-        {
-            date = date.AddDays(1);
-            if (date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday)
-                ajoutes++;
-        }
-        return date;
+        var (result, error) = await _svc.CreateAsync(dto);
+        if (error != null) return BadRequest(new { message = error });
+        return CreatedAtAction(nameof(GetById), new { id = result!.Id },
+            new { result.Id, result.Statut, result.DureeJours });
     }
 
-    private static bool IsCongeMaladie(string typeConge)
-        => typeConge.Contains("maladie", StringComparison.OrdinalIgnoreCase);
-
-    private static int ComputeDureeJours(DateOnly debut, DateOnly fin, bool demiJournee)
+    // GET /api/demandes-conge/{id}/historique
+    [HttpGet("{id}/historique")]
+    public async Task<IActionResult> GetHistorique(int id)
     {
-        var jours = fin.DayNumber - debut.DayNumber + 1;
-        if (jours < 1) return 0;
-        return demiJournee ? 1 : jours;
+        var logs = await _svc.GetHistoriqueAsync(id);
+        return Ok(logs);
     }
 
-    private static string? NullIfWhiteSpace(string? s)
-        => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
-}
+    // ── Workflow endpoints ────────────────────────────────────────────────────
 
-// ── DTOs ──────────────────────────────────────────────────────
+    // POST /api/demandes-conge/{id}/valider-n1
+    [HttpPost("{id}/valider-n1")]
+    [Authorize(Roles = "n1,admin")]
+    public async Task<IActionResult> ValiderN1(int id, [FromBody] WorkflowActionDto action)
+    {
+        var (ok, err) = await _svc.ValiderN1Async(id, action);
+        return ok ? Ok(new { message = "Demande transmise à la DG." }) : BadRequest(new { message = err });
+    }
 
-public sealed class CreateDemandeCongeDto
-{
-    public string TypeConge { get; set; } = string.Empty;
-    public DateOnly DateDebut { get; set; }
-    public DateOnly DateFin { get; set; }
-    public bool EstBrouillon { get; set; }
-    public string? NomComplet { get; set; }
-    public string? Matricule { get; set; }
-    public string? Service { get; set; }
-    public string? SuperieurHierarchique { get; set; }
-    public string? GradeFonction { get; set; }
-    public string? TypeDuree { get; set; }
-    public string? Motif { get; set; }
-    public string? AdressePendantConge { get; set; }
-    public string? Telephone { get; set; }
-    public string? Email { get; set; }   // ← NOUVEAU
-    public string? PieceJustificativeFichierNom { get; set; }
-}
+    // POST /api/demandes-conge/{id}/rejeter-n1
+    [HttpPost("{id}/rejeter-n1")]
+    [Authorize(Roles = "n1,admin")]
+    public async Task<IActionResult> RejeterN1(int id, [FromBody] WorkflowActionDto action)
+    {
+        var (ok, err) = await _svc.RejeterN1Async(id, action);
+        return ok ? Ok(new { message = "Demande rejetée." }) : BadRequest(new { message = err });
+    }
 
-public sealed class DemandeCongeResponse
-{
-    public int Id { get; init; }
-    public string Statut { get; init; } = string.Empty;
+    // POST /api/demandes-conge/{id}/valider-dg
+    [HttpPost("{id}/valider-dg")]
+    [Authorize(Roles = "dg,admin")]
+    public async Task<IActionResult> ValiderDG(int id, [FromBody] WorkflowActionDto action)
+    {
+        var (ok, err) = await _svc.ValiderDGAsync(id, action);
+        return ok ? Ok(new { message = "Demande transmise à la RH." }) : BadRequest(new { message = err });
+    }
 
-    public DemandeCongeResponse(int id, string statut) { Id = id; Statut = statut; }
+    // POST /api/demandes-conge/{id}/rejeter-dg
+    [HttpPost("{id}/rejeter-dg")]
+    [Authorize(Roles = "dg,admin")]
+    public async Task<IActionResult> RejeterDG(int id, [FromBody] WorkflowActionDto action)
+    {
+        var (ok, err) = await _svc.RejeterDGAsync(id, action);
+        return ok ? Ok(new { message = "Demande rejetée." }) : BadRequest(new { message = err });
+    }
+
+    // POST /api/demandes-conge/{id}/cloturer
+    [HttpPost("{id}/cloturer")]
+    [Authorize(Roles = "rh,admin")]
+    public async Task<IActionResult> CloturerRH(int id, [FromBody] WorkflowActionDto action)
+    {
+        var (ok, err) = await _svc.CloturerRHAsync(id, action);
+        return ok ? Ok(new { message = "Demande clôturée, solde débité." }) : BadRequest(new { message = err });
+    }
+
+    // POST /api/demandes-conge/{id}/annuler
+    [HttpPost("{id}/annuler")]
+    public async Task<IActionResult> Annuler(int id, [FromBody] WorkflowActionDto action)
+    {
+        var (ok, err) = await _svc.AnnulerAsync(id, action);
+        return ok ? Ok(new { message = "Demande annulée." }) : BadRequest(new { message = err });
+    }
 }
