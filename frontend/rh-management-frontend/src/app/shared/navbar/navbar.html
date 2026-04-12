@@ -1,104 +1,98 @@
 <nav class="navbar">
   <div class="navbar-inner">
 
-    <!-- LOGO / MARQUE -->
+    <!-- LOGO on white background -->
     <a class="navbar-brand" [routerLink]="homeRoute">
-      <div class="brand-logo">AB</div>
-      <div class="brand-text">
-        <span class="brand-name">Al Baraka Assurances</span>
-        <span class="brand-sub">Intranet RH</span>
-      </div>
+      <img src="assets/logo.png" alt="Al Baraka Assurances" class="nav-logo" />
+      <span class="nav-pill">Intranet RH</span>
     </a>
 
-    <!-- NAVIGATION DESKTOP -->
+    <!-- DESKTOP LINKS -->
     <div class="navbar-links">
-      <a
-        *ngFor="let item of navItems"
-        class="nav-link"
-        [routerLink]="item.route"
-        [class.active]="isActive(item.route)"
-      >
-        <span class="nav-icon">{{ item.icon }}</span>
-        <span>{{ item.label }}</span>
-      </a>
+      @for (item of navItems; track item.route) {
+        <a
+          class="nav-link"
+          [routerLink]="item.route"
+          [class.active]="isActive(item.route)"
+        >
+          <span class="nav-icon" [innerHTML]="item.icon"></span>
+          <span class="nav-label">{{ item.label }}</span>
+        </a>
+      }
     </div>
 
-    <!-- ACTIONS DROITE -->
+    <!-- RIGHT ZONE -->
     <div class="navbar-right">
-      <!-- NOTIFICATIONS -->
-      <button class="notif-btn" title="Notifications">
-        <span class="notif-icon">🔔</span>
-        <span class="notif-badge" *ngIf="notifCount > 0">{{ notifCount }}</span>
+
+
+      <!-- Notification bell -->
+      <button class="icon-btn" title="Notifications">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        @if (notifCount > 0) {
+          <span class="notif-dot">{{ notifCount }}</span>
+        }
       </button>
 
-      <!-- RÔLE DEMO (à remplacer par AuthService) -->
-      <div class="role-switcher">
-        <select class="role-select" [ngModel]="currentRole" (ngModelChange)="switchRole($any($event))">
-          <option value="employe">Employé</option>
-          <option value="n1">Responsable N+1</option>
-          <option value="dg">Direction Générale</option>
-          <option value="rh">Direction RH</option>
-          <option value="admin">Admin</option>
-        </select>
-      </div>
-
-      <!-- AVATAR UTILISATEUR -->
+      <!-- User chip -->
       <div class="user-chip">
-        <div class="user-avatar">{{ currentUser.initiales }}</div>
-        <div class="user-info">
-          <span class="user-name">{{ currentUser.nom }}</span>
-          <span class="user-role">{{ roleLabel }}</span>
+        <div class="avatar">{{ currentUser.initiales }}</div>
+        <div class="user-text">
+          <span class="uname">{{ currentUser.nom }}</span>
+          <span class="urole">{{ roleLabel }}</span>
         </div>
       </div>
 
-      <!-- DÉCONNEXION -->
-      <button class="logout-btn" (click)="logout()" title="Se déconnecter">
-        <span>⎋</span>
+      <!-- Logout -->
+      <button class="icon-btn danger" (click)="logout()" title="Se déconnecter">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
       </button>
+
     </div>
 
-    <!-- HAMBURGER MOBILE -->
-    <button class="navbar-mobile-toggle" (click)="toggleMobile()" [class.open]="mobileOpen">
-      <span></span>
-      <span></span>
-      <span></span>
+    <!-- HAMBURGER -->
+    <button class="hamburger" (click)="toggleMobile()" [class.open]="mobileOpen" aria-label="Menu">
+      <span></span><span></span><span></span>
     </button>
+
   </div>
 
-  <!-- MENU MOBILE -->
-  <div class="navbar-mobile-menu" [class.open]="mobileOpen">
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" [class.open]="mobileOpen">
+
     <div class="mobile-user">
-      <div class="user-avatar">{{ currentUser.initiales }}</div>
+      <div class="avatar lg">{{ currentUser.initiales }}</div>
       <div>
-        <strong>{{ currentUser.nom }}</strong>
-        <span>{{ roleLabel }}</span>
+        <div class="uname">{{ currentUser.nom }}</div>
+        <div class="urole">{{ roleLabel }}</div>
+        <div class="umat">{{ currentUser.matricule }}</div>
       </div>
     </div>
 
-    <div class="mobile-role-switch">
-      <label>Rôle (démo)</label>
-      <select class="role-select" [ngModel]="currentRole" (ngModelChange)="switchRole($any($event))">
-        <option value="employe">Employé</option>
-        <option value="n1">Responsable N+1</option>
-        <option value="dg">Direction Générale</option>
-        <option value="rh">Direction RH</option>
-        <option value="admin">Admin</option>
-      </select>
-    </div>
 
-    <a
-      *ngFor="let item of navItems"
-      class="mobile-nav-link"
-      [routerLink]="item.route"
-      [class.active]="isActive(item.route)"
-      (click)="closeMobile()"
-    >
-      <span class="nav-icon">{{ item.icon }}</span>
-      <span>{{ item.label }}</span>
-    </a>
+    <nav class="mobile-nav">
+      @for (item of navItems; track item.route) {
+        <a
+          class="mobile-link"
+          [routerLink]="item.route"
+          [class.active]="isActive(item.route)"
+          (click)="closeMobile()"
+        >
+          <span class="mobile-icon" [innerHTML]="item.icon"></span>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
 
     <button class="mobile-logout" (click)="logout()">
-      ⎋ Se déconnecter
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Se déconnecter
     </button>
+
   </div>
 </nav>

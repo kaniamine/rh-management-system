@@ -1,29 +1,36 @@
-<div class="page">
+<div class="pers-page">
 
-  <div class="header">
-    <div>
-      <h1>Gestion du personnel</h1>
-      <p class="subtitle">Liste des employés + ajout rapide</p>
+  <!-- BRANDED HEADER -->
+  <div class="pers-header">
+    <div class="pers-header-left">
+      <img src="assets/logo.png" alt="Al Baraka Assurances" class="page-logo" />
+      <div class="page-logo-divider"></div>
+      <div>
+        <h1>Gestion du personnel</h1>
+        <p>Liste des employés, soldes de congés et gestion des accès.</p>
+      </div>
     </div>
-
-    <button class="btn btn-primary" type="button" (click)="openModal()">
-      + Ajouter employé
+    <button class="btn-add" type="button" (click)="openModal()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Ajouter un employé
     </button>
   </div>
 
-  <div class="filters">
-    <input class="input" type="text" placeholder="Rechercher (matricule, nom, prénom)..." />
-
-    <select class="input">
-      <option value="">Direction (toutes)</option>
+  <!-- FILTERS -->
+  <div class="filters-bar">
+    <div class="filter-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="filter-input" type="text" placeholder="Rechercher matricule, nom, prénom…" />
+    </div>
+    <select class="filter-select">
+      <option value="">Toutes les directions</option>
       <option>IT</option>
       <option>RH</option>
       <option>Production</option>
       <option>Qualité</option>
     </select>
-
-    <select class="input">
-      <option value="">Rôle (tous)</option>
+    <select class="filter-select">
+      <option value="">Tous les rôles</option>
       <option>Employé</option>
       <option>SH</option>
       <option>DG</option>
@@ -32,123 +39,165 @@
     </select>
   </div>
 
+  <!-- TABLE -->
   <div class="table-card">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Matricule</th>
-          <th>Nom</th>
-          <th>Prénom</th>
-          <th>Direction</th>
-          <th>Service</th>
-          <th>Fonction</th>
-          <th>Rôle</th>
-          <th>Solde congés</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr *ngFor="let emp of employees">
-          <td>{{ emp.matricule }}</td>
-          <td>{{ emp.nom }}</td>
-          <td>{{ emp.prenom }}</td>
-          <td>{{ emp.direction }}</td>
-          <td>{{ emp.service }}</td>
-          <td>{{ emp.fonction }}</td>
-          <td>{{ emp.role }}</td>
-          <td>{{ emp.solde }}</td>
-          <td class="actions">
-            <button class="btn btn-light" type="button">Modifier</button>
-            <button class="btn btn-danger" type="button">Désactiver</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="pagination">
-    <span>Affichage 1–10 sur {{ employees.length }}</span>
-    <div class="pagination-buttons">
-      <button class="btn btn-light" type="button">Précédent</button>
-      <button class="btn btn-light" type="button">Suivant</button>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Matricule</th>
+            <th>Nom &amp; Prénom</th>
+            <th>Direction</th>
+            <th>Service</th>
+            <th>Fonction</th>
+            <th>Rôle</th>
+            <th>Solde congés</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (emp of employees; track emp.matricule) {
+            <tr class="table-row">
+              <td><span class="mat-chip">{{ emp.matricule }}</span></td>
+              <td>
+                <div class="emp-cell">
+                  <div class="emp-avatar">{{ emp.prenom.charAt(0) }}{{ emp.nom.charAt(0) }}</div>
+                  <div>
+                    <strong>{{ emp.prenom }} {{ emp.nom }}</strong>
+                  </div>
+                </div>
+              </td>
+              <td>{{ emp.direction }}</td>
+              <td>{{ emp.service }}</td>
+              <td>{{ emp.fonction }}</td>
+              <td>
+                <span class="role-chip" [ngClass]="'role-' + emp.role.toLowerCase()">{{ emp.role }}</span>
+              </td>
+              <td>
+                <span class="solde-chip">{{ emp.solde }} j</span>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button class="abtn abtn-teal" type="button">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Modifier
+                  </button>
+                  <button class="abtn abtn-danger" type="button">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                    Désactiver
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
-  </div>
 
-  <!-- MODAL -->
-  <div class="modal-backdrop" *ngIf="isModalOpen">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>Ajouter un employé</h2>
-        <button class="btn btn-light" type="button" (click)="closeModal()">X</button>
+    <!-- PAGINATION -->
+    <div class="pagination">
+      <span class="pagination-info">Affichage 1–{{ employees.length }} sur {{ employees.length }}</span>
+      <div class="pagination-btns">
+        <button class="pag-btn" type="button" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Précédent
+        </button>
+        <button class="pag-btn" type="button">
+          Suivant
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
       </div>
-
-      <form class="form">
-        <div class="grid">
-          <div class="field">
-            <label>Matricule *</label>
-            <input class="input" type="text" placeholder="Ex: 001"
-              [(ngModel)]="newEmployee.matricule" name="matricule" />
-          </div>
-
-          <div class="field">
-            <label>Rôle *</label>
-            <select class="input" [(ngModel)]="newEmployee.role" name="role">
-              <option>Employé</option>
-              <option>SH</option>
-              <option>DG</option>
-              <option>RH</option>
-              <option>Admin</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Nom *</label>
-            <input class="input" type="text" placeholder="Nom"
-              [(ngModel)]="newEmployee.nom" name="nom" />
-          </div>
-
-          <div class="field">
-            <label>Prénom *</label>
-            <input class="input" type="text" placeholder="Prénom"
-              [(ngModel)]="newEmployee.prenom" name="prenom" />
-          </div>
-
-          <div class="field">
-            <label>Direction *</label>
-            <select class="input" [(ngModel)]="newEmployee.direction" name="direction">
-              <option>IT</option>
-              <option>RH</option>
-              <option>Production</option>
-              <option>Qualité</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Service</label>
-            <input class="input" type="text" placeholder="Service"
-              [(ngModel)]="newEmployee.service" name="service" />
-          </div>
-
-          <div class="field">
-            <label>Fonction</label>
-            <input class="input" type="text" placeholder="Fonction"
-              [(ngModel)]="newEmployee.fonction" name="fonction" />
-          </div>
-
-          <div class="field">
-            <label>Solde congés (jours)</label>
-            <input class="input" type="number" min="0"
-              [(ngModel)]="newEmployee.solde" name="solde" />
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button class="btn btn-light" type="button" (click)="closeModal()">Annuler</button>
-          <button class="btn btn-primary" type="button" (click)="addEmployee()">Enregistrer</button>
-        </div>
-      </form>
     </div>
   </div>
+
+  <!-- ADD EMPLOYEE MODAL -->
+  @if (isModalOpen) {
+    <div class="modal-back">
+      <div class="modal-box">
+
+        <div class="modal-head">
+          <div>
+            <h3>Ajouter un employé</h3>
+            <p>Remplissez les informations de base du nouvel employé.</p>
+          </div>
+          <button class="close-btn" type="button" (click)="closeModal()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <form class="modal-form" (ngSubmit)="addEmployee()">
+          <div class="form-grid">
+
+            <div class="field">
+              <label for="matricule">Matricule <span class="req">*</span></label>
+              <input id="matricule" class="finput" type="text" placeholder="Ex : EMP-001"
+                [(ngModel)]="newEmployee.matricule" name="matricule" required />
+            </div>
+
+            <div class="field">
+              <label for="role">Rôle <span class="req">*</span></label>
+              <select id="role" class="finput" [(ngModel)]="newEmployee.role" name="role">
+                <option>Employé</option>
+                <option>SH</option>
+                <option>DG</option>
+                <option>RH</option>
+                <option>Admin</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="nom">Nom <span class="req">*</span></label>
+              <input id="nom" class="finput" type="text" placeholder="Nom de famille"
+                [(ngModel)]="newEmployee.nom" name="nom" required />
+            </div>
+
+            <div class="field">
+              <label for="prenom">Prénom <span class="req">*</span></label>
+              <input id="prenom" class="finput" type="text" placeholder="Prénom"
+                [(ngModel)]="newEmployee.prenom" name="prenom" required />
+            </div>
+
+            <div class="field">
+              <label for="direction">Direction <span class="req">*</span></label>
+              <select id="direction" class="finput" [(ngModel)]="newEmployee.direction" name="direction">
+                <option>IT</option>
+                <option>RH</option>
+                <option>Production</option>
+                <option>Qualité</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="service">Service</label>
+              <input id="service" class="finput" type="text" placeholder="Service"
+                [(ngModel)]="newEmployee.service" name="service" />
+            </div>
+
+            <div class="field">
+              <label for="fonction">Fonction</label>
+              <input id="fonction" class="finput" type="text" placeholder="Titre du poste"
+                [(ngModel)]="newEmployee.fonction" name="fonction" />
+            </div>
+
+            <div class="field">
+              <label for="solde">Solde congés (jours)</label>
+              <input id="solde" class="finput" type="number" min="0" placeholder="0"
+                [(ngModel)]="newEmployee.solde" name="solde" />
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button class="mbtn mbtn-ghost" type="button" (click)="closeModal()">Annuler</button>
+            <button class="mbtn mbtn-teal" type="submit">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Enregistrer
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  }
 
 </div>

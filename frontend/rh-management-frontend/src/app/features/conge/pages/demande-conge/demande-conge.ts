@@ -33,16 +33,14 @@ export class DemandeConge {
     'Congé compensatoire'
   ];
 
-  // Auto-rempli depuis la session
   readonly employee = {
-    nomComplet: 'Amine Kani',
-    matricule: 'EMP-2026-014',
-    service: 'Comptabilité',
-    direction: 'Direction Finance',
-    superieurHierarchique: 'Ahmed Ben Ali'
+  nomComplet: 'Amine Kani',
+  matricule: 'EMP-2026-014',
+  direction: 'Direction Finance',
+  service: 'Comptabilité',
+  superieurHierarchique: 'Ahmed Ben Ali'
   };
 
-  // Solde actuel (récupéré depuis l'API en production)
   readonly soldeCongesJours = 12;
   readonly demandesEnAttente = 2;
 
@@ -67,7 +65,6 @@ export class DemandeConge {
     const cur = new Date(debut);
     while (cur <= fin) {
       const dow = cur.getDay();
-      // Compter tous les jours sauf dimanche (0); le vendredi (5) est compté
       if (dow !== 0) jours++;
       cur.setDate(cur.getDate() + 1);
     }
@@ -102,8 +99,6 @@ export class DemandeConge {
     const debut = new Date(this.form.dateDebut);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
-    // Calculer 3 jours ouvrés à partir d'aujourd'hui
     let joursOuvres = 0;
     const cur = new Date(today);
     cur.setDate(cur.getDate() + 1);
@@ -132,7 +127,6 @@ export class DemandeConge {
     this.currentAction = action;
 
     if (action === 'submit') {
-      // Validations bloquantes
       if (!this.form.dateDebut || !this.form.dateFin) {
         this.errorMessage = 'La date de début et la date de fin sont obligatoires.';
         return;
@@ -142,21 +136,17 @@ export class DemandeConge {
         return;
       }
       if (this.dateTropProche) {
-        this.errorMessage =
-          'La demande doit être déposée au minimum 3 jours ouvrés avant la date de début.';
+        this.errorMessage = 'La demande doit être déposée au minimum 3 jours ouvrés avant la date de début.';
         return;
       }
       if (this.soldeInsuffisant) {
-        this.errorMessage =
-          `Solde insuffisant : vous demandez ${this.dureeJours} jours mais votre solde est de ${this.soldeCongesJours} jours.`;
+        this.errorMessage = `Solde insuffisant : vous demandez ${this.dureeJours} jours mais votre solde est de ${this.soldeCongesJours} jours.`;
         return;
       }
       if (this.isMotifObligatoire && !this.form.motif.trim()) {
-        this.errorMessage =
-          `Le motif est obligatoire pour un "${this.form.typeConge}".`;
+        this.errorMessage = `Le motif est obligatoire pour un "${this.form.typeConge}".`;
         return;
       }
-
       this.modalTitle = 'Confirmer la demande';
       this.modalMessage =
         `Vous allez soumettre une demande de "${this.form.typeConge}" ` +
@@ -175,7 +165,6 @@ export class DemandeConge {
     this.currentAction = null;
   }
 
-  /** Clic sur le fond assombri : fermer (comme Retour). */
   onConfirmBackdropClick(event: MouseEvent): void {
     if ((event.target as HTMLElement).classList.contains('confirm-backdrop')) {
       this.closeConfirmModal();
@@ -184,16 +173,11 @@ export class DemandeConge {
 
   @HostListener('document:keydown.escape')
   onEscapeCloseModal(): void {
-    if (this.showConfirmModal) {
-      this.closeConfirmModal();
-    }
+    if (this.showConfirmModal) this.closeConfirmModal();
   }
 
-  /** Bouton Annuler : ferme la modale si elle est ouverte. */
   onAnnuler(): void {
-    if (this.showConfirmModal) {
-      this.closeConfirmModal();
-    }
+    if (this.showConfirmModal) this.closeConfirmModal();
   }
 
   onJustificatifChange(event: Event): void {
@@ -204,7 +188,6 @@ export class DemandeConge {
 
   confirmAction(): void {
     if (!this.currentAction) return;
-
     const estBrouillon = this.currentAction === 'draft';
 
     this.submitting = true;

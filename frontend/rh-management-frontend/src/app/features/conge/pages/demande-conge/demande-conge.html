@@ -1,301 +1,262 @@
-<div class="leave-page">
+<div class="form-page">
 
-  <!-- EN-TÊTE -->
+  <!-- PAGE HEADER -->
   <div class="page-header">
-    <div>
-      <h1>Demande de congé</h1>
-      <p class="subtitle">
-        Remplissez les informations nécessaires pour soumettre votre demande de congé.
-        La durée est calculée automatiquement et votre solde est vérifié avant soumission.
-      </p>
+    <div class="page-header-left">
+      <img src="assets/logo.png" alt="Al Baraka Assurances" class="page-logo" />
+      <div class="page-logo-sep"></div>
+      <div>
+        <a routerLink="/home-employee" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Retour à l'accueil
+        </a>
+        <h1>Demande de congé</h1>
+        <p>La durée est calculée automatiquement et votre solde est vérifié avant soumission.</p>
+      </div>
     </div>
-    <div class="header-actions">
-      <button routerLink="/home-employee" class="btn btn-light">Accueil</button>
-      <button routerLink="/dashboard-employee" class="btn btn-light">Historique</button>
-    </div>
+    <a routerLink="/dashboard-employee" class="header-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/></svg>
+      Mes demandes
+    </a>
   </div>
 
-  <!-- MESSAGES GLOBAUX -->
-  <p class="form-alert success" *ngIf="successMessage">{{ successMessage }}</p>
-  <p class="form-alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <!-- ALERTS -->
+  @if (successMessage) {
+    <div class="alert alert-success">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      {{ successMessage }}
+    </div>
+  }
+  @if (errorMessage) {
+    <div class="alert alert-error">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ errorMessage }}
+    </div>
+  }
+  @if (soldeInsuffisant) {
+    <div class="alert alert-error">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Solde insuffisant : vous demandez <strong>&nbsp;{{ dureeJours }}&nbsp;</strong> jours mais votre solde est de <strong>&nbsp;{{ soldeCongesJours }}&nbsp;</strong> jours.
+    </div>
+  }
+  @if (dateTropProche && !soldeInsuffisant) {
+    <div class="alert alert-warning">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      La demande doit être déposée au minimum <strong>&nbsp;3 jours ouvrés&nbsp;</strong> avant la date de début.
+    </div>
+  }
 
-  <!-- INDICATEUR DE PROGRESSION -->
-  <div class="progress-bar">
-    <div class="step done">Informations</div>
-    <div class="step active">Détails</div>
-    <div class="step">Confirmation</div>
-  </div>
-
-  <!-- RÉSUMÉ RAPIDE -->
+  <!-- SUMMARY STRIP -->
   <div class="summary-strip">
-    <div class="summary-card" [class.alert-card]="soldeInsuffisant">
-      <span class="label">Solde congés restant</span>
-      <span class="value" [class.text-danger]="soldeInsuffisant">{{ soldeCongesJours }} jours</span>
+    <div class="scard" [class.scard-danger]="soldeInsuffisant">
+      <span class="scard-label">Solde disponible</span>
+      <strong class="scard-value" [class.danger]="soldeInsuffisant">{{ soldeCongesJours }} j</strong>
     </div>
-    <div class="summary-card">
-      <span class="label">Demandes en attente</span>
-      <span class="value">{{ demandesEnAttente }}</span>
+    <div class="scard">
+      <span class="scard-label">En attente</span>
+      <strong class="scard-value">{{ demandesEnAttente }}</strong>
     </div>
-    <div class="summary-card">
-      <span class="label">Durée calculée</span>
-      <span class="value" [class.text-danger]="soldeInsuffisant">{{ dureeLabel }}</span>
+    <div class="scard" [class.scard-danger]="soldeInsuffisant">
+      <span class="scard-label">Durée calculée</span>
+      <strong class="scard-value" [class.danger]="soldeInsuffisant">{{ dureeLabel }}</strong>
     </div>
-    <div class="summary-card">
-      <span class="label">Type sélectionné</span>
-      <span class="value">{{ form.typeConge }}</span>
-    </div>
-  </div>
-
-  <!-- ALERTES MÉTIER -->
-  <div class="form-alert error" *ngIf="soldeInsuffisant">
-    Solde insuffisant : vous demandez <strong>{{ dureeJours }}</strong> jours mais votre solde est de
-    <strong>{{ soldeCongesJours }}</strong> jours. La soumission est bloquée.
-  </div>
-
-  <div class="form-alert error" *ngIf="dateTropProche && !soldeInsuffisant">
-    La demande doit être déposée au minimum <strong>3 jours ouvrés</strong> avant la date de début.
-    Veuillez avancer la date de début.
-  </div>
-
-  <div class="form-alert error" *ngIf="dateFinAvantDebut">
-    La date de fin ne peut pas être antérieure à la date de début.
-  </div>
-
-  <!-- FORMULAIRE -->
-  <div class="card form-card">
-    <div class="card-title">Informations de la demande</div>
-    <p class="card-subtitle">
-      Veuillez renseigner les champs obligatoires. Le motif n'est obligatoire que pour certains types de congé.
-    </p>
-
-    <div class="form-grid">
-      <!-- TYPE DE CONGÉ -->
-      <div class="field">
-        <label>Type de congé <span class="required">*</span></label>
-        <select class="input" name="typeConge" [(ngModel)]="form.typeConge" [disabled]="submitting">
-          <option *ngFor="let t of typesConge" [value]="t">{{ t }}</option>
-        </select>
-      </div>
-
-      <!-- DURÉE CALCULÉE (lecture seule) -->
-      <div class="field">
-        <label>Durée calculée</label>
-        <input
-          class="input readonly"
-          [class.input-over-limit]="soldeInsuffisant"
-          type="text"
-          [value]="dureeLabel"
-          readonly
-        />
-        <span class="field-error" *ngIf="soldeInsuffisant">
-          Dépasse votre solde de {{ soldeCongesJours }} jours
-        </span>
-      </div>
-
-      <!-- DATE DÉBUT -->
-      <div class="field">
-        <label>Date de début <span class="required">*</span></label>
-        <input
-          type="date"
-          class="input"
-          [class.input-error]="dateTropProche || dateFinAvantDebut"
-          name="dateDebut"
-          [(ngModel)]="form.dateDebut"
-          [disabled]="submitting"
-        />
-        <span class="field-error" *ngIf="dateTropProche">
-          Délai de 3 jours ouvrés non respecté
-        </span>
-      </div>
-
-      <!-- DATE FIN -->
-      <div class="field">
-        <label>Date de fin <span class="required">*</span></label>
-        <input
-          type="date"
-          class="input"
-          [class.input-error]="dateFinAvantDebut"
-          name="dateFin"
-          [(ngModel)]="form.dateFin"
-          [disabled]="submitting"
-        />
-        <span class="field-error" *ngIf="dateFinAvantDebut">
-          La date de fin doit être après la date de début
-        </span>
-      </div>
-
-      <!-- MOTIF -->
-      <div class="field field-full">
-        <label>
-          Motif
-          <span class="required" *ngIf="isMotifObligatoire">*</span>
-          <span class="label-optional" *ngIf="!isMotifObligatoire"> (facultatif sauf congé exceptionnel)</span>
-        </label>
-        <textarea
-          class="input textarea"
-          name="motif"
-          [placeholder]="isMotifObligatoire
-            ? 'Motif obligatoire pour ce type de congé...'
-            : 'Décrivez la raison du congé (optionnel)...'"
-          [(ngModel)]="form.motif"
-          [disabled]="submitting"
-        ></textarea>
-        <span class="field-error" *ngIf="isMotifObligatoire && !form.motif.trim()">
-          Le motif est obligatoire pour un "{{ form.typeConge }}"
-        </span>
-      </div>
-
-      <!-- ADRESSE PENDANT LE CONGÉ -->
-      <div class="field field-full">
-        <label>Adresse pendant le congé</label>
-        <input
-          type="text"
-          class="input"
-          name="adresse"
-          placeholder="Adresse temporaire ou domicile..."
-          [(ngModel)]="form.adressePendantConge"
-          [disabled]="submitting"
-        />
-      </div>
-
-      <!-- TÉLÉPHONE ALTERNATIF -->
-      <div class="field">
-        <label>Téléphone alternatif</label>
-        <input
-          type="text"
-          class="input"
-          name="tel"
-          placeholder="+216 XX XXX XXX"
-          [(ngModel)]="form.telephone"
-          [disabled]="submitting"
-        />
-      </div>
-
-      <!-- PIÈCE JUSTIFICATIVE -->
-      <div class="field">
-        <label>
-          Pièce justificative
-          <span class="required" *ngIf="isCongeMaladie">*</span>
-          <small *ngIf="isCongeMaladie"> (obligatoire pour congé maladie)</small>
-        </label>
-        <input type="file" class="input file-input" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-          (change)="onJustificatifChange($event)" [disabled]="submitting" />
-        <span class="field-success" *ngIf="form.pieceJustificativeFichierNom">
-          Fichier sélectionné : {{ form.pieceJustificativeFichierNom }}
-        </span>
-      </div>
+    <div class="scard">
+      <span class="scard-label">Type</span>
+      <strong class="scard-value scard-truncate">{{ form.typeConge }}</strong>
     </div>
   </div>
 
-  <!-- INFORMATIONS EMPLOYÉ (lecture seule) -->
-  <div class="card">
-    <div class="card-title">Informations employé</div>
-    <p class="card-subtitle">Ces informations sont auto-remplies depuis votre dossier RH et ne peuvent pas être modifiées.</p>
+  <div class="form-layout">
+    <div class="form-main">
 
-    <div class="info-grid">
-      <div class="info-box">
-        <span class="info-label">Nom complet</span>
-        <span class="info-value">{{ employee.nomComplet }}</span>
-      </div>
-      <div class="info-box">
-        <span class="info-label">Matricule</span>
-        <span class="info-value">{{ employee.matricule }}</span>
-      </div>
-      <div class="info-box">
-        <span class="info-label">Direction / Service</span>
-        <span class="info-value">{{ employee.direction }} / {{ employee.service }}</span>
-      </div>
-      <div class="info-box">
-        <span class="info-label">Supérieur hiérarchique (N+1)</span>
-        <span class="info-value">{{ employee.superieurHierarchique }}</span>
-      </div>
-    </div>
-  </div>
+      <!-- SECTION: Demande -->
+      <div class="fcard">
+        <div class="fcard-head">
+          <span class="fcard-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span>
+          <div>
+            <h2>Informations de la demande</h2>
+            <p>Sélectionnez le type, la période et indiquez le motif si requis.</p>
+          </div>
+        </div>
 
-  <!-- CIRCUIT DE VALIDATION -->
-  <div class="card">
-    <div class="card-title">Circuit de validation</div>
-    <div class="workflow-steps">
-      <div class="wf-step">
-        <div class="wf-dot primary">1</div>
-        <div class="wf-label">
-          <strong>Soumis</strong>
-          <span>{{ employee.nomComplet }}</span>
+        <div class="fg">
+          <!-- Type de congé -->
+          <div class="ff">
+            <label class="fl">Type de congé <span class="req">*</span></label>
+            <select class="fi" name="typeConge" [(ngModel)]="form.typeConge" [disabled]="submitting">
+              @for (t of typesConge; track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Durée calculée -->
+          <div class="ff">
+            <label class="fl">Durée calculée</label>
+            <input class="fi readonly" [class.fi-error]="soldeInsuffisant" type="text" [value]="dureeLabel" readonly />
+            @if (soldeInsuffisant) {
+              <span class="fe">Dépasse votre solde de {{ soldeCongesJours }} j</span>
+            }
+          </div>
+
+          <!-- Date début -->
+          <div class="ff">
+            <label class="fl">Date de début <span class="req">*</span></label>
+            <input type="date" class="fi" [class.fi-error]="dateTropProche || dateFinAvantDebut"
+              name="dateDebut" [(ngModel)]="form.dateDebut" [disabled]="submitting" />
+            @if (dateTropProche) {
+              <span class="fe">Délai minimum 3 jours ouvrés non respecté</span>
+            }
+          </div>
+
+          <!-- Date fin -->
+          <div class="ff">
+            <label class="fl">Date de fin <span class="req">*</span></label>
+            <input type="date" class="fi" [class.fi-error]="dateFinAvantDebut"
+              name="dateFin" [(ngModel)]="form.dateFin" [disabled]="submitting" />
+            @if (dateFinAvantDebut) {
+              <span class="fe">La date de fin doit être après la date de début</span>
+            }
+          </div>
+
+          <!-- Motif -->
+          <div class="ff ff-full">
+            <label class="fl">
+              Motif
+              @if (isMotifObligatoire) { <span class="req">*</span> }
+              @else { <span class="fl-opt">(facultatif)</span> }
+            </label>
+            <textarea class="fi" style="min-height:90px; resize:vertical;" name="motif"
+              [placeholder]="isMotifObligatoire ? 'Motif obligatoire pour ce type de congé...' : 'Décrivez la raison du congé (optionnel)...'"
+              [(ngModel)]="form.motif" [disabled]="submitting"></textarea>
+            @if (isMotifObligatoire && !form.motif.trim()) {
+              <span class="fe">Le motif est obligatoire pour un "{{ form.typeConge }}"</span>
+            }
+          </div>
+
+          <!-- Adresse -->
+          <div class="ff ff-full">
+            <label class="fl">Adresse pendant le congé <span class="fl-opt">(optionnel)</span></label>
+            <input type="text" class="fi" name="adresse" placeholder="Adresse temporaire ou domicile..."
+              [(ngModel)]="form.adressePendantConge" [disabled]="submitting" />
+          </div>
+
+          <!-- Téléphone -->
+          <div class="ff">
+            <label class="fl">Téléphone alternatif <span class="fl-opt">(optionnel)</span></label>
+            <input type="text" class="fi" name="tel" placeholder="+216 XX XXX XXX"
+              [(ngModel)]="form.telephone" [disabled]="submitting" />
+          </div>
+
+          <!-- Pièce justificative -->
+          <div class="ff">
+            <label class="fl">Pièce justificative <span class="fl-opt">(optionnel)</span></label>
+            <input type="file" class="fi fi-file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+              (change)="onJustificatifChange($event)" [disabled]="submitting" />
+            @if (form.pieceJustificativeFichierNom) {
+              <span class="fs">✓ {{ form.pieceJustificativeFichierNom }}</span>
+            }
+          </div>
         </div>
       </div>
-      <div class="wf-arrow">→</div>
-      <div class="wf-step">
-        <div class="wf-dot">2</div>
-        <div class="wf-label">
-          <strong>Validation N+1</strong>
-          <span>{{ employee.superieurHierarchique }}</span>
+
+      <!-- SECTION: Circuit de validation -->
+      <div class="fcard">
+        <div class="fcard-head">
+          <span class="fcard-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </span>
+          <div>
+            <h2>Circuit de validation</h2>
+            <p>Votre demande suivra ce parcours avant d'être traitée.</p>
+          </div>
         </div>
-      </div>
-      <div class="wf-arrow">→</div>
-      <div class="wf-step">
-        <div class="wf-dot">3</div>
-        <div class="wf-label">
-          <strong>Validation DG</strong>
-          <span>Direction Générale</span>
+
+        <div class="workflow">
+          <div class="wf-step wf-active">
+            <div class="wf-num">1</div>
+            <div class="wf-info"><strong>Soumission</strong><span>{{ employee.nomComplet }}</span></div>
+          </div>
+          <div class="wf-line"></div>
+          <div class="wf-step">
+            <div class="wf-num">2</div>
+            <div class="wf-info"><strong>Validation N+1</strong><span>{{ employee.superieurHierarchique }}</span></div>
+          </div>
+          <div class="wf-line"></div>
+          <div class="wf-step">
+            <div class="wf-num">3</div>
+            <div class="wf-info"><strong>Direction Générale</strong><span>Validation finale</span></div>
+          </div>
+          <div class="wf-line"></div>
+          <div class="wf-step">
+            <div class="wf-num">4</div>
+            <div class="wf-info"><strong>Clôture RH</strong><span>Archivage</span></div>
+          </div>
         </div>
+
+        <p class="workflow-note">
+          Le solde ne sera débité qu'après validation finale par la RH. Une demande rejetée n'affecte pas votre solde.
+        </p>
       </div>
-      <div class="wf-arrow">→</div>
-      <div class="wf-step">
-        <div class="wf-dot">4</div>
-        <div class="wf-label">
-          <strong>Clôture RH</strong>
-          <span>Direction RH</span>
-        </div>
-      </div>
+
     </div>
-    <p class="workflow-note">
-      Le solde de congés ne sera débité qu'après la <strong>validation finale</strong> de la RH.
-      Une demande rejetée ou annulée n'a aucun impact sur le solde.
-    </p>
+
+    <!-- SIDEBAR: Informations employé -->
+    <aside class="form-sidebar">
+      <div class="fcard">
+        <div class="sidebar-head">
+          <div class="emp-avatar">{{ employee.nomComplet.charAt(0) }}</div>
+          <div>
+            <strong>{{ employee.nomComplet }}</strong>
+            <span>{{ employee.matricule }}</span>
+          </div>
+        </div>
+        <div class="emp-details">
+          <div class="emp-row"><span>Direction</span><strong>{{ employee.direction }}</strong></div>
+          <div class="emp-row"><span>Service</span><strong>{{ employee.service }}</strong></div>
+          <div class="emp-row"><span>Responsable N+1</span><strong>{{ employee.superieurHierarchique }}</strong></div>
+          <div class="emp-row highlight"><span>Solde congés</span><strong>{{ soldeCongesJours }} jours</strong></div>
+        </div>
+      </div>
+    </aside>
   </div>
 
-  <!-- PIED DE PAGE / ACTIONS -->
-  <div class="page-footer">
-    <button class="btn btn-light" type="button" (click)="onAnnuler()" [disabled]="submitting">Annuler</button>
-    <button
-      class="btn btn-outline-primary"
-      type="button"
-      (click)="openConfirmModal('draft')"
-      [disabled]="submitting"
-    >
-      {{ submitting ? 'Envoi…' : 'Enregistrer brouillon' }}
+  <!-- FOOTER ACTIONS -->
+  <div class="form-footer">
+    <a routerLink="/home-employee" class="fbtn fbtn-ghost" [class.disabled]="submitting">
+      Annuler
+    </a>
+    <button class="fbtn fbtn-outline" type="button" (click)="openConfirmModal('draft')" [disabled]="submitting">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      {{ submitting ? 'Envoi…' : 'Brouillon' }}
     </button>
-    <button
-      class="btn btn-success"
-      type="button"
+    <button class="fbtn fbtn-primary" type="button"
       (click)="openConfirmModal('submit')"
-      [disabled]="submitting || !peutSoumettre || (isMotifObligatoire && !form.motif.trim())"
-    >
-      {{ submitting ? 'Envoi…' : 'Soumettre la demande' }}
+      [disabled]="submitting || !peutSoumettre || (isMotifObligatoire && !form.motif.trim())">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      {{ submitting ? 'Envoi en cours…' : 'Soumettre la demande' }}
     </button>
   </div>
 
   <!-- MODAL DE CONFIRMATION -->
-  <div
-    class="confirm-backdrop"
-    *ngIf="showConfirmModal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="conge-confirm-title"
-    (click)="onConfirmBackdropClick($event)"
-  >
-    <div class="confirm-modal" (click)="$event.stopPropagation()">
-      <h3 id="conge-confirm-title">{{ modalTitle }}</h3>
-      <p>{{ modalMessage }}</p>
-      <div class="confirm-actions">
-        <button class="btn btn-light" type="button" (click)="closeConfirmModal()">
-          Retour
-        </button>
-        <button class="btn btn-success" type="button" (click)="confirmAction()" [disabled]="submitting">
-          {{ submitting ? 'Envoi en cours…' : 'Confirmer' }}
-        </button>
+  @if (showConfirmModal) {
+    <div class="modal-back" (click)="onConfirmBackdropClick($event)">
+      <div class="modal-box">
+        <div class="modal-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <h3>{{ modalTitle }}</h3>
+        <p>{{ modalMessage }}</p>
+        <div class="modal-actions">
+          <button class="fbtn fbtn-ghost" type="button" (click)="closeConfirmModal()">Annuler</button>
+          <button class="fbtn fbtn-primary" type="button" (click)="confirmAction()" [disabled]="submitting">
+            {{ submitting ? 'Envoi…' : 'Confirmer' }}
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
 </div>

@@ -2,109 +2,441 @@
    GLOBAL STYLES — Al Baraka Assurances Intranet RH
    ============================================================ */
 
-/* Polices — Mada (arabe/latin) + Open Sans (latin) */
-@import url('https://fonts.googleapis.com/css2?family=Mada:wght@300;400;500;600;700;900&family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Mada:wght@300;400;500;600;700;900&family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
-/* ─── Tokens de design ──────────────────────────────────────── */
+/* ─── Design Tokens ─────────────────────────────────────────── */
 :root {
-  --primary:       #ff5800;
-  --danger:        #c60c30;
-  --success:       #0D776E;
-  --text:          #5e6167;
-  --title-light:   #a7a9ac;
-  --bg-main:       #ffffff;
-  --bg-form:       #a7a9ac;
-  --bg-soft:       #f7f7f7;
-  --border:        #e2e2e2;
-  --shadow-sm:     0 4px 12px rgba(0, 0, 0, 0.05);
-  --shadow-md:     0 10px 28px rgba(0, 0, 0, 0.08);
-  --radius-xl:     20px;
-  --radius-lg:     16px;
-  --radius-md:     12px;
-  --radius-sm:     10px;
-  --font-main:     'Mada', 'Open Sans', Arial, sans-serif;
+  /* Brand colors */
+  --color-primary:      #ff5800;
+  --color-secondary:    #c60c30;
+  --color-teal:         #0D776E;
+  --color-text:         #5e6167;
+  --color-subtitle:     #a7a9ac;
+  --color-bg-primary:   #FFFFFF;
+  --color-bg-soft:      #f8f9fa;
+  --color-bg-form:      #a7a9ac;
+
+  /* Secondary palette */
+  --color-green:        #0D776E;
+  --color-blue:         #0073B0;
+  --color-purple:       #614D7D;
+  --color-raspberry:    #C60651;
+
+  /* UI system */
+  --border:             #ebebeb;
+  --border-focus:       #ff5800;
+  --shadow-xs:          0 1px 4px rgba(0,0,0,0.04);
+  --shadow-sm:          0 2px 10px rgba(0,0,0,0.06);
+  --shadow-md:          0 8px 24px rgba(0,0,0,0.08);
+  --shadow-lg:          0 20px 50px rgba(0,0,0,0.12);
+  --shadow-primary:     0 8px 24px rgba(255,88,0,0.20);
+  --shadow-teal:        0 8px 24px rgba(13,119,110,0.20);
+
+  /* Radii */
+  --radius-xs:          6px;
+  --radius-sm:          8px;
+  --radius-md:          12px;
+  --radius-lg:          16px;
+  --radius-xl:          20px;
+  --radius-2xl:         24px;
+  --radius-full:        999px;
+
+  /* Typography */
+  --font-main:          'Mada', 'Open Sans', Arial, sans-serif;
+
+  /* Transitions */
+  --transition-fast:    150ms ease;
+  --transition-base:    200ms ease;
+  --transition-slow:    300ms ease;
 }
 
 /* ─── Reset ─────────────────────────────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  font-size: 16px;
 }
 
 body {
-  margin: 0;
-  padding: 0;
   font-family: var(--font-main);
   font-size: 15px;
   line-height: 1.6;
-  color: var(--text);
-  background: var(--bg-main);
+  color: var(--color-text);
+  background: var(--color-bg-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
 }
 
-/* ─── Typographie globale ────────────────────────────────────── */
+img { max-width: 100%; height: auto; display: block; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }
+
 h1, h2, h3, h4, h5, h6 {
-  margin: 0;
-  line-height: 1.25;
   font-family: var(--font-main);
+  line-height: 1.25;
+  color: var(--color-primary);
 }
 
-p { margin: 0; }
+/* ─── Utility classes ───────────────────────────────────────── */
+.text-primary   { color: var(--color-primary) !important; }
+.text-secondary { color: var(--color-secondary) !important; }
+.text-teal      { color: var(--color-teal) !important; }
+.text-muted     { color: var(--color-subtitle) !important; }
+.text-danger    { color: var(--color-secondary) !important; }
+.text-success   { color: var(--color-teal) !important; }
 
-a {
-  color: var(--primary);
+.bg-soft        { background: var(--color-bg-soft); }
+.bg-white       { background: #fff; }
+
+/* ─── Global Button System ──────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  white-space: nowrap;
   text-decoration: none;
+  font-family: var(--font-main);
+  line-height: 1;
+  -webkit-tap-highlight-color: transparent;
 }
 
-a:hover { text-decoration: underline; }
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
 
-/* ─── Focus visible (accessibilité) ─────────────────────────── */
-:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-  border-radius: 4px;
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(255,88,0,0.20);
+}
+.btn-primary:hover:not(:disabled) {
+  background: #e84e00;
+  box-shadow: var(--shadow-primary);
+  transform: translateY(-1px);
 }
 
-/* ─── Scrollbar personnalisée (WebKit) ───────────────────────── */
+.btn-teal, .btn-success {
+  background: var(--color-teal);
+  color: #fff;
+  border-color: var(--color-teal);
+  box-shadow: 0 2px 8px rgba(13,119,110,0.20);
+}
+.btn-teal:hover:not(:disabled), .btn-success:hover:not(:disabled) {
+  background: #0b665f;
+  box-shadow: var(--shadow-teal);
+  transform: translateY(-1px);
+}
+
+.btn-danger, .btn-secondary {
+  background: var(--color-secondary);
+  color: #fff;
+  border-color: var(--color-secondary);
+}
+.btn-danger:hover:not(:disabled), .btn-secondary:hover:not(:disabled) {
+  background: #ad0a2a;
+  transform: translateY(-1px);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.btn-outline:hover:not(:disabled) {
+  background: rgba(255,88,0,0.06);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text);
+  border-color: var(--border);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-bg-soft);
+  border-color: #ccc;
+}
+
+.btn-sm { min-height: 36px; padding: 6px 14px; font-size: 13px; }
+.btn-lg { min-height: 52px; padding: 14px 28px; font-size: 16px; }
+.btn-full { width: 100%; }
+
+/* ─── Global Form System ────────────────────────────────────── */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.form-required { color: var(--color-secondary); }
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  font-size: 14px;
+  color: var(--color-text);
+  font-family: var(--font-main);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  outline: none;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255,88,0,0.10);
+}
+
+.form-input::placeholder { color: #b0b4b8; }
+.form-textarea { resize: vertical; min-height: 100px; }
+.form-input[readonly], .form-select[readonly] {
+  background: var(--color-bg-soft);
+  color: var(--color-subtitle);
+  cursor: default;
+}
+
+.form-hint { font-size: 12px; color: var(--color-subtitle); }
+.form-error { font-size: 12px; color: var(--color-secondary); font-weight: 500; }
+
+/* ─── Card System ───────────────────────────────────────────── */
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-xs);
+}
+
+.card-sm { padding: 16px; border-radius: var(--radius-md); }
+.card-lg { padding: 32px; border-radius: var(--radius-xl); }
+
+/* ─── Badge / Status System ─────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-pending  { background: rgba(255,88,0,0.10);  color: var(--color-primary); }
+.badge-approved { background: rgba(13,119,110,0.10); color: var(--color-teal); }
+.badge-rejected { background: rgba(198,12,48,0.10);  color: var(--color-secondary); }
+.badge-neutral  { background: rgba(94,97,103,0.08);  color: var(--color-text); }
+.badge-blue     { background: rgba(0,115,176,0.10);  color: var(--color-blue); }
+
+/* ─── Alert Banners ─────────────────────────────────────────── */
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.alert-error   { background: rgba(198,12,48,0.06);  color: #9a0824; border: 1px solid rgba(198,12,48,0.15); }
+.alert-success { background: rgba(13,119,110,0.06); color: #0a5c54; border: 1px solid rgba(13,119,110,0.15); }
+.alert-warning { background: rgba(255,88,0,0.06);   color: #c44200; border: 1px solid rgba(255,88,0,0.15); }
+.alert-info    { background: rgba(0,115,176,0.06);  color: #00527f; border: 1px solid rgba(0,115,176,0.15); }
+
+/* ─── Page Animations ───────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+.animate-fade-in-up  { animation: fadeInUp 0.4s ease both; }
+.animate-fade-in     { animation: fadeIn 0.3s ease both; }
+.animate-scale-in    { animation: scaleIn 0.3s ease both; }
+
+/* Staggered children */
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.10s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.20s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+
+/* ─── Scrollbar ─────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #f1f1f1; }
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 88, 0, 0.35);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 88, 0, 0.6);
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #b0b0b0; }
+
+/* ─── Selection ─────────────────────────────────────────────── */
+::selection { background: rgba(255,88,0,0.15); color: inherit; }
+
+/* ─── Focus visible (accessibility) ─────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
-/* ─── Support RTL (arabe) ────────────────────────────────────── */
-[dir="rtl"] {
-  font-family: 'Mada', Arial, sans-serif;
-  text-align: right;
+/* ─── Modal backdrop ────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.40);
+  backdrop-filter: blur(3px);
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.2s ease;
 }
 
-/* ─── Utilitaires globaux ────────────────────────────────────── */
-.visually-hidden {
-  position: absolute;
+.modal-box {
+  background: #fff;
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  animation: scaleIn 0.25s ease;
+}
+
+/* ─── Table System ──────────────────────────────────────────── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.data-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-subtitle);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--color-text);
+  vertical-align: middle;
+}
+
+.data-table tbody tr:last-child td { border-bottom: none; }
+.data-table tbody tr:hover { background: var(--color-bg-soft); cursor: pointer; }
+
+/* ─── Responsive container ──────────────────────────────────── */
+.page-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  animation: fadeInUp 0.4s ease both;
+}
+
+@media (max-width: 768px) {
+  .page-container { padding: 20px 16px; }
+}
+
+/* ─── Logo utilities (shared across all pages) ──────────────── */
+/* Rule: logo must ONLY appear on #FFFFFF backgrounds           */
+
+/* Page-header logo (form pages + dashboard pages) */
+.page-logo {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Vertical divider next to logo */
+.page-logo-divider,
+.page-logo-sep {
   width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
+  height: 36px;
+  background: #ebebeb;
+  flex-shrink: 0;
 }
 
-/* Désactiver les animations pour les utilisateurs qui le préfèrent */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
+/* Hero logo (home-employee) */
+.hero-logo {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+/* Page-header-left flex alignment for form pages */
+.page-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* RH Dashboard header brand wrapper */
+.rh-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.rh-header-divider {
+  width: 1px;
+  height: 36px;
+  background: #ebebeb;
+  flex-shrink: 0;
+}
+
+/* Employee Dashboard header brand wrapper */
+.dash-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }

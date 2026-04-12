@@ -1,126 +1,152 @@
-<div class="home-page">
-  <section class="hero-section">
-    <div>
-      <h1>Accueil Direction RH</h1>
-      <p>
-        Supervisez les demandes, le personnel et les indicateurs RH depuis un point d’entrée unique.
-      </p>
-    </div>
+<div class="hrh-page">
 
-    <div class="hero-badge">
-      <span>Accès RH</span>
-      <strong>Suivi global actif</strong>
-    </div>
-  </section>
-
-  <section class="actions-section">
-    <a class="action-card primary" routerLink="/dashboard-rh">
+  <!-- BRANDED HEADER -->
+  <div class="hrh-header">
+    <div class="hrh-header-left">
+      <img src="assets/logo.png" alt="Al Baraka Assurances" class="hrh-logo" />
+      <div class="hrh-header-divider"></div>
       <div>
-        <h2>Tableau de bord RH</h2>
-        <p>Vue globale des demandes, validations et indicateurs.</p>
-      </div>
-      <span class="card-btn">Ouvrir</span>
-    </a>
-
-    <a class="action-card success" routerLink="/conge">
-      <div>
-        <h2>Consulter les demandes</h2>
-        <p>Accéder aux demandes de congé et d’autorisation en circulation.</p>
-      </div>
-      <span class="card-btn">Consulter</span>
-    </a>
-
-    <a class="action-card secondary" routerLink="/personnel">
-      <div>
-        <h2>Gérer le personnel</h2>
-        <p>Mettre à jour les informations et les données des employés.</p>
-      </div>
-      <span class="card-btn">Gérer</span>
-    </a>
-
-    <a class="action-card neutral" routerLink="/personnel">
-      <div>
-        <h2>Reporting RH</h2>
-        <p>Préparer le suivi mensuel et l’aide à la décision.</p>
-      </div>
-      <span class="card-btn">Voir</span>
-    </a>
-
-    <a class="action-card success" routerLink="/responsable">
-      <div>
-        <h2>Espace Responsable (N+1)</h2>
-        <p>Valider ou rejeter les demandes en attente de votre équipe.</p>
-      </div>
-      <span class="card-btn">Accéder</span>
-    </a>
-  </section>
-
-  <section class="stats-section">
-    <div class="section-header">
-      <h3>Indicateurs clés</h3>
-      <p>Vue rapide de l’activité RH</p>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-card" *ngFor="let kpi of kpis" [ngClass]="kpi.tone">
-        <span>{{ kpi.label }}</span>
-        <strong>{{ kpi.value }}</strong>
+        <h1>Accueil Direction RH</h1>
+        <p>Supervisez les demandes, le personnel et les indicateurs depuis un point d'entrée unique.</p>
       </div>
     </div>
-  </section>
+    <div class="hrh-badge">
+      <div class="hrh-badge-dot"></div>
+      Suivi global actif
+    </div>
+  </div>
 
-  <section class="content-grid">
-    <div class="panel-card">
-      <div class="section-header">
-        <h3>Demandes récentes</h3>
-        <p>Suivi des derniers mouvements</p>
+  <!-- KPI STRIP -->
+  <div class="kpi-strip">
+    @for (kpi of kpis; track kpi.label) {
+      <div class="kpi-card" [ngClass]="'kpi-' + kpi.tone">
+        <span class="kpi-lbl">{{ kpi.label }}</span>
+        <strong class="kpi-val">{{ kpi.value }}</strong>
       </div>
+    }
+  </div>
 
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Employé</th>
-              <th>Type</th>
-              <th>Date</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of recentItems">
-              <td>{{ item.employe }}</td>
-              <td>{{ item.type }}</td>
-              <td>{{ item.date }}</td>
-              <td>
-                <span
-                  class="badge"
-                  [ngClass]="{
-                    'badge-pending': item.statut === 'En attente',
-                    'badge-approved': item.statut === 'Validée',
-                    'badge-rejected': item.statut === 'Rejetée'
-                  }"
-                >
-                  {{ item.statut }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+  <!-- QUICK ACTIONS GRID -->
+  <div class="qa-grid">
+    <a routerLink="/dashboard-rh" class="qa-card qa-orange">
+      <div class="qa-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      </div>
+      <div class="qa-text">
+        <strong>Tableau de bord RH</strong>
+        <span>Vue globale des demandes et indicateurs</span>
+      </div>
+      <div class="qa-arrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </a>
+
+    <a routerLink="/conge" class="qa-card qa-teal">
+      <div class="qa-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+      </div>
+      <div class="qa-text">
+        <strong>Consulter les demandes</strong>
+        <span>Demandes de congé et autorisations</span>
+      </div>
+      <div class="qa-arrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </a>
+
+    <a routerLink="/responsable" class="qa-card qa-teal">
+      <div class="qa-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="qa-text">
+        <strong>Espace Responsable</strong>
+        <span>Validation des demandes N+1</span>
+      </div>
+      <div class="qa-arrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </a>
+
+    <a routerLink="/personnel" class="qa-card qa-neutral">
+      <div class="qa-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="qa-text">
+        <strong>Gérer le personnel</strong>
+        <span>Fiches employés et données RH</span>
+      </div>
+      <div class="qa-arrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </a>
+
+    <a routerLink="/personnel" class="qa-card qa-neutral">
+      <div class="qa-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      </div>
+      <div class="qa-text">
+        <strong>Reporting RH</strong>
+        <span>Suivi mensuel et aide à la décision</span>
+      </div>
+      <div class="qa-arrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </a>
+  </div>
+
+  <!-- BOTTOM GRID: Recent + Alerts -->
+  <div class="bottom-grid">
+
+    <!-- RECENT REQUESTS -->
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>Demandes récentes</h3>
+          <p>Derniers mouvements enregistrés</p>
+        </div>
+        <a routerLink="/dashboard-rh" class="panel-link">
+          Voir tout
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </div>
+      <div class="recent-list">
+        @for (item of recentItems; track item.employe) {
+          <div class="recent-row">
+            <div class="recent-avatar">{{ item.employe.charAt(0) }}</div>
+            <div class="recent-info">
+              <strong>{{ item.employe }}</strong>
+              <span>{{ item.type }} · {{ item.date }}</span>
+            </div>
+            <span class="badge"
+              [class.badge-pending]="item.statut === 'En attente'"
+              [class.badge-approved]="item.statut === 'Validée'"
+              [class.badge-rejected]="item.statut === 'Rejetée'"
+            >{{ item.statut }}</span>
+          </div>
+        }
       </div>
     </div>
 
-    <div class="panel-card">
-      <div class="section-header">
-        <h3>Alertes RH</h3>
-        <p>Éléments de suivi et de contrôle</p>
-      </div>
-
-      <div class="alert-list">
-        <div class="alert-item" *ngFor="let alert of alerts">
-          <div class="alert-icon">!</div>
-          <p>{{ alert }}</p>
+    <!-- ALERTS -->
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>Alertes RH</h3>
+          <p>Éléments nécessitant votre attention</p>
         </div>
       </div>
+      <div class="alert-list">
+        @for (alert of alerts; track alert) {
+          <div class="alert-item">
+            <div class="alert-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <p>{{ alert }}</p>
+          </div>
+        }
+      </div>
     </div>
-  </section>
+
+  </div>
+
 </div>

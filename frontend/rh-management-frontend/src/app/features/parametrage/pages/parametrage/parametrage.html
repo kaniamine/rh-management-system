@@ -1,0 +1,577 @@
+<div class="param-page">
+
+  <!-- HEADER -->
+  <div class="param-header">
+    <div class="param-header-left">
+      <img src="assets/logo.png" alt="Al Baraka Assurances" class="page-logo" />
+      <div class="page-logo-divider"></div>
+      <div>
+        <h1>Paramétrage</h1>
+        <p>Configuration du système RH — règles, rôles et circuits de validation.</p>
+      </div>
+    </div>
+    <a routerLink="/home-rh" class="header-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Retour
+    </a>
+  </div>
+
+  <!-- LAYOUT -->
+  <div class="param-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="param-sidebar">
+      @for (sec of sections; track sec.id; let i = $index) {
+        <button class="sec-item" [class.active]="activeSection === sec.id" (click)="selectSection(sec.id)" type="button">
+          <span class="sec-num">{{ i + 1 }}</span>
+          <div class="sec-text">
+            <strong>{{ sec.label }}</strong>
+            <span>{{ sec.desc }}</span>
+          </div>
+          <svg class="sec-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      }
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="param-content">
+
+      <!-- ══ 1. Personnel ══════════════════════════════════════ -->
+      @if (activeSection === 'personnel') {
+        <div class="sec-panel">
+          <div class="sec-panel-head">
+            <div class="sec-icon-wrap sec-icon-orange">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
+            </div>
+            <div>
+              <h2>Base de données du personnel</h2>
+              <p>Configurez les champs du référentiel RH, leurs obligations et leur modifiabilité.</p>
+            </div>
+          </div>
+          <div class="sec-panel-body">
+            <table class="param-table">
+              <thead>
+                <tr>
+                  <th>Champ</th>
+                  <th class="tcenter">Obligatoire</th>
+                  <th class="tcenter">Modifiable</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (f of personnelFields; track f.key) {
+                  <tr>
+                    <td class="field-name">{{ f.label }}</td>
+                    <td class="tcenter">
+                      <label class="toggle">
+                        <input type="checkbox" [(ngModel)]="f.required" [name]="'req_' + f.key" />
+                        <span class="toggle-track"></span>
+                      </label>
+                    </td>
+                    <td class="tcenter">
+                      <label class="toggle">
+                        <input type="checkbox" [(ngModel)]="f.editable" [name]="'edit_' + f.key" />
+                        <span class="toggle-track"></span>
+                      </label>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="sec-footer">
+            <button class="btn-save" type="button" (click)="saveSection()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Enregistrer
+            </button>
+            @if (savedSection === 'personnel') {
+              <span class="save-toast">Modifications enregistrées.</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ══ 2. Rôles & habilitations ══════════════════════════ -->
+      @if (activeSection === 'roles') {
+        <div class="sec-panel">
+          <div class="sec-panel-head">
+            <div class="sec-icon-wrap sec-icon-teal">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+              <h2>Profils, rôles et habilitations</h2>
+              <p>Définissez les droits de chaque rôle sur les fonctionnalités du système.</p>
+            </div>
+          </div>
+          <div class="sec-panel-body overflow-x">
+            <table class="param-table perm-matrix">
+              <thead>
+                <tr>
+                  <th>Droit / Action</th>
+                  @for (r of roles; track r.id) {
+                    <th class="tcenter role-col">{{ r.label }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of permissions; track p.id) {
+                  <tr>
+                    <td class="field-name">{{ p.label }}</td>
+                    @for (r of roles; track r.id) {
+                      <td class="tcenter">
+                        <input type="checkbox"
+                               class="perm-check"
+                               [checked]="rolePerms[r.id][p.id]"
+                               (change)="togglePerm(r.id, p.id)" />
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="sec-footer">
+            <button class="btn-save" type="button" (click)="saveSection()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Enregistrer
+            </button>
+            @if (savedSection === 'roles') {
+              <span class="save-toast">Modifications enregistrées.</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ══ 3. Congés ══════════════════════════════════════════ -->
+      @if (activeSection === 'conges') {
+        <div class="sec-panel">
+          <div class="sec-panel-head">
+            <div class="sec-icon-wrap sec-icon-orange">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+            </div>
+            <div>
+              <h2>Paramétrage RH — Gestion des congés</h2>
+              <p>Règles de calcul des durées et contraintes de gestion des congés.</p>
+            </div>
+          </div>
+          <div class="sec-panel-body">
+
+            <div class="rule-group">
+              <div class="rule-group-title">Règles de calcul</div>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <strong>Unité jours ouvrés</strong>
+                  <span>Le calcul s'effectue en jours ouvrés (lundi – vendredi).</span>
+                </div>
+                <label class="toggle"><input type="checkbox" [(ngModel)]="congesConfig.uniteJoursOuvres" name="joursOuvres" /><span class="toggle-track"></span></label>
+              </div>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <strong>Inclusion week-end si vendredi posé</strong>
+                  <span>Le samedi et dimanche sont comptés si le vendredi est inclus dans la période.</span>
+                </div>
+                <label class="toggle"><input type="checkbox" [(ngModel)]="congesConfig.inclusionWeekend" name="weekend" /><span class="toggle-track"></span></label>
+              </div>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <strong>Inclusion des jours fériés</strong>
+                  <span>Les jours fériés officiels sont décomptés du solde si la période les englobe.</span>
+                </div>
+                <label class="toggle"><input type="checkbox" [(ngModel)]="congesConfig.inclusionFeries" name="feries" /><span class="toggle-track"></span></label>
+              </div>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <strong>Débit du solde après validation finale uniquement</strong>
+                  <span>Aucun débit si la demande est rejetée ou annulée.</span>
+                </div>
+                <label class="toggle"><input type="checkbox" [(ngModel)]="congesConfig.debitApresValidation" name="debit" /><span class="toggle-track"></span></label>
+              </div>
+            </div>
+
+            <div class="rule-group">
+              <div class="rule-group-title">Règles de gestion</div>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <strong>Solde minimum avant soumission (jours)</strong>
+                  <span>Une demande ne peut être soumise si le solde restant est inférieur à ce seuil.</span>
+                </div>
+                <input type="number" class="num-input" min="0" [(ngModel)]="congesConfig.soldeMinimum" name="soldeMin" />
+              </div>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <strong>Délai de dépôt minimum (jours ouvrés)</strong>
+                  <span>La demande doit être soumise au moins N jours ouvrés avant la date de départ.</span>
+                </div>
+                <input type="number" class="num-input" min="0" [(ngModel)]="congesConfig.delaiDepot" name="delai" />
+              </div>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <strong>Motif obligatoire pour congés exceptionnels</strong>
+                  <span>Le champ motif doit être renseigné pour tout congé de type exceptionnel.</span>
+                </div>
+                <label class="toggle"><input type="checkbox" [(ngModel)]="congesConfig.motifObligatoire" name="motif" /><span class="toggle-track"></span></label>
+              </div>
+            </div>
+
+          </div>
+          <div class="sec-footer">
+            <button class="btn-save" type="button" (click)="saveSection()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Enregistrer
+            </button>
+            @if (savedSection === 'conges') {
+              <span class="save-toast">Modifications enregistrées.</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ══ 4. Workflow ════════════════════════════════════════ -->
+      @if (activeSection === 'workflow') {
+        <div class="sec-panel">
+          <div class="sec-panel-head">
+            <div class="sec-icon-wrap sec-icon-teal">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div>
+              <h2>Circuits de validation</h2>
+              <p>Configurez les étapes du workflow d'approbation des demandes RH.</p>
+            </div>
+          </div>
+          <div class="sec-panel-body">
+            <div class="wf-strip">
+              @for (step of workflowSteps; track step.label; let last = $last) {
+                <div class="wf-step" [class.wf-locked]="step.locked" [class.wf-inactive]="!step.active">
+                  <div class="wf-dot" [class.wf-dot-active]="step.active"></div>
+                  <div class="wf-step-body">
+                    <strong>{{ step.label }}</strong>
+                    <span>{{ step.sublabel }}</span>
+                    @if (!step.locked) {
+                      <label class="toggle wf-toggle">
+                        <input type="checkbox" [(ngModel)]="step.active" [name]="'wf_' + step.label" />
+                        <span class="toggle-track"></span>
+                        <span class="toggle-lbl">{{ step.active ? 'Actif' : 'Inactif' }}</span>
+                      </label>
+                    } @else {
+                      <span class="wf-badge-locked">Obligatoire</span>
+                    }
+                  </div>
+                </div>
+                @if (!last) {
+                  <div class="wf-arrow">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+          <div class="sec-footer">
+            <button class="btn-save" type="button" (click)="saveSection()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Enregistrer
+            </button>
+            @if (savedSection === 'workflow') {
+              <span class="save-toast">Modifications enregistrées.</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ══ 5. Autorisations ═══════════════════════════════════ -->
+      @if (activeSection === 'autorisations') {
+        <div class="sec-panel">
+          <div class="sec-panel-head">
+            <div class="sec-icon-wrap sec-icon-orange">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+              <h2>Paramétrage — Autorisations de sortie</h2>
+              <p>Horaires de travail et règles de contrôle des autorisations personnelles.</p>
+            </div>
+          </div>
+          <div class="sec-panel-body">
+
+            <div class="rule-group">
+              <div class="rule-group-title">Horaires standard</div>
+              <div class="time-grid">
+                <div class="time-block">
+                  <span class="time-lbl">Matin</span>
+                  <div class="time-range">
+                    <input type="time" class="time-input" [(ngModel)]="autoriConfig.matinDebut" name="matinDebut" />
+                    <span class="time-sep">–</span>
+                    <input type="time" class="time-input" [(ngModel)]="autoriConfig.matinFin" name="matinFin" />
+                  </div>
+                </div>
+                <div class="time-block time-block-pause">
+                  <span class="time-lbl">Pause (exclue du calcul)</span>
+                  <div class="time-range">
+                    <input type="time" class="time-input" [(ngModel)]="autoriConfig.pauseDebut" name="pauseDebut" />
+                    <span class="time-sep">–</span>
+                    <input type="time" class="time-input" [(ngModel)]="autoriConfig.pauseFin" name="pauseFin" />
+                  </div>
+                </div>
+                <div class="time-block">
+                  <span class="time-lbl">Après-midi</span>
+                  <div class="time-range">
+                    <input type="time" class="time-input" [(ngModel)]="autoriConfig.apremDebut" name="apremDebut" />
+                    <span class="time-sep">–</span>
+                    <input type="time" class="time-input" [(ngModel)]="autoriConfig.apremFin" name="apremFin" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="rule-group">
+              <div class="rule-group-title">
+                Horaires été
+                <label class="toggle toggle-inline">
+                  <input type="checkbox" [(ngModel)]="autoriConfig.eteActif" name="eteActif" />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              @if (autoriConfig.eteActif) {
+                <div class="time-grid">
+                  <div class="time-block">
+                    <span class="time-lbl">Période (JJ/MM)</span>
+                    <div class="time-range">
+                      <input type="text" class="time-input" placeholder="01/07" [(ngModel)]="autoriConfig.eteDebut" name="eteDebut" maxlength="5" />
+                      <span class="time-sep">–</span>
+                      <input type="text" class="time-input" placeholder="31/08" [(ngModel)]="autoriConfig.eteFin" name="eteFin" maxlength="5" />
+                    </div>
+                  </div>
+                  <div class="time-block">
+                    <span class="time-lbl">Plage horaire</span>
+                    <div class="time-range">
+                      <input type="time" class="time-input" [(ngModel)]="autoriConfig.eteHeureDebut" name="eteHD" />
+                      <span class="time-sep">–</span>
+                      <input type="time" class="time-input" [(ngModel)]="autoriConfig.eteHeureFin" name="eteHF" />
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="rule-group">
+              <div class="rule-group-title">
+                Horaires Ramadan
+                <label class="toggle toggle-inline">
+                  <input type="checkbox" [(ngModel)]="autoriConfig.ramadanActif" name="ramadanActif" />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              @if (autoriConfig.ramadanActif) {
+                <div class="time-grid">
+                  <div class="time-block">
+                    <span class="time-lbl">Plage horaire Ramadan</span>
+                    <div class="time-range">
+                      <input type="time" class="time-input" [(ngModel)]="autoriConfig.ramadanDebut" name="ramadanD" />
+                      <span class="time-sep">–</span>
+                      <input type="time" class="time-input" [(ngModel)]="autoriConfig.ramadanFin" name="ramadanF" />
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="rule-group">
+              <div class="rule-group-title">Règles de contrôle</div>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <strong>Durée max autorisation personnelle (minutes/jour)</strong>
+                  <span>Au-delà, la demande est bloquée automatiquement si l'option ci-dessous est active.</span>
+                </div>
+                <input type="number" class="num-input" min="0" max="480" [(ngModel)]="autoriConfig.dureeMaxPerso" name="dureeMax" />
+              </div>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <strong>Blocage automatique en cas de dépassement</strong>
+                  <span>Empêche la soumission si la durée calculée dépasse le maximum autorisé.</span>
+                </div>
+                <label class="toggle"><input type="checkbox" [(ngModel)]="autoriConfig.blocageAuto" name="blocage" /><span class="toggle-track"></span></label>
+              </div>
+            </div>
+
+          </div>
+          <div class="sec-footer">
+            <button class="btn-save" type="button" (click)="saveSection()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Enregistrer
+            </button>
+            @if (savedSection === 'autorisations') {
+              <span class="save-toast">Modifications enregistrées.</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ══ 6. Maladie ═════════════════════════════════════════ -->
+      @if (activeSection === 'maladie') {
+        <div class="sec-panel">
+          <div class="sec-panel-head">
+            <div class="sec-icon-wrap sec-icon-red">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <div>
+              <h2>Paramétrage — Congés de maladie</h2>
+              <p>Types reconnus, règles de validation et impact sur le calcul d'assiduité.</p>
+            </div>
+          </div>
+          <div class="sec-panel-body">
+
+            <div class="rule-group">
+              <div class="rule-group-title">Types de congés maladie</div>
+              <table class="param-table">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th class="tcenter">Exempté du calcul d'assiduité</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (t of maladieTypes; track t.label) {
+                    <tr>
+                      <td class="field-name">{{ t.label }}</td>
+                      <td class="tcenter">
+                        <label class="toggle">
+                          <input type="checkbox" [(ngModel)]="t.exempte" [name]="'mal_' + t.label" />
+                          <span class="toggle-track"></span>
+                        </label>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <div class="rule-group">
+              <div class="rule-group-title">Règles de gestion</div>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <strong>Certificat médical obligatoire</strong>
+                  <span>Un justificatif médical doit être joint à toute demande de congé maladie.</span>
+                </div>
+                <label class="toggle"><input type="checkbox" [(ngModel)]="maladieConfig.certificatObligatoire" name="certif" /><span class="toggle-track"></span></label>
+              </div>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <strong>Validation exclusivement par la Direction RH</strong>
+                  <span>Les congés maladie ne passent pas par le circuit N+1 / DG standard.</span>
+                </div>
+                <label class="toggle"><input type="checkbox" [(ngModel)]="maladieConfig.validationRhOnly" name="rhOnly" /><span class="toggle-track"></span></label>
+              </div>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <strong>Exclusion automatique maternité / chirurgie</strong>
+                  <span>Ces congés sont exclus du calcul d'assiduité sans action manuelle.</span>
+                </div>
+                <label class="toggle"><input type="checkbox" [(ngModel)]="maladieConfig.exclusionAssiduite" name="exclusion" /><span class="toggle-track"></span></label>
+              </div>
+            </div>
+
+          </div>
+          <div class="sec-footer">
+            <button class="btn-save" type="button" (click)="saveSection()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Enregistrer
+            </button>
+            @if (savedSection === 'maladie') {
+              <span class="save-toast">Modifications enregistrées.</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ══ 7. Assiduité ═══════════════════════════════════════ -->
+      @if (activeSection === 'assiduite') {
+        <div class="sec-panel">
+          <div class="sec-panel-head">
+            <div class="sec-icon-wrap sec-icon-teal">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <div>
+              <h2>Module d'assiduité — Barème de points</h2>
+              <p>Configurez les tranches d'absence et les points d'impact correspondants.</p>
+            </div>
+          </div>
+          <div class="sec-panel-body">
+            <div class="rule-group">
+              <div class="rule-group-title">Barème des absences</div>
+              <table class="param-table bareme-table">
+                <thead>
+                  <tr>
+                    <th>Tranche d'absences</th>
+                    <th class="tcenter">Points d'impact</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of bareme; track row.tranche) {
+                    <tr>
+                      <td class="field-name">{{ row.tranche }}</td>
+                      <td class="tcenter">
+                        <input type="number" class="num-input"
+                               min="0" max="10" step="0.5"
+                               [(ngModel)]="row.points"
+                               [name]="'bar_' + row.tranche" />
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+              <p class="hint-text">Un point d'impact plus élevé pénalise davantage l'employé dans l'évaluation annuelle d'assiduité.</p>
+            </div>
+          </div>
+          <div class="sec-footer">
+            <button class="btn-save" type="button" (click)="saveSection()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Enregistrer
+            </button>
+            @if (savedSection === 'assiduite') {
+              <span class="save-toast">Modifications enregistrées.</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ══ 8. Notifications ═══════════════════════════════════ -->
+      @if (activeSection === 'notifications') {
+        <div class="sec-panel">
+          <div class="sec-panel-head">
+            <div class="sec-icon-wrap sec-icon-orange">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <div>
+              <h2>Notifications RH automatiques</h2>
+              <p>Activez ou désactivez les alertes envoyées aux parties prenantes.</p>
+            </div>
+          </div>
+          <div class="sec-panel-body">
+            @for (n of notifications; track n.label) {
+              <div class="notif-row">
+                <div class="notif-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                </div>
+                <div class="notif-info">
+                  <strong>{{ n.label }}</strong>
+                  <span>{{ n.desc }}</span>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" [(ngModel)]="n.active" [name]="'notif_' + n.label" />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+            }
+          </div>
+          <div class="sec-footer">
+            <button class="btn-save" type="button" (click)="saveSection()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Enregistrer
+            </button>
+            @if (savedSection === 'notifications') {
+              <span class="save-toast">Modifications enregistrées.</span>
+            }
+          </div>
+        </div>
+      }
+
+    </main>
+  </div>
+</div>
