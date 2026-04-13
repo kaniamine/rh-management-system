@@ -14,6 +14,8 @@ public class RhDbContext : DbContext
     public DbSet<DemandeMaladie> DemandesMaladie => Set<DemandeMaladie>();
     public DbSet<HistoriqueAction> HistoriqueActions => Set<HistoriqueAction>();
 
+    public DbSet<Notification> Notifications => Set<Notification>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

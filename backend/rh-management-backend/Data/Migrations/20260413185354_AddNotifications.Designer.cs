@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using rh_management_backend.Data;
 
@@ -11,9 +12,11 @@ using rh_management_backend.Data;
 namespace rh_management_backend.Data.Migrations
 {
     [DbContext(typeof(RhDbContext))]
-    partial class RhDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260413185354_AddNotifications")]
+    partial class AddNotifications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
