@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { AuthService } from '../../../../core/auth.service';
 
 type TypeDemande = 'conge' | 'autorisation' | 'maladie' | 'all';
 
@@ -18,6 +20,8 @@ interface Demande {
   motif: string;
 }
 
+const API = 'http://localhost:5130/api';
+
 @Component({
   selector: 'app-employee-dashboard',
   standalone: true,
@@ -25,10 +29,14 @@ interface Demande {
   templateUrl: './employee-dashboard.html',
   styleUrl: './employee-dashboard.css'
 })
-export class EmployeeDashboard {
+export class EmployeeDashboard implements OnInit {
+  private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
+
   activeTab: TypeDemande = 'all';
   filterStatut = '';
   selectedDemande: Demande | null = null;
+  loadError: string | null = null;
 
   readonly stats = {
     soldeConges: 12,
@@ -37,59 +45,40 @@ export class EmployeeDashboard {
     rejetees: 1
   };
 
-  readonly demandes: Demande[] = [
-    {
-      id: 1,
-      refNo: '#CON-2026-001',
-      type: 'conge',
-      sousType: 'Congé annuel',
-      dateCreation: '2026-04-01',
-      dateDebut: '2026-04-15',
-      dateFin: '2026-04-20',
-      duree: '5 jours',
-      motif: 'Voyage familial',
-      statut: 'En attente de validation N+1'
-    },
-    {
-      id: 2,
-      refNo: '#AUT-2026-007',
-      type: 'autorisation',
-      sousType: 'Personnelle',
-      dateCreation: '2026-03-20',
-      dateDebut: '2026-03-21',
-      duree: '01h 30',
-      motif: 'Rendez-vous médical',
-      statut: 'Validée'
-    },
-    {
-      id: 3,
-      refNo: '#MAL-2026-001',
-      type: 'maladie',
-      sousType: 'Maladie simple',
-      dateCreation: '2026-03-10',
-      dateDebut: '2026-03-10',
-      dateFin: '2026-03-15',
-      duree: '6 jours',
-      motif: 'Grippe — certificat médical joint',
-      statut: 'Validée'
-    },
-    {
-      id: 4,
-      refNo: '#CON-2026-002',
-      type: 'conge',
-      sousType: 'Congé exceptionnel',
-      dateCreation: '2026-02-28',
-      dateDebut: '2026-03-05',
-      dateFin: '2026-03-06',
-      duree: '2 jours',
-      motif: 'Mariage dans la famille',
-      statut: 'Rejetée par le supérieur hiérarchique'
-    }
-  ];
+  demandes: Demande[] = [];
+
+  ngOnInit(): void {
+    this.chargerDemandes();
+  }
+
+  private chargerDemandes(): void {
+    const matricule = this.auth.session?.matricule ?? '';
+    this.http
+      .get<any[]>(`${API}/demandes-conge?matricule=${encodeURIComponent(matricule)}`)
+      .subscribe({
+        next: (data) => {
+          this.demandes = data.map(c => ({
+            id:           c.id,
+            refNo:        c.refNo ?? `#CON-${c.id}`,
+            type:         'conge' as TypeDemande,
+            sousType:     c.typeConge ?? '',
+            dateCreation: c.createdAt?.substring(0, 10) ?? '',
+            dateDebut:    c.dateDebut ?? '',
+            dateFin:      c.dateFin ?? undefined,
+            duree:        c.typeDuree ?? '',
+            motif:        c.motif ?? '',
+            statut:       c.statut ?? ''
+          }));
+        },
+        error: (err: HttpErrorResponse) => {
+          this.loadError = err.error?.message ?? `Erreur ${err.status} lors du chargement.`;
+        }
+      });
+  }
 
   get filteredDemandes(): Demande[] {
     return this.demandes.filter(d => {
-      const matchTab = this.activeTab === 'all' || d.type === this.activeTab;
+      const matchTab    = this.activeTab === 'all' || d.type === this.activeTab;
       const matchStatut = !this.filterStatut || d.statut === this.filterStatut;
       return matchTab && matchStatut;
     });
@@ -108,9 +97,9 @@ export class EmployeeDashboard {
 
   getTypeIcon(type: TypeDemande): string {
     const icons: Record<string, string> = {
-      conge: '🏖',
+      conge:        '🏖',
       autorisation: '🕐',
-      maladie: '🏥'
+      maladie:      '🏥'
     };
     return icons[type] ?? '📄';
   }

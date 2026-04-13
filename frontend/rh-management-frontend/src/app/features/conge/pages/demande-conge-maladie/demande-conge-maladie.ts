@@ -158,7 +158,7 @@ export class DemandeCongeArrMaladie {
     }
 
     this.http
-      .post<{ id: number; statut: string }>('http://localhost:5130/api/conges-maladie', formData)
+      .post<{ id: number; statut: string }>('http://localhost:5130/api/demandes-maladie', formData)
       .subscribe({
         next: (res) => {
           this.successMessage = `Demande soumise avec succès (réf. #${res.id}) — statut : ${res.statut}. La Direction RH a été notifiée.`;

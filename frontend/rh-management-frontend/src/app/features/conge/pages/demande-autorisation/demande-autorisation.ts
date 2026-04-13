@@ -195,7 +195,7 @@ export class DemandeAutorisation {
     };
 
     this.http
-      .post<{ id: number; statut: string }>('http://localhost:5130/api/autorisations-sortie', payload)
+      .post<{ id: number; statut: string }>('http://localhost:5130/api/demandes-autorisation', payload)
       .subscribe({
         next: (res) => {
           this.successMessage = `Demande soumise avec succès (réf. #${res.id}) — statut : ${res.statut}.`;

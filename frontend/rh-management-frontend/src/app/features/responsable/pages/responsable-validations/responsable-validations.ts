@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../../../core/auth.service';
 import { SignaturePad, LeaveRequestSummary, SignatureResult } from '../../../../shared/components/signature-pad/signature-pad';
 
 type StatutDemande =
@@ -45,14 +47,20 @@ interface Demande {
   templateUrl: './responsable-validations.html',
   styleUrls: ['./responsable-validations.css']
 })
-export class ResponsableValidations {
-  // Responsable connecté
-  readonly responsable = {
-    nomComplet: 'Ahmed Ben Ali',
-    matricule: 'MGR-2026-001',
-    service: 'Direction Finance',
-    equipeCount: 8
-  };
+export class ResponsableValidations implements OnInit {
+  private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
+  private readonly API  = 'http://localhost:5130';
+
+  get responsable() {
+    return {
+      nomComplet:  this.auth.session?.nomComplet ?? '',
+      matricule:   this.auth.session?.matricule  ?? '',
+      initiales:   this.auth.session?.initiales  ?? '',
+      service:     this.auth.session?.service    ?? '',
+      equipeCount: 0
+    };
+  }
 
   activeTab: TypeDemande | 'all' = 'all';
   selectedDemande: Demande | null = null;
@@ -64,89 +72,52 @@ export class ResponsableValidations {
   filterStatut     = '';
   signatureRequest: LeaveRequestSummary | null = null;
 
-  // Données de démonstration — seront remplacées par des appels API
-  demandes: Demande[] = [
-    {
-      id: 1,
-      refNo: '#CON-2026-001',
-      type: 'conge',
-      typeLabel: 'Congé',
-      sousType: 'Congé annuel',
-      employe: 'Amine Kani',
-      matricule: 'EMP-2026-014',
-      service: 'Comptabilité',
-      dateCreation: '2026-04-01',
-      dateDebut: '2026-04-15',
-      dateFin: '2026-04-20',
-      duree: '5 jours',
-      motif: 'Voyage familial',
-      statut: 'En attente de validation N+1'
-    },
-    {
-      id: 2,
-      refNo: '#AUT-2026-007',
-      type: 'autorisation',
-      typeLabel: 'Autorisation',
-      sousType: 'Personnelle',
-      employe: 'Sara Trabelsi',
-      matricule: 'EMP-2026-022',
-      service: 'Comptabilité',
-      dateCreation: '2026-04-03',
-      dateDebut: '2026-04-05',
-      heureDepart: '09:00',
-      heureRetour: '10:30',
-      duree: '01h 30',
-      motif: 'Rendez-vous médical',
-      statut: 'En attente de validation du supérieur hiérarchique'
-    },
-    {
-      id: 3,
-      refNo: '#MAL-2026-003',
-      type: 'maladie',
-      typeLabel: 'Maladie',
-      sousType: 'Maladie simple',
-      employe: 'Mohamed Kacem',
-      matricule: 'EMP-2026-031',
-      service: 'Comptabilité',
-      dateCreation: '2026-03-28',
-      dateDebut: '2026-03-28',
-      dateFin: '2026-04-02',
-      duree: '6 jours',
-      motif: 'Grippe — certificat médical joint',
-      statut: 'En attente de validation RH'
-    },
-    {
-      id: 4,
-      refNo: '#CON-2026-002',
-      type: 'conge',
-      typeLabel: 'Congé',
-      sousType: 'Congé exceptionnel',
-      employe: 'Nadia Bouhajeb',
-      matricule: 'EMP-2026-019',
-      service: 'Comptabilité',
-      dateCreation: '2026-03-30',
-      dateDebut: '2026-04-10',
-      dateFin: '2026-04-11',
-      duree: '2 jours',
-      motif: 'Mariage dans la famille',
-      statut: 'En attente de validation N+1'
-    }
-  ];
+  demandes: any[] = [];
+
+  ngOnInit(): void {
+    this.loadDemandes();
+  }
+
+  loadDemandes(): void {
+    this.http.get<any[]>(
+      `${this.API}/api/demandes-conge?statut=En%20attente%20de%20validation%20N%2B1`
+    ).subscribe({
+      next: (data) => {
+        this.demandes = data.map(d => ({
+          id:           d.id,
+          refNo:        `#CON-${d.id}`,
+          type:         'conge',
+          typeLabel:    'Congé',
+          sousType:     d.typeConge,
+          employe:      d.nomComplet,
+          matricule:    d.matricule,
+          service:      d.service,
+          dateCreation: d.createdAt?.substring(0, 10),
+          dateDebut:    d.dateDebut,
+          dateFin:      d.dateFin,
+          duree:        `${d.dureeJours} jours`,
+          motif:        d.motif ?? '',
+          statut:       d.statut
+        }));
+      },
+      error: () => {}
+    });
+  }
 
   get filteredDemandes(): Demande[] {
-    return this.demandes.filter(d => {
-      const matchTab = this.activeTab === 'all' || d.type === this.activeTab;
+    return this.demandes.filter((d: any) => {
+      const matchTab    = this.activeTab === 'all' || d.type === this.activeTab;
       const matchStatut = !this.filterStatut || d.statut === this.filterStatut;
       return matchTab && matchStatut;
     });
   }
 
   countByType(type: TypeDemande): number {
-    return this.demandes.filter(d => d.type === type).length;
+    return this.demandes.filter((d: any) => d.type === type).length;
   }
 
   get pendingCount(): number {
-    return this.demandes.filter(d =>
+    return this.demandes.filter((d: any) =>
       d.statut === 'En attente de validation N+1' ||
       d.statut === 'En attente de validation du supérieur hiérarchique'
     ).length;
@@ -171,15 +142,14 @@ export class ResponsableValidations {
 
   openApproveModal(): void {
     if (!this.selectedDemande) return;
-    // Congé requests go through the signature pad; others use the simple modal
     if (this.selectedDemande.type === 'conge') {
       this.signatureRequest = {
-        refNo:        this.selectedDemande.refNo,
-        employeeNom:  this.selectedDemande.employe,
-        type:         this.selectedDemande.sousType,
-        dateDebut:    this.selectedDemande.dateDebut,
-        dateFin:      this.selectedDemande.dateFin ?? '—',
-        motif:        this.selectedDemande.motif
+        refNo:       this.selectedDemande.refNo,
+        employeeNom: this.selectedDemande.employe,
+        type:        this.selectedDemande.sousType,
+        dateDebut:   this.selectedDemande.dateDebut,
+        dateFin:     this.selectedDemande.dateFin ?? '—',
+        motif:       this.selectedDemande.motif
       };
       this.showSignaturePad = true;
       this.showApproveModal = false;
@@ -214,54 +184,48 @@ export class ResponsableValidations {
   }
 
   closeModals(): void {
-    this.showApproveModal  = false;
-    this.showRejectModal   = false;
-    this.showSignaturePad  = false;
-    this.signatureRequest  = null;
-    this.rejectMotif       = '';
+    this.showApproveModal = false;
+    this.showRejectModal  = false;
+    this.showSignaturePad = false;
+    this.signatureRequest = null;
+    this.rejectMotif      = '';
   }
 
   approuveDemande(): void {
     if (!this.selectedDemande) return;
+    const id = this.selectedDemande.id;
     this.actionLoading = true;
-
-    // Simuler un appel API
-    setTimeout(() => {
-      if (!this.selectedDemande) return;
-      const d = this.demandes.find(x => x.id === this.selectedDemande!.id);
-      if (d) {
-        if (d.type === 'conge') {
-          d.statut = 'En attente de validation DG';
-        } else if (d.type === 'autorisation') {
-          d.statut = 'Validée';
-        } else {
-          d.statut = 'En attente de validation RH';
-        }
-      }
-      this.actionLoading = false;
-      this.showApproveModal = false;
-      this.selectedDemande = null;
-    }, 600);
+    this.http.post(`${this.API}/api/demandes-conge/${id}/valider-n1`, {
+      auteurMatricule: this.auth.session?.matricule ?? '',
+      commentaire: ''
+    }).subscribe({
+      next: () => {
+        this.actionLoading    = false;
+        this.showApproveModal = false;
+        this.selectedDemande  = null;
+        this.loadDemandes();
+      },
+      error: () => { this.actionLoading = false; }
+    });
   }
 
   rejeteDemande(): void {
     if (!this.selectedDemande || !this.rejectMotif.trim()) return;
+    const id = this.selectedDemande.id;
     this.actionLoading = true;
-
-    // Simuler un appel API
-    setTimeout(() => {
-      if (!this.selectedDemande) return;
-      const d = this.demandes.find(x => x.id === this.selectedDemande!.id);
-      if (d) {
-        d.statut = d.type === 'conge'
-          ? 'Rejetée par le supérieur hiérarchique'
-          : 'Rejetée';
-      }
-      this.actionLoading = false;
-      this.showRejectModal = false;
-      this.selectedDemande = null;
-      this.rejectMotif = '';
-    }, 600);
+    this.http.post(`${this.API}/api/demandes-conge/${id}/rejeter-n1`, {
+      auteurMatricule: this.auth.session?.matricule ?? '',
+      commentaire: this.rejectMotif
+    }).subscribe({
+      next: () => {
+        this.actionLoading   = false;
+        this.showRejectModal = false;
+        this.selectedDemande = null;
+        this.rejectMotif     = '';
+        this.loadDemandes();
+      },
+      error: () => { this.actionLoading = false; }
+    });
   }
 
   isPendingValidation(d: Demande): boolean {
@@ -280,9 +244,9 @@ export class ResponsableValidations {
 
   getTypeClass(type: TypeDemande): string {
     const map: Record<TypeDemande, string> = {
-      conge: 'type-conge',
+      conge:        'type-conge',
       autorisation: 'type-auto',
-      maladie: 'type-maladie'
+      maladie:      'type-maladie'
     };
     return map[type];
   }
