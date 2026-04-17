@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 type StatutDemande = string;
 type TypeDemande = 'conge' | 'autorisation' | 'maladie' | 'all';
@@ -30,7 +31,10 @@ interface DemandeRH {
   templateUrl: './rh-dashboard.html',
   styleUrl: './rh-dashboard.css'
 })
-export class RhDashboard {
+export class RhDashboard implements OnInit {
+  private readonly http = inject(HttpClient);
+  private readonly API = 'http://localhost:5130';
+
   activeTab: TypeDemande = 'all';
   filterStatut = '';
   filterEmploye = '';
@@ -41,92 +45,62 @@ export class RhDashboard {
   rejectMotif = '';
   actionLoading = false;
 
-  readonly kpis = {
-    total: 152,
-    enAttente: 18,
-    validees: 104,
-    rejetees: 12,
-    cloturees: 18
-  };
+  demandes: DemandeRH[] = [];
 
-  demandes: DemandeRH[] = [
-    {
-      id: 1,
-      refNo: '#CON-2026-001',
-      type: 'conge',
-      sousType: 'Congé annuel',
-      employe: 'Amine Kani',
-      matricule: 'EMP-2026-014',
-      direction: 'Direction Finance',
-      dateCreation: '2026-04-01',
-      dateDebut: '2026-04-15',
-      dateFin: '2026-04-20',
-      duree: '5 jours',
-      motif: 'Voyage familial',
-      statut: 'Validée – En traitement RH'
-    },
-    {
-      id: 2,
-      refNo: '#AUT-2026-007',
-      type: 'autorisation',
-      sousType: 'Personnelle',
-      employe: 'Sara Trabelsi',
-      matricule: 'EMP-2026-022',
-      direction: 'Direction Commerciale',
-      dateCreation: '2026-04-03',
-      dateDebut: '2026-04-05',
-      duree: '01h 30',
-      motif: 'Rendez-vous médical',
-      statut: 'Validée'
-    },
-    {
-      id: 3,
-      refNo: '#MAL-2026-003',
-      type: 'maladie',
-      sousType: 'Maladie simple',
-      employe: 'Mohamed Kacem',
-      matricule: 'EMP-2026-031',
-      direction: 'Direction Finance',
-      dateCreation: '2026-03-28',
-      dateDebut: '2026-03-28',
-      dateFin: '2026-04-02',
-      duree: '6 jours',
-      motif: 'Grippe',
-      statut: 'En attente de validation RH',
-      certificat: 'certificat-kacem-mar26.pdf'
-    },
-    {
-      id: 4,
-      refNo: '#CON-2026-002',
-      type: 'conge',
-      sousType: 'Congé exceptionnel',
-      employe: 'Nadia Bouhajeb',
-      matricule: 'EMP-2026-019',
-      direction: 'DRH',
-      dateCreation: '2026-03-30',
-      dateDebut: '2026-04-10',
-      dateFin: '2026-04-11',
-      duree: '2 jours',
-      motif: 'Mariage dans la famille',
-      statut: 'En attente de validation N+1'
-    },
-    {
-      id: 5,
-      refNo: '#MAL-2026-002',
-      type: 'maladie',
-      sousType: 'Congé maternité',
-      employe: 'Leila Mansouri',
-      matricule: 'EMP-2026-007',
-      direction: 'Direction Technique',
-      dateCreation: '2026-03-15',
-      dateDebut: '2026-03-20',
-      dateFin: '2026-06-12',
-      duree: '84 jours',
-      motif: 'Congé maternité légal',
-      statut: 'Validée',
-      certificat: 'cert-maternite-mansouri.pdf'
-    }
-  ];
+  get kpis() {
+    return {
+      total: this.demandes.length,
+      enAttente: this.demandes.filter(d => d.statut.startsWith('En attente')).length,
+      validees: this.demandes.filter(d =>
+        d.statut === 'Validée' || d.statut === 'Validée – En traitement RH'
+      ).length,
+      rejetees: this.demandes.filter(d => d.statut.startsWith('Rejetée')).length,
+      cloturees: this.demandes.filter(d => d.statut === 'Clôturée').length
+    };
+  }
+
+  ngOnInit(): void {
+    this.loadDemandes();
+  }
+
+  loadDemandes(): void {
+    this.http.get<any[]>(`${this.API}/api/demandes-conge`).subscribe({
+      next: (data) => {
+        this.demandes = data.map(d => this.mapDemande(d));
+      },
+      error: () => {
+        this.demandes = [];
+      }
+    });
+  }
+
+  private mapDemande(d: any): DemandeRH {
+    const type = this.inferType(d.typeConge ?? '');
+    const prefix = type === 'maladie' ? 'MAL' : type === 'autorisation' ? 'AUT' : 'CON';
+    const year = d.createdAt ? new Date(d.createdAt).getFullYear() : new Date().getFullYear();
+    return {
+      id: d.id,
+      refNo: `#${prefix}-${year}-${String(d.id).padStart(3, '0')}`,
+      type,
+      sousType: d.typeConge ?? '',
+      employe: d.nomComplet ?? '',
+      matricule: d.matricule ?? '',
+      direction: d.service ?? '',
+      dateCreation: d.createdAt ? d.createdAt.slice(0, 10) : '',
+      dateDebut: d.dateDebut ?? '',
+      dateFin: d.dateFin ?? undefined,
+      duree: d.dureeJours != null ? `${d.dureeJours} jour${d.dureeJours > 1 ? 's' : ''}` : '',
+      motif: d.motif ?? '',
+      statut: d.statut ?? ''
+    };
+  }
+
+  private inferType(typeConge: string): TypeDemande {
+    const tc = typeConge.toLowerCase();
+    if (tc.includes('maladie') || tc.includes('maternit')) return 'maladie';
+    if (tc.includes('autorisation')) return 'autorisation';
+    return 'conge';
+  }
 
   get filteredDemandes(): DemandeRH[] {
     const q = this.filterEmploye.toLowerCase();
@@ -170,23 +144,37 @@ export class RhDashboard {
   cloturer(): void {
     if (!this.selectedDemande) return;
     this.actionLoading = true;
-    setTimeout(() => {
-      const d = this.demandes.find(x => x.id === this.selectedDemande!.id);
-      if (d) d.statut = 'Clôturée';
-      this.actionLoading = false;
-      this.selectedDemande = null;
-    }, 500);
+    const id = this.selectedDemande.id;
+    this.http
+      .patch(`${this.API}/api/demandes-conge/${id}/statut`, { statut: 'Clôturée' })
+      .subscribe({
+        next: () => {
+          this.actionLoading = false;
+          this.selectedDemande = null;
+          this.loadDemandes();
+        },
+        error: () => {
+          this.actionLoading = false;
+        }
+      });
   }
 
   validerMaladie(): void {
     if (!this.selectedDemande) return;
     this.actionLoading = true;
-    setTimeout(() => {
-      const d = this.demandes.find(x => x.id === this.selectedDemande!.id);
-      if (d) d.statut = 'Validée';
-      this.actionLoading = false;
-      this.selectedDemande = null;
-    }, 500);
+    const id = this.selectedDemande.id;
+    this.http
+      .patch(`${this.API}/api/demandes-conge/${id}/statut`, { statut: 'Validée' })
+      .subscribe({
+        next: () => {
+          this.actionLoading = false;
+          this.selectedDemande = null;
+          this.loadDemandes();
+        },
+        error: () => {
+          this.actionLoading = false;
+        }
+      });
   }
 
   openRejectModal(): void {
@@ -202,13 +190,20 @@ export class RhDashboard {
   rejeter(): void {
     if (!this.selectedDemande || !this.rejectMotif.trim()) return;
     this.actionLoading = true;
-    setTimeout(() => {
-      const d = this.demandes.find(x => x.id === this.selectedDemande!.id);
-      if (d) d.statut = 'Rejetée';
-      this.actionLoading = false;
-      this.showRejectModal = false;
-      this.selectedDemande = null;
-    }, 500);
+    const id = this.selectedDemande.id;
+    this.http
+      .patch(`${this.API}/api/demandes-conge/${id}/statut`, { statut: 'Rejetée', motif: this.rejectMotif })
+      .subscribe({
+        next: () => {
+          this.actionLoading = false;
+          this.showRejectModal = false;
+          this.selectedDemande = null;
+          this.loadDemandes();
+        },
+        error: () => {
+          this.actionLoading = false;
+        }
+      });
   }
 
   canCloturer(d: DemandeRH): boolean {
