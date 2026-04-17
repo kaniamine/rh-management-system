@@ -13,13 +13,14 @@ public class DemandeCongeController : ControllerBase
     private readonly IDemandeCongeService _svc;
     public DemandeCongeController(IDemandeCongeService svc) => _svc = svc;
 
-    // GET /api/demandes-conge?matricule=EMP001&statut=En+attente+de+validation+N%2B1
+    // GET /api/demandes-conge?matricule=EMP001&statut=...&type=conge|maladie|autorisation
     [HttpGet]
     public async Task<IActionResult> GetAll(
         [FromQuery] string? matricule,
-        [FromQuery] string? statut)
+        [FromQuery] string? statut,
+        [FromQuery] string? type)
     {
-        var list = await _svc.GetAllAsync(matricule, statut);
+        var list = await _svc.GetAllAsync(matricule, statut, type);
         return Ok(list);
     }
 
@@ -95,6 +96,15 @@ public class DemandeCongeController : ControllerBase
     {
         var (ok, err) = await _svc.CloturerRHAsync(id, action);
         return ok ? Ok(new { message = "Demande clôturée, solde débité." }) : BadRequest(new { message = err });
+    }
+
+    // PATCH /api/demandes-conge/{id}/statut
+    [HttpPatch("{id}/statut")]
+    [Authorize(Roles = "rh,admin")]
+    public async Task<IActionResult> PatchStatut(int id, [FromBody] UpdateStatutDto dto)
+    {
+        var (ok, err) = await _svc.UpdateStatutAsync(id, dto);
+        return ok ? Ok(new { message = "Statut mis à jour." }) : NotFound(new { message = err });
     }
 
     // POST /api/demandes-conge/{id}/annuler

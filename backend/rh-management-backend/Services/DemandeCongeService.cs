@@ -11,333 +11,231 @@ public class DemandeCongeService : IDemandeCongeService
 
     public DemandeCongeService(RhDbContext db) => _db = db;
 
-    public async Task<List<DemandeConge>> GetAllAsync(string? matricule, string? statut)
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private static bool EstCongeSansSolde(string typeConge) =>
+        typeConge.Contains("maladie", StringComparison.OrdinalIgnoreCase) ||
+        typeConge.Contains("maternité", StringComparison.OrdinalIgnoreCase) ||
+        typeConge.Contains("chirurgie", StringComparison.OrdinalIgnoreCase) ||
+        typeConge.Contains("sans solde", StringComparison.OrdinalIgnoreCase);
+
+    private static int ComputeDureeJours(DateOnly debut, DateOnly fin, bool demiJournee)
     {
-        var q = _db.DemandesConges.AsQueryable();
-        if (!string.IsNullOrEmpty(matricule)) q = q.Where(d => d.Matricule == matricule);
-        if (!string.IsNullOrEmpty(statut)) q = q.Where(d => d.Statut == statut);
+        var jours = fin.DayNumber - debut.DayNumber + 1;
+        if (jours < 1) return 0;
+        return demiJournee ? 1 : jours;
+    }
+
+    // ── Read ──────────────────────────────────────────────────────────────────
+
+    public async Task<List<DemandeConge>> GetAllAsync(string? matricule, string? statut, string? type)
+    {
+        var q = _db.DemandesConges.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(matricule))
+            q = q.Where(d => d.Matricule == matricule.Trim());
+
+        if (!string.IsNullOrWhiteSpace(statut))
+            q = q.Where(d => d.Statut == statut.Trim());
+
+        if (!string.IsNullOrWhiteSpace(type))
+        {
+            // type = "maladie" | "conge" | "autorisation"
+            if (type == "maladie")
+                q = q.Where(d => d.TypeConge.Contains("maladie") || d.TypeConge.Contains("maternité") || d.TypeConge.Contains("chirurgie"));
+            else if (type == "conge")
+                q = q.Where(d => !d.TypeConge.Contains("maladie") && !d.TypeConge.Contains("maternité") && !d.TypeConge.Contains("chirurgie"));
+        }
+
         return await q.OrderByDescending(d => d.CreatedAt).ToListAsync();
     }
 
     public async Task<DemandeConge?> GetByIdAsync(int id) =>
         await _db.DemandesConges.FindAsync(id);
 
+    public async Task<List<object>> GetHistoriqueAsync(int id)
+    {
+        // Structure extensible — retourne le statut actuel pour l'instant
+        var d = await _db.DemandesConges.FindAsync(id);
+        if (d == null) return [];
+        return [new { action = "Statut courant", statut = d.Statut, date = d.CreatedAt }];
+    }
+
+    // ── Create ────────────────────────────────────────────────────────────────
+
     public async Task<(DemandeConge? result, string? error)> CreateAsync(CreateCongeDto dto)
     {
-        var employe = await _db.Employes.FirstOrDefaultAsync(e => e.Matricule == dto.Matricule);
-        if (employe == null)
-            return (null, "Employé introuvable avec ce matricule.");
-
-        string supNom = string.Empty;
-        if (!string.IsNullOrEmpty(employe.SuperieurHierarchiqueMatricule))
-        {
-            var sup = await _db.Employes
-                .FirstOrDefaultAsync(e => e.Matricule == employe.SuperieurHierarchiqueMatricule);
-            supNom = sup?.NomComplet ?? string.Empty;
-        }
+        if (string.IsNullOrWhiteSpace(dto.TypeConge))
+            return (null, "Le type de congé est obligatoire.");
 
         if (dto.DateFin < dto.DateDebut)
-            return (null, "La date de fin doit être >= à la date de début.");
+            return (null, "La date de fin doit être postérieure ou égale à la date de début.");
 
-        bool demiJournee = (dto.TypeDuree ?? "").Contains("Demi", StringComparison.OrdinalIgnoreCase);
-        if (demiJournee && dto.DateDebut != dto.DateFin)
-            return (null, "Pour une demi-journée, les dates début et fin doivent être identiques.");
+        var typeDuree = string.IsNullOrWhiteSpace(dto.TypeDuree) ? "Journée entière" : dto.TypeDuree.Trim();
+        var demiJournee = typeDuree.Contains("Demi", StringComparison.OrdinalIgnoreCase);
 
         if (!dto.EstBrouillon)
         {
-            if (!IsMinThreeWorkingDays(dto.DateDebut))
-                return (null, "La demande doit être déposée au minimum 3 jours ouvrés avant la date de début.");
+            if (string.IsNullOrWhiteSpace(dto.Matricule))
+                return (null, "Le matricule est obligatoire.");
 
-            int dureeCheck = ComputeDuree(dto.DateDebut, dto.DateFin, demiJournee);
-            bool needsSolde = dto.TypeConge is not ("Congé sans solde" or "Congé maternité");
-            if (needsSolde && dureeCheck > employe.SoldeConges)
-                return (null, $"Solde insuffisant : {employe.SoldeConges} jours disponibles, {dureeCheck} demandés.");
-
-            if (dto.TypeConge is "Congé exceptionnel de courte durée" or "Congé de décès"
-                && string.IsNullOrWhiteSpace(dto.Motif))
-                return (null, "Le motif est obligatoire pour ce type de congé.");
+            if (string.IsNullOrWhiteSpace(dto.Motif))
+                return (null, "Le motif est obligatoire pour soumettre la demande.");
         }
 
-        int dureeJours = ComputeDuree(dto.DateDebut, dto.DateFin, demiJournee);
-        string statut = dto.EstBrouillon ? "Brouillon" : "En attente de validation N+1";
+        var dureeJours = ComputeDureeJours(dto.DateDebut, dto.DateFin, demiJournee);
+        if (dureeJours < 1)
+            return (null, "Durée invalide.");
+
+        // Vérification du solde (sauf congés sans solde / maladie)
+        if (!dto.EstBrouillon && !EstCongeSansSolde(dto.TypeConge) && !string.IsNullOrWhiteSpace(dto.Matricule))
+        {
+            var employe = await _db.Employes.FirstOrDefaultAsync(e => e.Matricule == dto.Matricule);
+            if (employe != null && employe.SoldeCongesJours < dureeJours)
+                return (null, $"Solde insuffisant : vous demandez {dureeJours} jours mais votre solde est de {employe.SoldeCongesJours} jours.");
+        }
 
         var entity = new DemandeConge
         {
-            Matricule = employe.Matricule,
-            NomComplet = employe.NomComplet,
-            Direction = employe.Direction,
-            Service = employe.Service,
-            GradeFonction = employe.Fonction,
-            SuperieurHierarchique = supNom,
-            TypeConge = dto.TypeConge,
+            NomComplet = dto.Matricule ?? "",   // sera résolu via l'employé en prod
+            Matricule = (dto.Matricule ?? "").Trim(),
+            Service = null,
+            SuperieurHierarchique = null,
+            GradeFonction = null,
+            TypeConge = dto.TypeConge.Trim(),
+            TypeDuree = typeDuree,
             DateDebut = dto.DateDebut,
             DateFin = dto.DateFin,
             DureeJours = dureeJours,
-            TypeDuree = dto.TypeDuree,
-            Motif = dto.Motif,
-            AdressePendantConge = dto.AdressePendantConge,
-            Telephone = dto.Telephone,
-            PieceJustificativeFichierNom = dto.PieceJustificativeFichierNom,
-            Statut = statut,
+            Motif = string.IsNullOrWhiteSpace(dto.Motif) ? null : dto.Motif.Trim(),
+            AdressePendantConge = string.IsNullOrWhiteSpace(dto.AdressePendantConge) ? null : dto.AdressePendantConge.Trim(),
+            Telephone = string.IsNullOrWhiteSpace(dto.Telephone) ? null : dto.Telephone.Trim(),
+            PieceJustificativeFichierNom = string.IsNullOrWhiteSpace(dto.PieceJustificativeFichierNom) ? null : dto.PieceJustificativeFichierNom.Trim(),
             EstBrouillon = dto.EstBrouillon,
+            Statut = dto.EstBrouillon ? "Brouillon" : "En attente de validation N+1",
             CreatedAt = DateTime.UtcNow
         };
 
         _db.DemandesConges.Add(entity);
         await _db.SaveChangesAsync();
-
-        await AddLog("conge", entity.Id,
-            dto.EstBrouillon ? "Brouillon créé" : "Demande soumise",
-            employe.Matricule, "employe");
-
-        // ── Notifier N+1 quand demande soumise ──────────────────────────────
-        if (!dto.EstBrouillon && !string.IsNullOrEmpty(employe.SuperieurHierarchiqueMatricule))
-        {
-            var n1User = await _db.Users
-                .Include(u => u.Employe)
-                .FirstOrDefaultAsync(u =>
-                    u.Employe.Matricule == employe.SuperieurHierarchiqueMatricule
-                    && u.IsActive);
-            if (n1User != null)
-            {
-                _db.Notifications.Add(new Notification
-                {
-                    DestinataireMatricule = n1User.Matricule,
-                    Message = $"Nouvelle demande de congé soumise par {employe.NomComplet} : {dto.TypeConge} du {dto.DateDebut} au {dto.DateFin}.",
-                    Timestamp = DateTime.UtcNow,
-                    IsRead = false
-                });
-                await _db.SaveChangesAsync();
-            }
-        }
-
         return (entity, null);
     }
 
-    // ── Workflow ─────────────────────────────────────────────────────────────
+    // ── Workflow ──────────────────────────────────────────────────────────────
 
-    public async Task<(bool success, string? error)> ValiderN1Async(int id, WorkflowActionDto action)
+    public async Task<(bool ok, string? err)> ValiderN1Async(int id, WorkflowActionDto action)
     {
         var d = await _db.DemandesConges.FindAsync(id);
         if (d == null) return (false, "Demande introuvable.");
         if (d.Statut != "En attente de validation N+1")
-            return (false, "Ce statut ne permet pas cette action.");
+            return (false, $"Statut incorrect : {d.Statut}");
 
         d.Statut = "En attente de validation DG";
-        d.UpdatedAt = DateTime.UtcNow;
-
-        // Notifier l'employé
-        _db.Notifications.Add(new Notification
-        {
-            DestinataireMatricule = d.Matricule,
-            Message = "Votre demande de congé a été validée par votre supérieur hiérarchique.",
-            Timestamp = DateTime.UtcNow,
-            IsRead = false
-        });
-
-        // Notifier la DG
-        var dgUser = await _db.Users
-            .FirstOrDefaultAsync(u => u.Role == "dg" && u.IsActive);
-        if (dgUser != null)
-        {
-            _db.Notifications.Add(new Notification
-            {
-                DestinataireMatricule = dgUser.Matricule,
-                Message = $"Demande de congé de {d.NomComplet} validée par N+1 — en attente de votre validation.",
-                Timestamp = DateTime.UtcNow,
-                IsRead = false
-            });
-        }
-
         await _db.SaveChangesAsync();
-        await AddLog("conge", id, "Validation N+1", action.AuteurMatricule, "n1", action.Commentaire);
         return (true, null);
     }
 
-    public async Task<(bool success, string? error)> RejeterN1Async(int id, WorkflowActionDto action)
+    public async Task<(bool ok, string? err)> RejeterN1Async(int id, WorkflowActionDto action)
     {
         if (string.IsNullOrWhiteSpace(action.Commentaire))
             return (false, "Le motif de rejet est obligatoire.");
 
         var d = await _db.DemandesConges.FindAsync(id);
         if (d == null) return (false, "Demande introuvable.");
+        if (d.Statut != "En attente de validation N+1")
+            return (false, $"Statut incorrect : {d.Statut}");
 
+        // ✅ Rejet N+1 → solde INCHANGÉ (cahier des charges)
         d.Statut = "Rejetée par le supérieur hiérarchique";
-        d.UpdatedAt = DateTime.UtcNow;
-
-        // Notifier l'employé
-        _db.Notifications.Add(new Notification
-        {
-            DestinataireMatricule = d.Matricule,
-            Message = $"Votre demande de congé a été rejetée par votre supérieur hiérarchique. Motif : {action.Commentaire}",
-            Timestamp = DateTime.UtcNow,
-            IsRead = false
-        });
-
         await _db.SaveChangesAsync();
-        await AddLog("conge", id, "Rejet N+1", action.AuteurMatricule, "n1", action.Commentaire);
         return (true, null);
     }
 
-    public async Task<(bool success, string? error)> ValiderDGAsync(int id, WorkflowActionDto action)
+    public async Task<(bool ok, string? err)> ValiderDGAsync(int id, WorkflowActionDto action)
     {
         var d = await _db.DemandesConges.FindAsync(id);
         if (d == null) return (false, "Demande introuvable.");
         if (d.Statut != "En attente de validation DG")
-            return (false, "Ce statut ne permet pas cette action.");
+            return (false, $"Statut incorrect : {d.Statut}");
 
         d.Statut = "Validée – En traitement RH";
-        d.UpdatedAt = DateTime.UtcNow;
-
-        // Notifier l'employé
-        _db.Notifications.Add(new Notification
-        {
-            DestinataireMatricule = d.Matricule,
-            Message = "Votre demande de congé a été validée par la Direction Générale.",
-            Timestamp = DateTime.UtcNow,
-            IsRead = false
-        });
-
-        // Notifier la RH
-        var rhUser = await _db.Users
-            .FirstOrDefaultAsync(u => u.Role == "rh" && u.IsActive);
-        if (rhUser != null)
-        {
-            _db.Notifications.Add(new Notification
-            {
-                DestinataireMatricule = rhUser.Matricule,
-                Message = $"Demande de congé de {d.NomComplet} validée par la DG — à clôturer ({d.DureeJours} jours du {d.DateDebut} au {d.DateFin}).",
-                Timestamp = DateTime.UtcNow,
-                IsRead = false
-            });
-        }
-
         await _db.SaveChangesAsync();
-        await AddLog("conge", id, "Validation DG", action.AuteurMatricule, "dg", action.Commentaire);
         return (true, null);
     }
 
-    public async Task<(bool success, string? error)> RejeterDGAsync(int id, WorkflowActionDto action)
+    public async Task<(bool ok, string? err)> RejeterDGAsync(int id, WorkflowActionDto action)
     {
         if (string.IsNullOrWhiteSpace(action.Commentaire))
             return (false, "Le motif de rejet est obligatoire.");
 
         var d = await _db.DemandesConges.FindAsync(id);
         if (d == null) return (false, "Demande introuvable.");
+        if (d.Statut != "En attente de validation DG")
+            return (false, $"Statut incorrect : {d.Statut}");
 
+        // ✅ Rejet DG → solde INCHANGÉ (cahier des charges)
         d.Statut = "Rejetée par la Direction Générale";
-        d.UpdatedAt = DateTime.UtcNow;
-
-        // Notifier l'employé
-        _db.Notifications.Add(new Notification
-        {
-            DestinataireMatricule = d.Matricule,
-            Message = $"Votre demande de congé a été rejetée par la Direction Générale. Motif : {action.Commentaire}",
-            Timestamp = DateTime.UtcNow,
-            IsRead = false
-        });
-
         await _db.SaveChangesAsync();
-        await AddLog("conge", id, "Rejet DG", action.AuteurMatricule, "dg", action.Commentaire);
         return (true, null);
     }
 
-    public async Task<(bool success, string? error)> CloturerRHAsync(int id, WorkflowActionDto action)
+    public async Task<(bool ok, string? err)> CloturerRHAsync(int id, WorkflowActionDto action)
     {
         var d = await _db.DemandesConges.FindAsync(id);
         if (d == null) return (false, "Demande introuvable.");
-        if (d.Statut != "Validée – En traitement RH")
-            return (false, "Ce statut ne permet pas cette action.");
 
-        var employe = await _db.Employes.FirstOrDefaultAsync(e => e.Matricule == d.Matricule);
-        if (employe != null)
-            employe.SoldeConges = Math.Max(0, employe.SoldeConges - d.DureeJours);
+        if (d.Statut != "Validée – En traitement RH" && d.Statut != "Validée")
+            return (false, $"Impossible de clôturer une demande au statut : {d.Statut}");
+
+        // ✅ Débit du solde — sauf maladie/maternité/chirurgie/sans solde
+        bool estExempte =
+            d.TypeConge.Contains("maladie", StringComparison.OrdinalIgnoreCase) ||
+            d.TypeConge.Contains("maternit", StringComparison.OrdinalIgnoreCase) ||
+            d.TypeConge.Contains("chirurgie", StringComparison.OrdinalIgnoreCase) ||
+            d.TypeConge.Contains("sans solde", StringComparison.OrdinalIgnoreCase);
+
+        if (!estExempte)
+        {
+            var employe = await _db.Employes
+                .FirstOrDefaultAsync(e => e.Matricule == d.Matricule);
+
+            if (employe != null)
+            {
+                // Utiliser les deux champs pour rester compatible
+                employe.SoldeConges = Math.Max(0, employe.SoldeConges - d.DureeJours);
+                employe.SoldeCongesJours = employe.SoldeConges;
+            }
+        }
 
         d.Statut = "Clôturée";
-        d.UpdatedAt = DateTime.UtcNow;
-
-        // Notifier l'employé
-        _db.Notifications.Add(new Notification
-        {
-            DestinataireMatricule = d.Matricule,
-            Message = $"Votre congé du {d.DateDebut} au {d.DateFin} a été clôturé. Solde débité : {d.DureeJours} jours.",
-            Timestamp = DateTime.UtcNow,
-            IsRead = false
-        });
-
         await _db.SaveChangesAsync();
-        await AddLog("conge", id, "Clôture RH", action.AuteurMatricule, "rh", action.Commentaire);
         return (true, null);
     }
 
-    public async Task<(bool success, string? error)> AnnulerAsync(int id, WorkflowActionDto action)
+    public async Task<(bool ok, string? err)> UpdateStatutAsync(int id, UpdateStatutDto dto)
     {
         var d = await _db.DemandesConges.FindAsync(id);
         if (d == null) return (false, "Demande introuvable.");
-        if (d.Statut == "Clôturée")
-            return (false, "Impossible d'annuler une demande clôturée.");
 
-        d.Statut = "Annulée";
-        d.UpdatedAt = DateTime.UtcNow;
-
-        // Notifier l'employé
-        _db.Notifications.Add(new Notification
-        {
-            DestinataireMatricule = d.Matricule,
-            Message = "Votre demande de congé a été annulée.",
-            Timestamp = DateTime.UtcNow,
-            IsRead = false
-        });
-
+        // ✅ REJETER via PATCH statut → solde INCHANGÉ (cahier des charges)
+        // Le solde n'est jamais modifié ici, quelle que soit la valeur du statut
+        d.Statut = dto.Statut;
         await _db.SaveChangesAsync();
-        await AddLog("conge", id, "Annulation", action.AuteurMatricule, "employe", action.Commentaire);
         return (true, null);
     }
 
-    public async Task<List<HistoriqueAction>> GetHistoriqueAsync(int id) =>
-        await _db.HistoriqueActions
-            .Where(h => h.TypeDemande == "conge" && h.DemandeId == id)
-            .OrderBy(h => h.Timestamp)
-            .ToListAsync();
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
-
-    private async Task AddLog(string type, int demandeId, string action,
-                               string matricule, string role, string? commentaire = null)
+    public async Task<(bool ok, string? err)> AnnulerAsync(int id, WorkflowActionDto action)
     {
-        _db.HistoriqueActions.Add(new HistoriqueAction
-        {
-            TypeDemande = type,
-            DemandeId = demandeId,
-            Action = action,
-            AuteurMatricule = matricule,
-            AuteurRole = role,
-            Commentaire = commentaire,
-            Timestamp = DateTime.UtcNow
-        });
+        var d = await _db.DemandesConges.FindAsync(id);
+        if (d == null) return (false, "Demande introuvable.");
+
+        var annulables = new[] { "Brouillon", "En attente de validation N+1", "En attente de validation DG" };
+        if (!annulables.Contains(d.Statut))
+            return (false, $"Impossible d'annuler une demande au statut : {d.Statut}");
+
+        // ✅ Annulation → solde INCHANGÉ (cahier des charges)
+        d.Statut = "Annulée";
         await _db.SaveChangesAsync();
-    }
-
-    private static int ComputeDuree(DateOnly debut, DateOnly fin, bool demiJournee)
-    {
-        if (demiJournee) return 1;
-        int days = 0;
-        var cur = debut;
-        while (cur <= fin) { days++; cur = cur.AddDays(1); }
-        return days;
-    }
-
-    private static bool IsMinThreeWorkingDays(DateOnly dateDebut)
-    {
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        int jours = 0;
-        var cur = today.AddDays(1);
-        while (jours < 3)
-        {
-            if (cur.DayOfWeek != DayOfWeek.Saturday && cur.DayOfWeek != DayOfWeek.Sunday)
-                jours++;
-            if (jours < 3) cur = cur.AddDays(1);
-        }
-        return dateDebut >= cur;
+        return (true, null);
     }
 }

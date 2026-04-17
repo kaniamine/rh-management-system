@@ -33,3 +33,8 @@ public record WorkflowActionDto(
     [Required] string AuteurMatricule,
     string? Commentaire
 );
+
+public record UpdateStatutDto(
+    [Required] string Statut,
+    string? Motif
+);
