@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 import { AuthService } from '../../../../core/auth.service';
 import { SignaturePad, LeaveRequestSummary, SignatureResult } from '../../../../shared/components/signature-pad/signature-pad';
 
@@ -52,6 +53,8 @@ export class ResponsableValidations implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly API  = 'http://localhost:5130';
 
+  loading = true;
+
   get responsable() {
     return {
       nomComplet:  this.auth.session?.nomComplet ?? '',
@@ -72,40 +75,65 @@ export class ResponsableValidations implements OnInit {
   filterStatut     = '';
   signatureRequest: LeaveRequestSummary | null = null;
 
-  demandes: any[] = [];
+  demandes: Demande[] = [];
 
   ngOnInit(): void {
-    this.loadDemandes();
+    this.loadAll();
   }
 
-  loadDemandes(): void {
-    this.http.get<any[]>(
-      `${this.API}/api/demandes-conge?statut=En%20attente%20de%20validation%20N%2B1`
-    ).subscribe({
-      next: (data) => {
-        this.demandes = data.map(d => ({
-          id:           d.id,
-          refNo:        `#CON-${d.id}`,
-          type:         'conge',
-          typeLabel:    'Congé',
-          sousType:     d.typeConge,
-          employe:      d.nomComplet,
-          matricule:    d.matricule,
-          service:      d.service,
-          dateCreation: d.createdAt?.substring(0, 10),
-          dateDebut:    d.dateDebut,
-          dateFin:      d.dateFin,
-          duree:        `${d.dureeJours} jours`,
-          motif:        d.motif ?? '',
-          statut:       d.statut
-        }));
+  loadAll(): void {
+    forkJoin({
+      conges:        this.http.get<any[]>(`${this.API}/api/demandes-conge`),
+      autorisations: this.http.get<any[]>(`${this.API}/api/autorisations-sortie`)
+    }).subscribe({
+      next: ({ conges, autorisations }) => {
+        const mapped: Demande[] = [
+          ...conges.map(d => ({
+            id:           d.id,
+            refNo:        `#CON-${d.id}`,
+            type:         'conge' as TypeDemande,
+            typeLabel:    'Congé',
+            sousType:     d.typeConge,
+            employe:      d.nomComplet,
+            matricule:    d.matricule,
+            service:      d.service ?? '',
+            dateCreation: d.createdAt?.substring(0, 10) ?? '',
+            dateDebut:    d.dateDebut,
+            dateFin:      d.dateFin,
+            duree:        d.dureeJours + ' j',
+            motif:        d.motif ?? '',
+            statut:       d.statut
+          })),
+          ...autorisations.map(d => ({
+            id:           d.id,
+            refNo:        `#AUT-${d.id}`,
+            type:         'autorisation' as TypeDemande,
+            typeLabel:    'Autorisation',
+            sousType:     d.typeAutorisation,
+            employe:      d.nomComplet ?? d.matricule,
+            matricule:    d.matricule,
+            service:      d.service ?? '',
+            dateCreation: d.createdAt?.substring(0, 10) ?? '',
+            dateDebut:    d.dateDemande,
+            heureDepart:  d.heureSortie,
+            heureRetour:  d.heureRetour,
+            duree:        d.duree ?? '',
+            motif:        d.motif ?? '',
+            statut:       d.statut
+          }))
+        ];
+
+        this.demandes = mapped.filter(d => d.statut.includes('En attente'));
+        this.loading = false;
       },
-      error: () => {}
+      error: () => {
+        this.loading = false;
+      }
     });
   }
 
   get filteredDemandes(): Demande[] {
-    return this.demandes.filter((d: any) => {
+    return this.demandes.filter(d => {
       const matchTab    = this.activeTab === 'all' || d.type === this.activeTab;
       const matchStatut = !this.filterStatut || d.statut === this.filterStatut;
       return matchTab && matchStatut;
@@ -113,11 +141,11 @@ export class ResponsableValidations implements OnInit {
   }
 
   countByType(type: TypeDemande): number {
-    return this.demandes.filter((d: any) => d.type === type).length;
+    return this.demandes.filter(d => d.type === type).length;
   }
 
   get pendingCount(): number {
-    return this.demandes.filter((d: any) =>
+    return this.demandes.filter(d =>
       d.statut === 'En attente de validation N+1' ||
       d.statut === 'En attente de validation du supérieur hiérarchique'
     ).length;
@@ -193,17 +221,18 @@ export class ResponsableValidations implements OnInit {
 
   approuveDemande(): void {
     if (!this.selectedDemande) return;
-    const id = this.selectedDemande.id;
     this.actionLoading = true;
-    this.http.post(`${this.API}/api/demandes-conge/${id}/valider-n1`, {
-      auteurMatricule: this.auth.session?.matricule ?? '',
-      commentaire: ''
-    }).subscribe({
+    const d = this.selectedDemande;
+    const url     = d.type === 'autorisation'
+      ? `${this.API}/api/autorisations-sortie/${d.id}/statut`
+      : `${this.API}/api/demandes-conge/${d.id}/statut`;
+    const newStatut = d.type === 'autorisation' ? 'Validée' : 'En attente de validation DG';
+    this.http.patch(url, { statut: newStatut }).subscribe({
       next: () => {
+        d.statut          = newStatut as StatutDemande;
         this.actionLoading    = false;
         this.showApproveModal = false;
         this.selectedDemande  = null;
-        this.loadDemandes();
       },
       error: () => { this.actionLoading = false; }
     });
@@ -211,18 +240,21 @@ export class ResponsableValidations implements OnInit {
 
   rejeteDemande(): void {
     if (!this.selectedDemande || !this.rejectMotif.trim()) return;
-    const id = this.selectedDemande.id;
     this.actionLoading = true;
-    this.http.post(`${this.API}/api/demandes-conge/${id}/rejeter-n1`, {
-      auteurMatricule: this.auth.session?.matricule ?? '',
-      commentaire: this.rejectMotif
-    }).subscribe({
+    const d = this.selectedDemande;
+    const url       = d.type === 'autorisation'
+      ? `${this.API}/api/autorisations-sortie/${d.id}/statut`
+      : `${this.API}/api/demandes-conge/${d.id}/statut`;
+    const newStatut = d.type === 'autorisation'
+      ? 'Rejetée'
+      : 'Rejetée par le supérieur hiérarchique';
+    this.http.patch(url, { statut: newStatut, motif: this.rejectMotif }).subscribe({
       next: () => {
+        d.statut             = newStatut as StatutDemande;
         this.actionLoading   = false;
         this.showRejectModal = false;
         this.selectedDemande = null;
         this.rejectMotif     = '';
-        this.loadDemandes();
       },
       error: () => { this.actionLoading = false; }
     });

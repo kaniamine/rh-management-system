@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 
 type StatutDemande = string;
 type TypeDemande = 'conge' | 'autorisation' | 'maladie' | 'all';
@@ -35,6 +36,7 @@ export class RhDashboard implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly API = 'http://localhost:5130';
 
+  loading = true;
   activeTab: TypeDemande = 'all';
   filterStatut = '';
   filterEmploye = '';
@@ -45,71 +47,107 @@ export class RhDashboard implements OnInit {
   rejectMotif = '';
   actionLoading = false;
 
+  kpis = {
+    total: 0,
+    enAttente: 0,
+    validees: 0,
+    rejetees: 0,
+    cloturees: 0
+  };
+
   demandes: DemandeRH[] = [];
 
-  get kpis() {
-    return {
-      total: this.demandes.length,
-      enAttente: this.demandes.filter(d => d.statut.startsWith('En attente')).length,
-      validees: this.demandes.filter(d =>
-        d.statut === 'Validée' || d.statut === 'Validée – En traitement RH'
-      ).length,
-      rejetees: this.demandes.filter(d => d.statut.startsWith('Rejetée')).length,
-      cloturees: this.demandes.filter(d => d.statut === 'Clôturée').length
-    };
-  }
-
   ngOnInit(): void {
-    this.loadDemandes();
+    this.loadAll();
   }
 
-  loadDemandes(): void {
-    this.http.get<any[]>(`${this.API}/api/demandes-conge`).subscribe({
-      next: (data) => {
-        this.demandes = data.map(d => this.mapDemande(d));
+  loadAll(): void {
+    forkJoin({
+      conges:        this.http.get<any[]>(`${this.API}/api/demandes-conge`),
+      autorisations: this.http.get<any[]>(`${this.API}/api/autorisations-sortie`),
+      maladies:      this.http.get<any[]>(`${this.API}/api/demandes-maladie`)
+    }).subscribe({
+      next: ({ conges, autorisations, maladies }) => {
+        const mapped: DemandeRH[] = [
+          ...conges.map(d => ({
+            id:           d.id,
+            refNo:        `#CON-${d.id}`,
+            type:         'conge' as TypeDemande,
+            sousType:     d.typeConge,
+            employe:      d.nomComplet,
+            matricule:    d.matricule,
+            direction:    d.service ?? '',
+            dateCreation: d.createdAt?.substring(0, 10) ?? '',
+            dateDebut:    d.dateDebut,
+            dateFin:      d.dateFin,
+            duree:        d.dureeJours + ' j',
+            motif:        d.motif ?? '',
+            statut:       d.statut
+          })),
+          ...autorisations.map(d => ({
+            id:           d.id,
+            refNo:        `#AUT-${d.id}`,
+            type:         'autorisation' as TypeDemande,
+            sousType:     d.typeAutorisation,
+            employe:      d.nomComplet ?? d.matricule,
+            matricule:    d.matricule,
+            direction:    d.direction ?? '',
+            dateCreation: d.createdAt?.substring(0, 10) ?? '',
+            dateDebut:    d.dateDemande,
+            duree:        d.duree ?? '',
+            motif:        d.motif ?? '',
+            statut:       d.statut
+          })),
+          ...maladies.map(d => ({
+            id:           d.id,
+            refNo:        `#MAL-${d.id}`,
+            type:         'maladie' as TypeDemande,
+            sousType:     d.typeMaladie,
+            employe:      d.matricule,
+            matricule:    d.matricule,
+            direction:    d.direction ?? '',
+            dateCreation: d.createdAt?.substring(0, 10) ?? '',
+            dateDebut:    d.dateDebut,
+            dateFin:      d.dateFin,
+            duree:        d.nombreJours + ' j',
+            motif:        d.commentaire ?? '',
+            statut:       d.statut,
+            certificat:   d.certificatMedicalFichierNom
+          }))
+        ];
+
+        this.demandes = mapped.sort((a, b) => b.dateCreation.localeCompare(a.dateCreation));
+        this.updateKpis();
+        this.loading = false;
       },
       error: () => {
-        this.demandes = [];
+        this.loading = false;
       }
     });
   }
 
-  private mapDemande(d: any): DemandeRH {
-    const type = this.inferType(d.typeConge ?? '');
-    const prefix = type === 'maladie' ? 'MAL' : type === 'autorisation' ? 'AUT' : 'CON';
-    const year = d.createdAt ? new Date(d.createdAt).getFullYear() : new Date().getFullYear();
-    return {
-      id: d.id,
-      refNo: `#${prefix}-${year}-${String(d.id).padStart(3, '0')}`,
-      type,
-      sousType: d.typeConge ?? '',
-      employe: d.nomComplet ?? '',
-      matricule: d.matricule ?? '',
-      direction: d.service ?? '',
-      dateCreation: d.createdAt ? d.createdAt.slice(0, 10) : '',
-      dateDebut: d.dateDebut ?? '',
-      dateFin: d.dateFin ?? undefined,
-      duree: d.dureeJours != null ? `${d.dureeJours} jour${d.dureeJours > 1 ? 's' : ''}` : '',
-      motif: d.motif ?? '',
-      statut: d.statut ?? ''
-    };
+  private updateKpis(): void {
+    this.kpis.total     = this.demandes.length;
+    this.kpis.enAttente = this.demandes.filter(d => d.statut.startsWith('En attente')).length;
+    this.kpis.validees  = this.demandes.filter(d => d.statut === 'Validée' || d.statut.includes('traitement')).length;
+    this.kpis.rejetees  = this.demandes.filter(d => d.statut.startsWith('Rejetée')).length;
+    this.kpis.cloturees = this.demandes.filter(d => d.statut === 'Clôturée').length;
   }
 
-  private inferType(typeConge: string): TypeDemande {
-    const tc = typeConge.toLowerCase();
-    if (tc.includes('maladie') || tc.includes('maternit')) return 'maladie';
-    if (tc.includes('autorisation')) return 'autorisation';
-    return 'conge';
+  private endpointFor(type: TypeDemande): string {
+    if (type === 'maladie')      return `${this.API}/api/demandes-maladie`;
+    if (type === 'autorisation') return `${this.API}/api/autorisations-sortie`;
+    return `${this.API}/api/demandes-conge`;
   }
 
   get filteredDemandes(): DemandeRH[] {
     const q = this.filterEmploye.toLowerCase();
     return this.demandes.filter(d => {
-      const matchTab = this.activeTab === 'all' || d.type === this.activeTab;
-      const matchStatut = !this.filterStatut || d.statut === this.filterStatut;
+      const matchTab     = this.activeTab === 'all' || d.type === this.activeTab;
+      const matchStatut  = !this.filterStatut  || d.statut === this.filterStatut;
       const matchEmploye = !q || d.employe.toLowerCase().includes(q) || d.matricule.toLowerCase().includes(q);
-      const matchDate = !this.filterDateDebut || d.dateCreation >= this.filterDateDebut;
-      const matchDateFin = !this.filterDateFin || d.dateCreation <= this.filterDateFin;
+      const matchDate    = !this.filterDateDebut || d.dateCreation >= this.filterDateDebut;
+      const matchDateFin = !this.filterDateFin   || d.dateCreation <= this.filterDateFin;
       return matchTab && matchStatut && matchEmploye && matchDate && matchDateFin;
     });
   }
@@ -141,39 +179,39 @@ export class RhDashboard implements OnInit {
     this.showRejectModal = false;
   }
 
-  cloturer(): void {
-    if (!this.selectedDemande) return;
-    this.actionLoading = true;
-    const id = this.selectedDemande.id;
-    this.http
-      .patch(`${this.API}/api/demandes-conge/${id}/statut`, { statut: 'Clôturée' })
-      .subscribe({
-        next: () => {
-          this.actionLoading = false;
-          this.selectedDemande = null;
-          this.loadDemandes();
-        },
-        error: () => {
-          this.actionLoading = false;
-        }
-      });
-  }
-
   validerMaladie(): void {
     if (!this.selectedDemande) return;
     this.actionLoading = true;
-    const id = this.selectedDemande.id;
+    const d = this.selectedDemande;
+    const newStatut = 'Validée';
     this.http
-      .patch(`${this.API}/api/demandes-conge/${id}/statut`, { statut: 'Validée' })
+      .patch(`${this.endpointFor(d.type)}/${d.id}/statut`, { statut: newStatut })
       .subscribe({
         next: () => {
+          d.statut = newStatut;
+          this.updateKpis();
           this.actionLoading = false;
           this.selectedDemande = null;
-          this.loadDemandes();
         },
-        error: () => {
+        error: () => { this.actionLoading = false; }
+      });
+  }
+
+  cloturer(): void {
+    if (!this.selectedDemande) return;
+    this.actionLoading = true;
+    const d = this.selectedDemande;
+    const newStatut = 'Clôturée';
+    this.http
+      .patch(`${this.API}/api/demandes-conge/${d.id}/statut`, { statut: newStatut })
+      .subscribe({
+        next: () => {
+          d.statut = newStatut;
+          this.updateKpis();
           this.actionLoading = false;
-        }
+          this.selectedDemande = null;
+        },
+        error: () => { this.actionLoading = false; }
       });
   }
 
@@ -190,19 +228,20 @@ export class RhDashboard implements OnInit {
   rejeter(): void {
     if (!this.selectedDemande || !this.rejectMotif.trim()) return;
     this.actionLoading = true;
-    const id = this.selectedDemande.id;
+    const d = this.selectedDemande;
+    const newStatut = 'Rejetée';
     this.http
-      .patch(`${this.API}/api/demandes-conge/${id}/statut`, { statut: 'Rejetée', motif: this.rejectMotif })
+      .patch(`${this.endpointFor(d.type)}/${d.id}/statut`, { statut: newStatut, motif: this.rejectMotif })
       .subscribe({
         next: () => {
+          d.statut = newStatut;
+          this.updateKpis();
           this.actionLoading = false;
           this.showRejectModal = false;
+          this.rejectMotif = '';
           this.selectedDemande = null;
-          this.loadDemandes();
         },
-        error: () => {
-          this.actionLoading = false;
-        }
+        error: () => { this.actionLoading = false; }
       });
   }
 
