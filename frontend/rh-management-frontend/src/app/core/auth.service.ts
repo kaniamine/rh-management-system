@@ -16,11 +16,12 @@ export interface UserSession {
   superieurHierarchiqueMatricule?: string;
   token: string;
   expiresAt: string;
+  premiereConnexion: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API = 'http://localhost:5130/api/auth';
+  private readonly API = '/api/auth';
   private _session: UserSession | null = null;
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
@@ -45,6 +46,19 @@ export class AuthService {
         }
       })
     );
+  }
+
+  changePassword(matricule: string, ancienMotDePasse: string, nouveauMotDePasse: string) {
+    return this.http.post(`${this.API}/change-password`, { matricule, ancienMotDePasse, nouveauMotDePasse });
+  }
+
+  markPasswordChanged(): void {
+    if (this._session) {
+      this._session = { ...this._session, premiereConnexion: false };
+      if (this.isBrowser) {
+        sessionStorage.setItem('user_session', JSON.stringify(this._session));
+      }
+    }
   }
 
   logout(): void {
