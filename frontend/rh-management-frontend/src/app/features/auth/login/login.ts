@@ -1,55 +1,68 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/auth.service';
+import { ChangePasswordModal } from '../../../shared/components/change-password-modal/change-password-modal';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule, CommonModule, ChangePasswordModal],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class Login {
-  matricule = '';
-  password = '';
+export class Login implements OnInit {
+  private readonly auth       = inject(AuthService);
+  private readonly router     = inject(Router);
+  private readonly isBrowser  = isPlatformBrowser(inject(PLATFORM_ID));
+
+  matricule    = '';
+  password     = '';
   errorMessage = '';
-  loading = false;
-  showPassword = false;
+  loading      = false;
 
-  constructor(private auth: AuthService, private router: Router) {}
+  showPasswordModal = false;
 
-  togglePassword(): void {
-    this.showPassword = !this.showPassword;
+  ngOnInit(): void {
+    if (!this.isBrowser) return;
+    if (this.auth.isLoggedIn) {
+      if (this.auth.session?.premiereConnexion) {
+        this.matricule = this.auth.session.matricule;
+        this.showPasswordModal = true;
+      } else {
+        this.router.navigate([this.auth.getHomeRoute()]);
+      }
+    }
   }
 
   onLogin(): void {
-    if (!this.matricule.trim() || !this.password.trim()) {
-      this.errorMessage = 'Veuillez saisir le matricule et le mot de passe.';
+    if (!this.matricule || !this.password) {
+      this.errorMessage = 'Veuillez saisir votre matricule et mot de passe.';
       return;
     }
-
-    this.loading = true;
+    this.loading      = true;
     this.errorMessage = '';
 
-    this.auth.login(this.matricule.trim(), this.password).subscribe({
+    this.auth.login(this.matricule, this.password).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate([this.auth.getHomeRoute()]);
-      },
-      error: (err) => {
-        this.loading = false;
-        if (err.status === 0) {
-          this.errorMessage = 'Serveur inaccessible. Vérifiez que le backend est démarré (port 5130).';
-        } else if (err.status === 401 || err.status === 400) {
-          this.errorMessage = err.error?.message ?? 'Matricule ou mot de passe incorrect.';
-        } else if (err.status === 404) {
-          this.errorMessage = 'Endpoint d\'authentification introuvable (404).';
+        if (this.auth.session?.premiereConnexion) {
+          this.showPasswordModal = true;
         } else {
-          this.errorMessage = err.error?.message ?? `Erreur ${err.status} — réessayez.`;
+          this.router.navigate([this.auth.getHomeRoute()]);
         }
+      },
+      error: () => {
+        this.loading      = false;
+        this.errorMessage = 'Matricule ou mot de passe incorrect.';
       }
     });
+  }
+
+  onPasswordChanged(): void {
+    this.showPasswordModal = false;
+    this.router.navigate([this.auth.getHomeRoute()]);
   }
 }

@@ -1,176 +1,70 @@
 <div class="login-page">
-
-  <!-- LEFT PANEL — Brand -->
-  <div class="login-left">
-    <div class="left-inner">
-
-      <!-- Logo on white background -->
-      <div class="brand-logo-wrap">
-        <img src="assets/logo.png" alt="Al Baraka Assurances" class="brand-logo" />
+  <div class="login-wrapper">
+    <section class="login-brand">
+      <div class="brand-badge">Intranet RH</div>
+      <h1>Al Baraka Assurances</h1>
+      <p class="brand-text">
+        Plateforme interne de gestion des demandes RH. Accédez à votre espace
+        sécurisé pour gérer les congés, les autorisations et le suivi des traitements.
+      </p>
+      <div class="brand-features">
+        <div class="feature-item"><span class="feature-dot"></span><span>Gestion des congés et autorisations</span></div>
+        <div class="feature-item"><span class="feature-dot"></span><span>Suivi en temps réel des demandes</span></div>
+        <div class="feature-item"><span class="feature-dot"></span><span>Validation rapide par la hiérarchie</span></div>
       </div>
-
-      <div class="brand-content">
-        <span class="brand-badge">Intranet RH</span>
-        <h1 class="brand-title">Bienvenue sur<br>votre espace RH</h1>
-        <p class="brand-desc">
-          Gérez vos congés, autorisations et demandes RH en toute simplicité.
-          Accédez à votre espace personnel en quelques secondes.
-        </p>
-      </div>
-
-      <!-- Features -->
-      <ul class="feature-list">
-        <li class="feature-item">
-          <span class="feature-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-          </span>
-          <span>Gestion des congés et autorisations</span>
-        </li>
-        <li class="feature-item">
-          <span class="feature-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-          </span>
-          <span>Suivi en temps réel des demandes</span>
-        </li>
-        <li class="feature-item">
-          <span class="feature-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
-          </span>
-          <span>Validation rapide par la hiérarchie</span>
-        </li>
-        <li class="feature-item">
-          <span class="feature-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-          </span>
-          <span>Données sécurisées et confidentielles</span>
-        </li>
-      </ul>
-
-      <div class="brand-footer">
-        <span>© 2026 Al Baraka Assurances — Takaful Tunisie</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- RIGHT PANEL — Form -->
-  <div class="login-right">
-    <div class="form-panel">
-
-      <!-- Logo on white (mobile, shown only on small screens) -->
-      <div class="mobile-logo">
-        <img src="assets/logo.png" alt="Al Baraka Assurances" class="mobile-logo-img" />
-      </div>
-
-      <div class="form-header">
-        <h2>Connexion</h2>
-        <p>Saisissez vos identifiants pour accéder à votre espace.</p>
-      </div>
-
-      <!-- Error alert -->
-      <div class="form-alert" *ngIf="errorMessage">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-        {{ errorMessage }}
-      </div>
-
-      <form class="login-form" (ngSubmit)="onLogin()" autocomplete="off">
-
-        <!-- Matricule -->
-        <div class="field-group">
-          <label for="matricule" class="field-label">
-            Matricule <span class="required">*</span>
-          </label>
-          <div class="input-wrap">
-            <span class="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-              </svg>
-            </span>
-            <input
-              id="matricule"
-              type="text"
-              class="field-input"
-              placeholder="EMP-2026-XXX"
-              [(ngModel)]="matricule"
-              name="matricule"
-              autocomplete="username"
-            />
-          </div>
+    </section>
+    <section class="login-card">
+      <div class="form-badge">Connexion</div>
+      <p class="form-text">Saisissez vos identifiants pour accéder à votre espace personnel.</p>
+      <form class="login-form">
+        <div class="field">
+          <label for="matricule">Matricule <span class="required">*</span></label>
+          <input
+            id="matricule"
+            type="text"
+            name="matricule"
+            class="input"
+            placeholder="ex: EMP-2026-014"
+            [(ngModel)]="matricule"
+          />
         </div>
-
-        <!-- Password -->
-        <div class="field-group">
-          <label for="password" class="field-label">
-            Mot de passe <span class="required">*</span>
-          </label>
-          <div class="input-wrap">
-            <span class="input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-            </span>
+        <div class="field">
+          <label for="password">Mot de passe <span class="required">*</span></label>
+          <div class="password-wrapper">
             <input
               id="password"
-              [type]="showPassword ? 'text' : 'password'"
-              class="field-input with-toggle"
-              placeholder="Votre mot de passe"
-              [(ngModel)]="password"
+              type="password"
               name="password"
-              autocomplete="current-password"
+              class="input password-input"
+              placeholder="Saisir votre mot de passe"
+              [(ngModel)]="password"
             />
-            <button type="button" class="toggle-btn" (click)="togglePassword()" title="Afficher/masquer">
-              <svg *ngIf="!showPassword" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-              </svg>
-              <svg *ngIf="showPassword" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
-              </svg>
-            </button>
+            <button type="button" class="toggle-password">Afficher</button>
           </div>
         </div>
-
-        <!-- Options -->
         <div class="form-options">
-          <a href="#" class="forgot-link">Mot de passe oublié ?</a>
+          <label class="remember-me">
+            <input type="checkbox" />
+            <span>Se souvenir de moi</span>
+          </label>
         </div>
-
-        <!-- Submit -->
-        <button
-          type="submit"
-          class="submit-btn"
-          [class.loading]="loading"
-          [disabled]="loading"
-        >
-          <span *ngIf="!loading" class="btn-inner">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
-            </svg>
-            Se connecter
-          </span>
-          <span *ngIf="loading" class="btn-spinner"></span>
+        @if (errorMessage) {
+          <p style="color:#c60c30; font-size:14px; margin:0;">{{ errorMessage }}</p>
+        }
+        <button type="button" class="login-btn" (click)="onLogin()" [disabled]="loading">
+          {{ loading ? "Connexion..." : "Se connecter" }}
         </button>
-
-        <!-- Activate -->
-        <a href="#" class="activate-link">
-          Première connexion ? Activer mon compte
-        </a>
-
       </form>
-
-      <div class="form-footer">
-        Problème d'accès ? Contactez la Direction RH au <strong>poste 100</strong>.
+      <div class="login-footer">
+        En cas de problème d'accès, contactez la Direction des Ressources Humaines.
       </div>
-
-    </div>
+    </section>
   </div>
-
 </div>
+
+@if (showPasswordModal) {
+  <app-change-password-modal
+    [matricule]="matricule"
+    (passwordChanged)="onPasswordChanged()"
+  ></app-change-password-modal>
+}

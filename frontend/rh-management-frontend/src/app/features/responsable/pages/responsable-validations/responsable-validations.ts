@@ -1,9 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { AuthService } from '../../../../core/auth.service';
+import { Conge } from '../../../conge/services/conge';
+import { Autorisation } from '../../../conge/services/autorisation';
 import { SignaturePad, LeaveRequestSummary, SignatureResult } from '../../../../shared/components/signature-pad/signature-pad';
 
 type StatutDemande =
@@ -43,14 +45,14 @@ interface Demande {
 @Component({
   selector: 'app-responsable-validations',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, SignaturePad],
+  imports: [CommonModule, FormsModule, SignaturePad],
   templateUrl: './responsable-validations.html',
   styleUrls: ['./responsable-validations.css']
 })
 export class ResponsableValidations implements OnInit {
-  private readonly http = inject(HttpClient);
-  private readonly auth = inject(AuthService);
-  private readonly API  = 'http://localhost:5130';
+  private readonly congeService = inject(Conge);
+  private readonly autoService  = inject(Autorisation);
+  private readonly auth         = inject(AuthService);
 
   get responsable() {
     return {
@@ -72,21 +74,24 @@ export class ResponsableValidations implements OnInit {
   filterStatut     = '';
   signatureRequest: LeaveRequestSummary | null = null;
 
-  demandes: any[] = [];
+  demandes: Demande[] = [];
 
   ngOnInit(): void {
     this.loadDemandes();
   }
 
   loadDemandes(): void {
-    this.http.get<any[]>(
-      `${this.API}/api/demandes-conge?statut=En%20attente%20de%20validation%20N%2B1`
-    ).subscribe({
-      next: (data) => {
-        this.demandes = data.map(d => ({
+    forkJoin({
+      conges: this.congeService.getDemandes(undefined, 'En attente de validation N+1')
+        .pipe(catchError(() => of([]))),
+      autorisations: this.autoService.getDemandes(undefined, 'En attente de validation du supérieur hiérarchique')
+        .pipe(catchError(() => of([])))
+    }).subscribe({
+      next: ({ conges, autorisations }) => {
+        const mappedConges = (conges as any[]).map(d => ({
           id:           d.id,
           refNo:        `#CON-${d.id}`,
-          type:         'conge',
+          type:         'conge' as TypeDemande,
           typeLabel:    'Congé',
           sousType:     d.typeConge,
           employe:      d.nomComplet,
@@ -95,17 +100,38 @@ export class ResponsableValidations implements OnInit {
           dateCreation: d.createdAt?.substring(0, 10),
           dateDebut:    d.dateDebut,
           dateFin:      d.dateFin,
-          duree:        `${d.dureeJours} jours`,
+          duree:        d.dureeJours != null ? `${d.dureeJours} jours` : '',
           motif:        d.motif ?? '',
           statut:       d.statut
-        }));
+        } as Demande));
+
+        const mappedAutorisations = (autorisations as any[]).map(d => ({
+          id:           d.id,
+          refNo:        `#AUT-${d.id}`,
+          type:         'autorisation' as TypeDemande,
+          typeLabel:    'Autorisation',
+          sousType:     d.typeAutorisation ?? '',
+          employe:      d.nomComplet,
+          matricule:    d.matricule,
+          service:      d.service,
+          dateCreation: d.createdAt?.substring(0, 10),
+          dateDebut:    d.dateDemande ?? '',
+          dateFin:      undefined,
+          heureDepart:  d.heureSortie,
+          heureRetour:  d.heureRetour,
+          duree:        d.dureeCalculee ?? '',
+          motif:        d.motif ?? '',
+          statut:       d.statut
+        } as Demande));
+
+        this.demandes = [...mappedConges, ...mappedAutorisations];
       },
       error: () => {}
     });
   }
 
   get filteredDemandes(): Demande[] {
-    return this.demandes.filter((d: any) => {
+    return this.demandes.filter((d: Demande) => {
       const matchTab    = this.activeTab === 'all' || d.type === this.activeTab;
       const matchStatut = !this.filterStatut || d.statut === this.filterStatut;
       return matchTab && matchStatut;
@@ -113,11 +139,11 @@ export class ResponsableValidations implements OnInit {
   }
 
   countByType(type: TypeDemande): number {
-    return this.demandes.filter((d: any) => d.type === type).length;
+    return this.demandes.filter((d: Demande) => d.type === type).length;
   }
 
   get pendingCount(): number {
-    return this.demandes.filter((d: any) =>
+    return this.demandes.filter((d: Demande) =>
       d.statut === 'En attente de validation N+1' ||
       d.statut === 'En attente de validation du supérieur hiérarchique'
     ).length;
@@ -193,12 +219,15 @@ export class ResponsableValidations implements OnInit {
 
   approuveDemande(): void {
     if (!this.selectedDemande) return;
-    const id = this.selectedDemande.id;
+    const { id, type } = this.selectedDemande;
+    const matricule = this.auth.session?.matricule ?? '';
     this.actionLoading = true;
-    this.http.post(`${this.API}/api/demandes-conge/${id}/valider-n1`, {
-      auteurMatricule: this.auth.session?.matricule ?? '',
-      commentaire: ''
-    }).subscribe({
+
+    const obs$ = type === 'autorisation'
+      ? this.autoService.validerN1(id, matricule)
+      : this.congeService.validerN1(id, matricule, '');
+
+    obs$.subscribe({
       next: () => {
         this.actionLoading    = false;
         this.showApproveModal = false;
@@ -211,12 +240,15 @@ export class ResponsableValidations implements OnInit {
 
   rejeteDemande(): void {
     if (!this.selectedDemande || !this.rejectMotif.trim()) return;
-    const id = this.selectedDemande.id;
+    const { id, type } = this.selectedDemande;
+    const matricule = this.auth.session?.matricule ?? '';
     this.actionLoading = true;
-    this.http.post(`${this.API}/api/demandes-conge/${id}/rejeter-n1`, {
-      auteurMatricule: this.auth.session?.matricule ?? '',
-      commentaire: this.rejectMotif
-    }).subscribe({
+
+    const obs$ = type === 'autorisation'
+      ? this.autoService.rejeterN1(id, matricule, this.rejectMotif)
+      : this.congeService.rejeterN1(id, matricule, this.rejectMotif);
+
+    obs$.subscribe({
       next: () => {
         this.actionLoading   = false;
         this.showRejectModal = false;

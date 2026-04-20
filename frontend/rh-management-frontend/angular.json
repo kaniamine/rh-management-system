@@ -30,6 +30,7 @@
             ],
             "server": "src/main.server.ts",
             "outputMode": "server",
+            "prerender": false,
             "security": {
               "allowedHosts": []
             },
@@ -47,13 +48,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-<<<<<<< HEAD
-                  "maximumWarning": "8kB",
-                  "maximumError": "16kB"
-=======
                   "maximumWarning": "16kB",
                   "maximumError": "24kB"
->>>>>>> 4353ea0c3051e941bbbc679cdebc031d376dc25f
                 }
               ],
               "outputHashing": "all",
