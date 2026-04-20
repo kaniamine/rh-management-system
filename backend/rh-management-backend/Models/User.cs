@@ -20,6 +20,7 @@ public class User
     public string Role { get; set; } = "employe";
 
     public bool IsActive { get; set; } = true;
+    public bool MustChangePassword { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [ForeignKey(nameof(Employe))]

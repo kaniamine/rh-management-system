@@ -18,5 +18,11 @@ public record LoginResponseDto(
     int SoldeConges,
     string? SuperieurHierarchiqueMatricule,
     string Token,
-    DateTime ExpiresAt
+    DateTime ExpiresAt,
+    bool MustChangePassword
+);
+
+public record ChangePasswordDto(
+    [Required] string CurrentPassword,
+    [Required, MinLength(6)] string NewPassword
 );

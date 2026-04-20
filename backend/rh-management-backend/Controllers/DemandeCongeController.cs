@@ -101,7 +101,7 @@ public class DemandeCongeController : ControllerBase
     // PATCH /api/demandes-conge/{id}/statut
     [HttpPatch("{id}/statut")]
     [Authorize(Roles = "rh,admin")]
-    public async Task<IActionResult> PatchStatut(int id, [FromBody] UpdateStatutDto dto)
+    public async Task<IActionResult> PatchStatut(int id, [FromBody] rh_management_backend.DTOs.Conge.UpdateStatutDto dto)
     {
         var (ok, err) = await _svc.UpdateStatutAsync(id, dto);
         return ok ? Ok(new { message = "Statut mis à jour." }) : NotFound(new { message = err });

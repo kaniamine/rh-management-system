@@ -92,10 +92,10 @@ public class RhDbContext : DbContext
 
         // ── Users ─────────────────────────────────────────────────────────────
         modelBuilder.Entity<User>().HasData(
-            new User { Id = 1, Matricule = "EMP001", PasswordHash = hash, Role = "employe", EmployeId = 1, IsActive = true, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
-            new User { Id = 2, Matricule = "SH001", PasswordHash = hash, Role = "n1", EmployeId = 2, IsActive = true, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
-            new User { Id = 3, Matricule = "DG001", PasswordHash = hash, Role = "dg", EmployeId = 3, IsActive = true, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
-            new User { Id = 4, Matricule = "RH001", PasswordHash = hash, Role = "rh", EmployeId = 4, IsActive = true, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
+            new User { Id = 1, Matricule = "EMP001", PasswordHash = hash, Role = "employe", EmployeId = 1, IsActive = true, MustChangePassword = false, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new User { Id = 2, Matricule = "SH001", PasswordHash = hash, Role = "n1", EmployeId = 2, IsActive = true, MustChangePassword = false, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new User { Id = 3, Matricule = "DG001", PasswordHash = hash, Role = "dg", EmployeId = 3, IsActive = true, MustChangePassword = false, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new User { Id = 4, Matricule = "RH001", PasswordHash = hash, Role = "rh", EmployeId = 4, IsActive = true, MustChangePassword = false, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
         );
     }
 }

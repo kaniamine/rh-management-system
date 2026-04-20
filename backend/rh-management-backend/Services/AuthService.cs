@@ -44,8 +44,28 @@ public class AuthService : IAuthService
             SoldeConges: user.Employe.SoldeConges,
             SuperieurHierarchiqueMatricule: user.Employe.SuperieurHierarchiqueMatricule,
             Token: token,
-            ExpiresAt: expires
+            ExpiresAt: expires,
+            MustChangePassword: user.MustChangePassword
         );
+    }
+
+    public async Task<(bool ok, string? error)> ChangePasswordAsync(string matricule, ChangePasswordDto dto)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Matricule == matricule && u.IsActive);
+        if (user == null)
+            return (false, "Utilisateur introuvable.");
+
+        if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+            return (false, "Mot de passe actuel incorrect.");
+
+        if (dto.CurrentPassword == dto.NewPassword)
+            return (false, "Le nouveau mot de passe doit être différent du mot de passe actuel.");
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        user.MustChangePassword = false;
+        await _db.SaveChangesAsync();
+
+        return (true, null);
     }
 
     private string GenerateJwtToken(string matricule, string role)

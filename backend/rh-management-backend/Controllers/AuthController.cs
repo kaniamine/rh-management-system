@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using rh_management_backend.DTOs.Auth;
 using rh_management_backend.Services;
 
@@ -21,5 +23,21 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Matricule ou mot de passe incorrect." });
 
         return Ok(result);
+    }
+
+    /// POST /api/auth/change-password
+    [HttpPost("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+    {
+        var matricule = User.FindFirstValue("matricule");
+        if (string.IsNullOrEmpty(matricule))
+            return Unauthorized();
+
+        var (ok, error) = await _auth.ChangePasswordAsync(matricule, dto);
+        if (!ok)
+            return BadRequest(new { message = error });
+
+        return Ok(new { message = "Mot de passe modifié avec succès." });
     }
 }
