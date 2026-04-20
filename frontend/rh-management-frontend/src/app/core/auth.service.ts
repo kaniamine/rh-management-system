@@ -21,7 +21,7 @@ export interface UserSession {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API = 'http://localhost:5130/api/auth';
+  private readonly API = '/api/auth';
   private _session: UserSession | null = null;
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
