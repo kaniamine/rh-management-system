@@ -34,13 +34,16 @@ public class AuthService : IAuthService
             _config.GetValue<int>("Jwt:ExpiresInMinutes", 480));
 
         return new LoginResponseDto(
+            Id: user.Id,
             Matricule: user.Matricule,
             Role: user.Role,
+            Nom: user.Employe.Nom,
+            Prenom: user.Employe.Prenom,
             NomComplet: user.Employe.NomComplet,
             Initiales: $"{user.Employe.Prenom[0]}{user.Employe.Nom[0]}".ToUpper(),
-            Direction: user.Employe.Direction,
-            Service: user.Employe.Service,
-            Fonction: user.Employe.Fonction,
+            Direction: user.Employe.Direction ?? string.Empty,
+            Service: user.Employe.Service ?? string.Empty,
+            Fonction: user.Employe.Fonction ?? string.Empty,
             SoldeConges: user.Employe.SoldeConges,
             SuperieurHierarchiqueMatricule: user.Employe.SuperieurHierarchiqueMatricule,
             Token: token,

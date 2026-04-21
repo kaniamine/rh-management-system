@@ -8,8 +8,11 @@ public record LoginDto(
 );
 
 public record LoginResponseDto(
+    int Id,
     string Matricule,
     string Role,
+    string Nom,
+    string Prenom,
     string NomComplet,
     string Initiales,
     string Direction,
