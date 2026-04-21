@@ -1,41 +1,51 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../../core/auth.service';
+import { AuthService } from '../../core/auth.service';
 
 @Component({
-  selector: 'app-change-password-modal',
+  selector: 'app-profil',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './change-password-modal.html',
-  styleUrls: ['./change-password-modal.css']
+  templateUrl: './profil.html',
+  styleUrls: ['./profil.css']
 })
-export class ChangePasswordModal {
-  @Output() passwordChanged = new EventEmitter<void>();
+export class Profil {
+  private readonly auth = inject(AuthService);
 
   ancienMotDePasse  = '';
   nouveauMotDePasse = '';
   confirmMotDePasse = '';
 
-  showAncien   = false;
-  showNouveau  = false;
-  showConfirm  = false;
+  showAncien  = false;
+  showNouveau = false;
+  showConfirm = false;
 
-  loading      = false;
-  errorMessage = '';
+  loading        = false;
+  errorMessage   = '';
   successMessage = '';
 
-  constructor(private auth: AuthService) {}
+  get session() { return this.auth.session; }
+
+  get roleLabel(): string {
+    const map: Record<string, string> = {
+      employe: 'Employé',
+      n1:      'Responsable N+1',
+      dg:      'Direction Générale',
+      rh:      'Direction RH',
+      admin:   'Administrateur'
+    };
+    return map[this.auth.role] ?? this.auth.role;
+  }
 
   get strength(): { score: number; label: string; color: string } {
     const p = this.nouveauMotDePasse;
     let score = 0;
-    if (p.length >= 8)                   score++;
-    if (/[A-Z]/.test(p))                 score++;
-    if (/[a-z]/.test(p))                 score++;
-    if (/[0-9]/.test(p))                 score++;
-    if (/[^A-Za-z0-9]/.test(p))          score++;
-
+    if (p.length >= 8)          score++;
+    if (/[A-Z]/.test(p))        score++;
+    if (/[a-z]/.test(p))        score++;
+    if (/[0-9]/.test(p))        score++;
+    if (/[^A-Za-z0-9]/.test(p)) score++;
     if (score <= 1) return { score, label: 'Très faible', color: '#c60c30' };
     if (score === 2) return { score, label: 'Faible',      color: '#e05a00' };
     if (score === 3) return { score, label: 'Moyen',       color: '#f0a500' };
@@ -66,18 +76,18 @@ export class ChangePasswordModal {
     }
 
     this.loading = true;
-    this.auth.changePassword(this.ancienMotDePasse, this.nouveauMotDePasse, this.confirmMotDePasse)
-      .subscribe({
-        next: () => {
-          this.loading = false;
-          this.auth.markPasswordChanged();
-          this.successMessage = 'Mot de passe modifié avec succès.';
-          setTimeout(() => this.passwordChanged.emit(), 1200);
-        },
-        error: (err: any) => {
-          this.loading = false;
-          this.errorMessage = err?.error?.message ?? 'Mot de passe actuel incorrect.';
-        }
-      });
+    this.auth.changePassword(this.ancienMotDePasse, this.nouveauMotDePasse, this.confirmMotDePasse).subscribe({
+      next: () => {
+        this.loading        = false;
+        this.successMessage = 'Mot de passe modifié avec succès.';
+        this.ancienMotDePasse  = '';
+        this.nouveauMotDePasse = '';
+        this.confirmMotDePasse = '';
+      },
+      error: (err: any) => {
+        this.loading      = false;
+        this.errorMessage = err?.error?.message ?? 'Mot de passe actuel incorrect.';
+      }
+    });
   }
 }

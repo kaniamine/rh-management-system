@@ -1,0 +1,111 @@
+<div class="profil-page">
+
+  <!-- Header -->
+  <div class="profil-header">
+    <div class="profil-avatar">{{ session?.initiales }}</div>
+    <div class="profil-info">
+      <h1 class="profil-name">{{ session?.nomComplet }}</h1>
+      <p class="profil-meta">{{ roleLabel }} &bull; {{ session?.matricule }}</p>
+      @if (session?.service) {
+        <p class="profil-service">{{ session?.service }}</p>
+      }
+    </div>
+  </div>
+
+  <!-- Password change card -->
+  <div class="profil-card">
+    <h2 class="profil-section-title">Changer mon mot de passe</h2>
+
+    <form (ngSubmit)="onSubmit()">
+
+      <div class="field">
+        <label>Mot de passe actuel <span class="required">*</span></label>
+        <div class="password-wrapper">
+          <input
+            [type]="showAncien ? 'text' : 'password'"
+            [(ngModel)]="ancienMotDePasse"
+            name="ancien"
+            class="input password-input"
+            placeholder="Mot de passe actuel"
+            autocomplete="current-password"
+          />
+          <button type="button" class="toggle-password" (click)="showAncien = !showAncien">
+            {{ showAncien ? 'Masquer' : 'Afficher' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Nouveau mot de passe <span class="required">*</span></label>
+        <div class="password-wrapper">
+          <input
+            [type]="showNouveau ? 'text' : 'password'"
+            [(ngModel)]="nouveauMotDePasse"
+            name="nouveau"
+            class="input password-input"
+            placeholder="Minimum 8 caractères"
+            autocomplete="new-password"
+          />
+          <button type="button" class="toggle-password" (click)="showNouveau = !showNouveau">
+            {{ showNouveau ? 'Masquer' : 'Afficher' }}
+          </button>
+        </div>
+        @if (nouveauMotDePasse) {
+          <div class="strength-bar-wrap">
+            <div class="strength-bar">
+              @for (i of [1,2,3,4,5]; track i) {
+                <div
+                  class="strength-segment"
+                  [style.background]="i <= strength.score ? strength.color : '#e8e8e8'"
+                ></div>
+              }
+            </div>
+            <span class="strength-label" [style.color]="strength.color">{{ strength.label }}</span>
+          </div>
+          <ul class="strength-hints">
+            <li [class.ok]="nouveauMotDePasse.length >= 8">Au moins 8 caractères</li>
+            <li [class.ok]="/[A-Z]/.test(nouveauMotDePasse)">Une lettre majuscule</li>
+            <li [class.ok]="/[0-9]/.test(nouveauMotDePasse)">Un chiffre</li>
+            <li [class.ok]="/[^A-Za-z0-9]/.test(nouveauMotDePasse)">Un caractère spécial</li>
+          </ul>
+        }
+      </div>
+
+      <div class="field">
+        <label>Confirmer le mot de passe <span class="required">*</span></label>
+        <div class="password-wrapper">
+          <input
+            [type]="showConfirm ? 'text' : 'password'"
+            [(ngModel)]="confirmMotDePasse"
+            name="confirm"
+            class="input password-input"
+            placeholder="Répéter le nouveau mot de passe"
+            autocomplete="new-password"
+          />
+          <button type="button" class="toggle-password" (click)="showConfirm = !showConfirm">
+            {{ showConfirm ? 'Masquer' : 'Afficher' }}
+          </button>
+        </div>
+        @if (confirmMotDePasse && !passwordsMatch) {
+          <span class="match-error">Les mots de passe ne correspondent pas</span>
+        }
+        @if (confirmMotDePasse && passwordsMatch) {
+          <span class="match-ok">✓ Les mots de passe correspondent</span>
+        }
+      </div>
+
+      @if (errorMessage) {
+        <p class="form-error">{{ errorMessage }}</p>
+      }
+      @if (successMessage) {
+        <p class="form-success">{{ successMessage }}</p>
+      }
+
+      <button type="submit" class="submit-btn" [disabled]="loading || !canSubmit">
+        {{ loading ? 'Enregistrement...' : 'Enregistrer le nouveau mot de passe' }}
+      </button>
+
+    </form>
+  </div>
+
+</div>

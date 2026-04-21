@@ -33,10 +33,12 @@
   <!-- KPI STRIP -->
   <div class="kpi-strip stagger-children">
     @for (stat of stats; track stat.label) {
-      <div class="kpi-card" [ngClass]="'kpi-' + stat.tone">
-        <span class="kpi-label">{{ stat.label }}</span>
-        <strong class="kpi-value">{{ stat.value }}</strong>
-      </div>
+      @if (stat.label !== 'Demandes en attente' || role !== 'employe') {
+        <div class="kpi-card" [ngClass]="'kpi-' + stat.tone">
+          <span class="kpi-label">{{ stat.label }}</span>
+          <strong class="kpi-value">{{ stat.value }}</strong>
+        </div>
+      }
     }
   </div>
 
