@@ -18,28 +18,30 @@
       <p class="form-text">Saisissez vos identifiants pour accéder à votre espace personnel.</p>
       <form class="login-form">
         <div class="field">
-          <label for="matricule">Matricule <span class="required">*</span></label>
+          <label for="email">Matricule <span class="required">*</span></label>
           <input
-            id="matricule"
+            id="email"
             type="text"
-            name="matricule"
+            name="email"
             class="input"
-            placeholder="ex: EMP-2026-014"
-            [(ngModel)]="matricule"
+            placeholder="ex: EMP001"
+            [(ngModel)]="email"
           />
         </div>
         <div class="field">
-          <label for="password">Mot de passe <span class="required">*</span></label>
+          <label for="motDePasse">Mot de passe <span class="required">*</span></label>
           <div class="password-wrapper">
             <input
-              id="password"
-              type="password"
-              name="password"
+              id="motDePasse"
+              [type]="showPassword ? 'text' : 'password'"
+              name="motDePasse"
               class="input password-input"
               placeholder="Saisir votre mot de passe"
-              [(ngModel)]="password"
+              [(ngModel)]="motDePasse"
             />
-            <button type="button" class="toggle-password">Afficher</button>
+            <button type="button" class="toggle-password" (click)="showPassword = !showPassword">
+              {{ showPassword ? 'Masquer' : 'Afficher' }}
+            </button>
           </div>
         </div>
         <div class="form-options">
@@ -49,10 +51,10 @@
           </label>
         </div>
         @if (errorMessage) {
-          <p style="color:#c60c30; font-size:14px; margin:0;">{{ errorMessage }}</p>
+          <div style="color:#c60c30;font-size:13px;margin-top:-4px;">{{ errorMessage }}</div>
         }
         <button type="button" class="login-btn" (click)="onLogin()" [disabled]="loading">
-          {{ loading ? "Connexion..." : "Se connecter" }}
+          {{ loading ? 'Connexion...' : 'Se connecter' }}
         </button>
       </form>
       <div class="login-footer">
@@ -62,9 +64,33 @@
   </div>
 </div>
 
-@if (showPasswordModal) {
-  <app-change-password-modal
-    [matricule]="matricule"
-    (passwordChanged)="onPasswordChanged()"
-  ></app-change-password-modal>
+<!-- MODALE PREMIÈRE CONNEXION -->
+@if (showChangePasswordModal) {
+<div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:20px;padding:40px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:16px;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+    <div style="font-size:40px;text-align:center;">🔐</div>
+    <h2 style="margin:0;font-size:22px;font-weight:800;text-align:center;color:#111;">Changement de mot de passe obligatoire</h2>
+    <p style="margin:0;font-size:14px;color:#5e6167;text-align:center;line-height:1.6;">Pour votre sécurité, vous devez définir un nouveau mot de passe avant de continuer.</p>
+    <div class="field">
+      <label>Nouveau mot de passe <span class="required">*</span></label>
+      <div class="password-wrapper">
+        <input [type]="showNewPassword ? 'text' : 'password'" class="input password-input" [(ngModel)]="newPassword" name="newPassword" placeholder="Nouveau mot de passe" />
+        <button type="button" class="toggle-password" (click)="showNewPassword = !showNewPassword">{{ showNewPassword ? 'Masquer' : 'Afficher' }}</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Confirmer le mot de passe <span class="required">*</span></label>
+      <div class="password-wrapper">
+        <input [type]="showConfirmPassword ? 'text' : 'password'" class="input password-input" [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Confirmer le mot de passe" />
+        <button type="button" class="toggle-password" (click)="showConfirmPassword = !showConfirmPassword">{{ showConfirmPassword ? 'Masquer' : 'Afficher' }}</button>
+      </div>
+    </div>
+    @if (changeError) {
+      <div style="color:#c60c30;font-size:13px;">{{ changeError }}</div>
+    }
+    <button type="button" class="login-btn" (click)="onSaveNewPassword()" [disabled]="changeLoading">
+      {{ changeLoading ? 'Enregistrement...' : 'Enregistrer mon mot de passe' }}
+    </button>
+  </div>
+</div>
 }

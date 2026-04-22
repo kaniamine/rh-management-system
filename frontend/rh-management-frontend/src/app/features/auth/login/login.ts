@@ -1,68 +1,119 @@
-import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../core/auth.service';
-import { ChangePasswordModal } from '../../../shared/components/change-password-modal/change-password-modal';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, CommonModule, ChangePasswordModal],
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class Login implements OnInit {
-  private readonly auth       = inject(AuthService);
-  private readonly router     = inject(Router);
-  private readonly isBrowser  = isPlatformBrowser(inject(PLATFORM_ID));
+export class Login {
+  private router = inject(Router);
+  private http   = inject(HttpClient);
 
-  matricule    = '';
-  password     = '';
+  // Champs du formulaire
+  email      = '';
+  motDePasse = '';
+  showPassword = false;
   errorMessage = '';
   loading      = false;
 
-  showPasswordModal = false;
+  // Modale première connexion
+  showChangePasswordModal = false;
+  newPassword      = '';
+  confirmPassword  = '';
+  showNewPassword  = false;
+  showConfirmPassword = false;
+  changeError   = '';
+  changeLoading = false;
 
-  ngOnInit(): void {
-    if (!this.isBrowser) return;
-    if (this.auth.isLoggedIn) {
-      if (this.auth.session?.premiereConnexion && this.auth.session?.role !== 'rh') {
-        this.matricule = this.auth.session.matricule;
-        this.showPasswordModal = true;
-      } else {
-        this.router.navigate([this.auth.getHomeRoute()]);
-      }
-    }
-  }
+  private currentUser: any = null;
 
   onLogin(): void {
-    if (!this.matricule || !this.password) {
-      this.errorMessage = 'Veuillez saisir votre matricule et mot de passe.';
+    if (!this.email || !this.motDePasse) {
+      this.errorMessage = 'Veuillez remplir tous les champs.';
       return;
     }
     this.loading      = true;
     this.errorMessage = '';
 
-    this.auth.login(this.matricule, this.password).subscribe({
-      next: () => {
-        this.loading = false;
-        if (this.auth.session?.premiereConnexion && this.auth.session?.role !== 'rh') {
-          this.showPasswordModal = true;
+    this.http.post<any>('/api/auth/login', {
+      matricule: this.email,
+      password:  this.motDePasse
+    }).subscribe({
+      next: (user) => {
+        console.log('[LOGIN] Success:', user);
+        this.loading     = false;
+        this.currentUser = user;
+        // Clé lue par AuthService, authGuard et la navbar
+        sessionStorage.setItem('user_session', JSON.stringify(user));
+
+        if (user.premiereConnexion === true && user.role !== 'rh') {
+          this.showChangePasswordModal = true;
         } else {
-          this.router.navigate([this.auth.getHomeRoute()]);
+          this.navigateToDashboard(user.role);
         }
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        console.error('[LOGIN] Error:', err);
         this.loading      = false;
-        this.errorMessage = 'Matricule ou mot de passe incorrect.';
+        this.errorMessage = err.error?.message || 'Matricule ou mot de passe incorrect.';
       }
     });
   }
 
-  onPasswordChanged(): void {
-    this.showPasswordModal = false;
-    this.router.navigate([this.auth.getHomeRoute()]);
+  onSaveNewPassword(): void {
+    this.changeError = '';
+
+    if (!this.newPassword || !this.confirmPassword) {
+      this.changeError = 'Veuillez remplir tous les champs.';
+      return;
+    }
+    if (this.newPassword !== this.confirmPassword) {
+      this.changeError = 'Les mots de passe ne correspondent pas.';
+      return;
+    }
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+{};:,<.>]).{8,}$/;
+    if (!regex.test(this.newPassword)) {
+      this.changeError = 'Minimum 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial.';
+      return;
+    }
+
+    this.changeLoading = true;
+
+    this.http.post<any>('/api/auth/changer-mot-de-passe', {
+      matricule:        this.currentUser.matricule,
+      ancienMotDePasse: '0000',
+      nouveauMotDePasse: this.newPassword
+    }).subscribe({
+      next: () => {
+        this.changeLoading = false;
+        const updated = { ...this.currentUser, premiereConnexion: false };
+        sessionStorage.setItem('user_session', JSON.stringify(updated));
+        this.showChangePasswordModal = false;
+        this.navigateToDashboard(this.currentUser.role);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.changeLoading = false;
+        this.changeError   = err.error?.message || 'Erreur lors du changement de mot de passe.';
+      }
+    });
+  }
+
+  private navigateToDashboard(role: string): void {
+    const map: Record<string, string> = {
+      employe:                '/home-employee',
+      rh:                     '/home-rh',
+      admin:                  '/home-rh',
+      superieur_hierarchique: '/responsable',
+      n1:                     '/responsable',
+      direction_generale:     '/dg',
+      dg:                     '/dg'
+    };
+    this.router.navigate([map[role] ?? '/home-employee']);
   }
 }
