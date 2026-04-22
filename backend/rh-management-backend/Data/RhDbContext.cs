@@ -28,7 +28,7 @@ public class RhDbContext : DbContext
         // SEED DATA — 4 PROFILS DE TEST (mot de passe : 0000)
         // Hash BCrypt de "0000" — stable pour le seed
         // ═══════════════════════════════════════════════════════════════════════
-        const string hash = "$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lp02";
+        const string hash = "$2a$11$wSAQN1/IpviIviSFmY3dFOqWEusALRb9M2nDmaMb7TNYIbQrBz4UC";
 
         // ── Employés ─────────────────────────────────────────────────────────
         modelBuilder.Entity<Employe>().HasData(

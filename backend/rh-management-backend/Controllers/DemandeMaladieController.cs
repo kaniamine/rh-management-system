@@ -52,8 +52,8 @@ public class DemandeMaladieController : ControllerBase
         {
             Matricule = employe.Matricule,
             NomComplet = employe.NomComplet,
-            Direction = employe.Direction,
-            Service = employe.Service,
+            Direction = employe.Direction ?? string.Empty,
+            Service = employe.Service ?? string.Empty,
             TypeMaladie = dto.TypeMaladie,
             DateDebut = dto.DateDebut,
             DateFin = dto.DateFin,

@@ -88,7 +88,7 @@ public class DemandeAutorisationController : ControllerBase
             DateDemande = dto.DateDemande,
             HeureSortie = dto.HeureSortie,
             HeureRetour = dto.HeureRetour,
-            Motif = string.IsNullOrWhiteSpace(dto.Motif) ? null : dto.Motif.Trim(),
+            Motif = string.IsNullOrWhiteSpace(dto.Motif) ? string.Empty : dto.Motif.Trim(),
             Destination = string.IsNullOrWhiteSpace(dto.Destination) ? null : dto.Destination.Trim(),
             Telephone = string.IsNullOrWhiteSpace(dto.Telephone) ? null : dto.Telephone.Trim(),
             Statut = statut,
