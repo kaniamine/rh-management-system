@@ -18,5 +18,13 @@ public record LoginResponseDto(
     int SoldeConges,
     string? SuperieurHierarchiqueMatricule,
     string Token,
-    DateTime ExpiresAt
+    DateTime ExpiresAt,
+    bool PremiereConnexion,
+    int NombreConnexions
+);
+
+public record ChangePasswordDto(
+    [Required] string Matricule,
+    [Required] string AncienMotDePasse,
+    [Required] string NouveauMotDePasse
 );

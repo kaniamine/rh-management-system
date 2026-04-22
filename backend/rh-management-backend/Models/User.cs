@@ -20,6 +20,8 @@ public class User
     public string Role { get; set; } = "employe";
 
     public bool IsActive { get; set; } = true;
+    public bool PremiereConnexion { get; set; } = true;
+    public int NombreConnexions { get; set; } = 0;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [ForeignKey(nameof(Employe))]

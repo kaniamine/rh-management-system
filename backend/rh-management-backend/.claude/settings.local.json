@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(taskkill /PID 20496 /F)",
+      "Bash(npm install *)",
+      "Read(//c/Users/natal/source/repos/kaniamine/rh-management-system/**)",
+      "Bash(grep -rn *)",
+      "Bash(dotnet restore *)"
+    ]
+  }
+}
