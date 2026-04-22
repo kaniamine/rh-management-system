@@ -49,7 +49,12 @@ export class ChangePasswordModal {
   }
 
   get canSubmit(): boolean {
-    return !!this.ancienMotDePasse && this.strength.score >= 3 && this.passwordsMatch;
+    return (
+      !!this.ancienMotDePasse &&
+      this.strength.score >= 5 &&
+      this.passwordsMatch &&
+      this.nouveauMotDePasse !== this.ancienMotDePasse
+    );
   }
 
   onSubmit(): void {
@@ -59,8 +64,11 @@ export class ChangePasswordModal {
     if (!this.ancienMotDePasse) {
       this.errorMessage = 'Veuillez saisir votre mot de passe actuel.'; return;
     }
-    if (this.strength.score < 3) {
-      this.errorMessage = 'Le nouveau mot de passe est trop faible.'; return;
+    if (this.strength.score < 5) {
+      this.errorMessage = 'Le nouveau mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.'; return;
+    }
+    if (this.nouveauMotDePasse === this.ancienMotDePasse) {
+      this.errorMessage = 'Le nouveau mot de passe doit être différent de l\'ancien.'; return;
     }
     if (!this.passwordsMatch) {
       this.errorMessage = 'Les mots de passe ne correspondent pas.'; return;

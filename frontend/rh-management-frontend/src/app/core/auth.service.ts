@@ -49,7 +49,7 @@ export class AuthService {
   }
 
   changePassword(matricule: string, ancienMotDePasse: string, nouveauMotDePasse: string) {
-    return this.http.post(`${this.API}/change-password`, { matricule, ancienMotDePasse, nouveauMotDePasse });
+    return this.http.post(`${this.API}/changer-mot-de-passe`, { matricule, ancienMotDePasse, nouveauMotDePasse });
   }
 
   markPasswordChanged(): void {

@@ -2,10 +2,6 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-<<<<<<< HEAD
-import { HttpClient } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
-=======
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -13,7 +9,6 @@ import { AuthService } from '../../../../core/auth.service';
 import { Conge } from '../../../conge/services/conge';
 import { Autorisation } from '../../../conge/services/autorisation';
 import { Maladie } from '../../../conge/services/maladie';
->>>>>>> f5bff9c669c5aaa936f5ed647a6f3abda4250a77
 
 type TypeDemande = 'conge' | 'autorisation' | 'maladie' | 'all';
 
@@ -38,30 +33,18 @@ interface Demande {
   styleUrl: './employee-dashboard.css'
 })
 export class EmployeeDashboard implements OnInit {
-<<<<<<< HEAD
-  private readonly http = inject(HttpClient);
-=======
-  private readonly auth       = inject(AuthService);
-  private readonly congeService = inject(Conge);
-  private readonly autoService  = inject(Autorisation);
+  private readonly auth           = inject(AuthService);
+  private readonly congeService   = inject(Conge);
+  private readonly autoService    = inject(Autorisation);
   private readonly maladieService = inject(Maladie);
->>>>>>> f5bff9c669c5aaa936f5ed647a6f3abda4250a77
 
-  loading = true;
+  loading      = true;
   activeTab: TypeDemande = 'all';
   filterStatut = '';
   selectedDemande: Demande | null = null;
   loadError: string | null = null;
   actionLoading = false;
 
-<<<<<<< HEAD
-  stats = {
-    soldeConges: 12,
-    enAttente: 3,
-    validees: 8,
-    rejetees: 1
-  };
-=======
   get stats() {
     const solde = this.auth.session?.soldeConges ?? 0;
     return {
@@ -73,76 +56,16 @@ export class EmployeeDashboard implements OnInit {
       rejetees:    this.demandes.filter(d => d.statut.startsWith('Rejetée')).length
     };
   }
->>>>>>> f5bff9c669c5aaa936f5ed647a6f3abda4250a77
 
   demandes: Demande[] = [];
 
   ngOnInit(): void {
-    forkJoin({
-      conges:        this.http.get<any[]>('http://localhost:5130/api/demandes-conge'),
-      autorisations: this.http.get<any[]>('http://localhost:5130/api/autorisations-sortie'),
-      maladies:      this.http.get<any[]>('http://localhost:5130/api/demandes-maladie')
-    }).subscribe({
-      next: ({ conges, autorisations, maladies }) => {
-        const mapped: Demande[] = [
-          ...conges
-            .filter(d => d.matricule === 'EMP-2026-014')
-            .map(d => ({
-              id:           d.id,
-              refNo:        `#CON-${d.id}`,
-              type:         'conge' as TypeDemande,
-              sousType:     d.typeConge,
-              dateDebut:    d.dateDebut,
-              dateFin:      d.dateFin,
-              duree:        d.dureeJours + ' jour(s)',
-              statut:       d.statut,
-              motif:        d.motif ?? '',
-              dateCreation: d.createdAt?.substring(0, 10) ?? ''
-            })),
-          ...autorisations
-            .filter(d => d.matricule === 'EMP-2026-014')
-            .map(d => ({
-              id:           d.id,
-              refNo:        `#AUT-${d.id}`,
-              type:         'autorisation' as TypeDemande,
-              sousType:     d.typeAutorisation,
-              dateDebut:    d.dateDemande,
-              duree:        d.duree ?? '',
-              statut:       d.statut,
-              motif:        d.motif ?? '',
-              dateCreation: d.createdAt?.substring(0, 10) ?? ''
-            })),
-          ...maladies
-            .filter(d => d.matricule === 'EMP-2026-014')
-            .map(d => ({
-              id:           d.id,
-              refNo:        `#MAL-${d.id}`,
-              type:         'maladie' as TypeDemande,
-              sousType:     d.typeMaladie,
-              dateDebut:    d.dateDebut,
-              dateFin:      d.dateFin,
-              duree:        d.nombreJours + ' jour(s)',
-              statut:       d.statut,
-              motif:        d.commentaire ?? '',
-              dateCreation: d.createdAt?.substring(0, 10) ?? ''
-            }))
-        ];
+    this.chargerDemandes();
+  }
 
-<<<<<<< HEAD
-        this.demandes = mapped.sort((a, b) => b.dateCreation.localeCompare(a.dateCreation));
-
-        this.stats.enAttente = this.demandes.filter(d => d.statut.startsWith('En attente')).length;
-        this.stats.validees  = this.demandes.filter(d => d.statut === 'Validée' || d.statut.includes('traitement')).length;
-        this.stats.rejetees  = this.demandes.filter(d => d.statut.startsWith('Rejetée')).length;
-
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-=======
   chargerDemandes(): void {
     const matricule = this.auth.session?.matricule ?? '';
-    this.loadError = null;
+    this.loadError  = null;
 
     forkJoin({
       conges:        this.congeService.getDemandes(matricule).pipe(catchError(() => of([]))),
@@ -158,7 +81,7 @@ export class EmployeeDashboard implements OnInit {
           dateCreation: c.createdAt?.substring(0, 10) ?? '',
           dateDebut:    c.dateDebut ?? '',
           dateFin:      c.dateFin ?? undefined,
-          duree:        c.typeDuree ?? (c.dureeJours != null ? `${c.dureeJours} jour(s)` : ''),
+          duree:        c.dureeJours != null ? `${c.dureeJours} jour(s)` : '',
           motif:        c.motif ?? '',
           statut:       c.statut ?? ''
         }));
@@ -191,10 +114,11 @@ export class EmployeeDashboard implements OnInit {
 
         this.demandes = [...mappedConges, ...mappedAutorisations, ...mappedMaladies]
           .sort((a, b) => b.dateCreation.localeCompare(a.dateCreation));
+        this.loading = false;
       },
       error: (err: HttpErrorResponse) => {
         this.loadError = err.error?.message ?? `Erreur ${err.status} lors du chargement.`;
->>>>>>> f5bff9c669c5aaa936f5ed647a6f3abda4250a77
+        this.loading   = false;
       }
     });
   }
@@ -227,15 +151,9 @@ export class EmployeeDashboard implements OnInit {
     return icons[type] ?? '📄';
   }
 
-  openDetail(d: Demande): void {
-    this.selectedDemande = d;
-  }
+  openDetail(d: Demande): void  { this.selectedDemande = d; }
+  closeDetail(): void           { this.selectedDemande = null; }
 
-  closeDetail(): void {
-    this.selectedDemande = null;
-  }
-
-  // Annulable avant la validation finale (avant "Validée – En traitement RH")
   canCancel(d: Demande): boolean {
     return (
       d.statut === 'Brouillon' ||
@@ -251,14 +169,11 @@ export class EmployeeDashboard implements OnInit {
     this.actionLoading = true;
     const matricule = this.auth.session?.matricule ?? '';
 
-    let obs$;
-    if (d.type === 'conge') {
-      obs$ = this.congeService.annuler(d.id, matricule);
-    } else if (d.type === 'autorisation') {
-      obs$ = this.autoService.annuler(d.id, matricule);
-    } else {
-      obs$ = this.maladieService.annuler(d.id, matricule);
-    }
+    const obs$ = d.type === 'conge'
+      ? this.congeService.annuler(d.id, matricule)
+      : d.type === 'autorisation'
+        ? this.autoService.annuler(d.id, matricule)
+        : this.maladieService.annuler(d.id, matricule);
 
     obs$.subscribe({
       next: () => {
@@ -266,9 +181,7 @@ export class EmployeeDashboard implements OnInit {
         this.closeDetail();
         this.chargerDemandes();
       },
-      error: () => {
-        this.actionLoading = false;
-      }
+      error: () => { this.actionLoading = false; }
     });
   }
 }

@@ -61,7 +61,8 @@ export class Navbar implements OnInit {
     { label: 'Espace Responsable',      route: '/responsable',                 roles: ['n1', 'admin'],    icon: '✅' },
     { label: 'Direction Générale',      route: '/dg',                          roles: ['dg', 'admin'],    icon: '🏛' },
     { label: 'Tableau de bord RH',      route: '/dashboard-rh',                roles: ['rh', 'admin'],    icon: '📊' },
-    { label: 'Personnel',               route: '/personnel',                   roles: ['rh', 'admin'],    icon: '👥' }
+    { label: 'Personnel',               route: '/personnel',                   roles: ['rh', 'admin'],    icon: '👥' },
+    { label: 'Mon Profil',              route: '/profil',                      roles: ['employe', 'n1', 'dg', 'rh', 'admin'], icon: '👤' }
   ];
 
   get navItems(): NavItem[] {

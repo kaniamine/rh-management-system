@@ -28,7 +28,7 @@ export class Login implements OnInit {
   ngOnInit(): void {
     if (!this.isBrowser) return;
     if (this.auth.isLoggedIn) {
-      if (this.auth.session?.premiereConnexion) {
+      if (this.auth.session?.premiereConnexion && this.auth.session?.role !== 'rh') {
         this.matricule = this.auth.session.matricule;
         this.showPasswordModal = true;
       } else {
@@ -48,7 +48,7 @@ export class Login implements OnInit {
     this.auth.login(this.matricule, this.password).subscribe({
       next: () => {
         this.loading = false;
-        if (this.auth.session?.premiereConnexion) {
+        if (this.auth.session?.premiereConnexion && this.auth.session?.role !== 'rh') {
           this.showPasswordModal = true;
         } else {
           this.router.navigate([this.auth.getHomeRoute()]);
