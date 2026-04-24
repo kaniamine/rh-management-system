@@ -60,7 +60,7 @@ export class AuthService {
           superieurHierarchiqueMatricule: raw.superieurHierarchiqueMatricule ?? raw.superieur_hierarchique_matricule,
           token:                          raw.token ?? raw.accessToken ?? raw.access_token ?? '',
           expiresAt:                      raw.expiresAt ?? raw.expires_at ?? '',
-          premiereConnexion:              raw.premiereConnexion ?? raw.premiere_connexion ?? false
+          premiereConnexion:              raw.mustChangePassword ?? raw.premiereConnexion ?? raw.premiere_connexion ?? false
         };
         this._session = user;
         if (this.isBrowser) {
@@ -70,12 +70,10 @@ export class AuthService {
     );
   }
 
-  changePassword(ancienMotDePasse: string, nouveauMotDePasse: string, confirmationMotDePasse: string) {
-    return this.http.post(`${this.API}/changer-mot-de-passe`, {
-      matricule: this._session?.matricule ?? '',
-      mot_de_passe_actuel: ancienMotDePasse,
-      nouveau_mot_de_passe: nouveauMotDePasse,
-      confirmation_mot_de_passe: confirmationMotDePasse
+  changePassword(ancienMotDePasse: string, nouveauMotDePasse: string, _confirmationMotDePasse: string) {
+    return this.http.post(`${this.API}/change-password`, {
+      currentPassword: ancienMotDePasse,
+      newPassword:     nouveauMotDePasse
     });
   }
 
