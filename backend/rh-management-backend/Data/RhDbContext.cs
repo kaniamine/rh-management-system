@@ -87,15 +87,30 @@ public class RhDbContext : DbContext
                 SoldeConges = 30,
                 IsActive = true,
                 CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            },
+            new Employe
+            {
+                Id = 5,
+                Matricule = "EMP002",
+                Nom = "Bouazizi",
+                Prenom = "Amine",
+                Direction = "Direction Informatique",
+                Service = "Développement",
+                Fonction = "Développeur",
+                SuperieurHierarchiqueMatricule = "SH001",
+                SoldeConges = 30,
+                IsActive = true,
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             }
         );
 
         // ── Users ─────────────────────────────────────────────────────────────
         modelBuilder.Entity<User>().HasData(
-            new User { Id = 1, Matricule = "EMP001", PasswordHash = hash, Role = "employe", EmployeId = 1, IsActive = true, MustChangePassword = false, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
-            new User { Id = 2, Matricule = "SH001", PasswordHash = hash, Role = "n1", EmployeId = 2, IsActive = true, MustChangePassword = false, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
-            new User { Id = 3, Matricule = "DG001", PasswordHash = hash, Role = "dg", EmployeId = 3, IsActive = true, MustChangePassword = false, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
-            new User { Id = 4, Matricule = "RH001", PasswordHash = hash, Role = "rh", EmployeId = 4, IsActive = true, MustChangePassword = false, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
+            new User { Id = 1, Matricule = "EMP001", PasswordHash = hash, Role = "employe", EmployeId = 1, IsActive = true, MustChangePassword = false, NombreConnexions = 0, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new User { Id = 2, Matricule = "SH001", PasswordHash = hash, Role = "n1", EmployeId = 2, IsActive = true, MustChangePassword = false, NombreConnexions = 0, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new User { Id = 3, Matricule = "DG001", PasswordHash = hash, Role = "dg", EmployeId = 3, IsActive = true, MustChangePassword = false, NombreConnexions = 0, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new User { Id = 4, Matricule = "RH001", PasswordHash = hash, Role = "rh", EmployeId = 4, IsActive = true, MustChangePassword = false, NombreConnexions = 0, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new User { Id = 5, Matricule = "EMP002", PasswordHash = hash, Role = "employe", EmployeId = 5, IsActive = true, MustChangePassword = true, NombreConnexions = 0, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
         );
     }
 }

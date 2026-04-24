@@ -29,6 +29,10 @@ public class AuthService : IAuthService
         if (user == null) return null;
         if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash)) return null;
 
+        
+        user.NombreConnexions += 1;
+        await _db.SaveChangesAsync();
+
         var token = GenerateJwtToken(user.Matricule, user.Role);
         var expires = DateTime.UtcNow.AddMinutes(
             _config.GetValue<int>("Jwt:ExpiresInMinutes", 480));

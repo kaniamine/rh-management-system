@@ -3,9 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace rh_management_backend.Models;
 
-/// <summary>
-/// Rôles : employe | n1 | dg | rh | admin
-/// </summary>
+
 public class User
 {
     public int Id { get; set; }
@@ -21,6 +19,10 @@ public class User
 
     public bool IsActive { get; set; } = true;
     public bool MustChangePassword { get; set; } = true;
+
+    // ← NOUVEAU : compteur de connexions
+    public int NombreConnexions { get; set; } = 0;
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [ForeignKey(nameof(Employe))]
