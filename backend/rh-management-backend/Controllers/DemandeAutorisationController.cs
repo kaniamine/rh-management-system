@@ -1,25 +1,50 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using rh_management_backend.Data;
 using rh_management_backend.Models;
+using rh_management_backend.Services;
 using System.Text.RegularExpressions;
 
 namespace rh_management_backend.Controllers;
 
 [ApiController]
+[Route("api/demandes-autorisation")]
+[Authorize]
 public class DemandeAutorisationController : ControllerBase
 {
     private readonly RhDbContext _db;
+    private readonly NotificationService _notif;
 
-    public DemandeAutorisationController(RhDbContext db)
+    public DemandeAutorisationController(RhDbContext db, INotificationService notif)
     {
-        _db = db;
+        _db    = db;
+        _notif = (NotificationService)notif;
     }
 
-    [HttpPost("api/autorisations-sortie")]
-    [HttpPost("api/DemandeAutorisation")]
-    [HttpPost("api/demandes-autorisation")]
-    [HttpPost("api/conge/demande-autorisation")]
+    // GET /api/demandes-autorisation?matricule=...&statut=...
+    [HttpGet]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] string? matricule,
+        [FromQuery] string? statut)
+    {
+        var q = _db.DemandesAutorisations.AsNoTracking().AsQueryable();
+        if (!string.IsNullOrWhiteSpace(matricule)) q = q.Where(d => d.Matricule == matricule.Trim());
+        if (!string.IsNullOrWhiteSpace(statut))    q = q.Where(d => d.Statut    == statut.Trim());
+        return Ok(await q.OrderByDescending(d => d.CreatedAt).ToListAsync());
+    }
+
+    // GET /api/demandes-autorisation/{id}
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var d = await _db.DemandesAutorisations.FindAsync(id);
+        return d == null ? NotFound() : Ok(d);
+    }
+
+    // POST /api/demandes-autorisation — Créer / brouillon (Employé)
+    [HttpPost]
+    [Authorize(Roles = "employe,n1")]
     public async Task<IActionResult> Create([FromBody] CreateDemandeAutorisationDto? dto)
     {
         if (dto == null)
@@ -28,16 +53,11 @@ public class DemandeAutorisationController : ControllerBase
         if (string.IsNullOrWhiteSpace(dto.Matricule))
             return BadRequest(new { message = "Le matricule est obligatoire." });
 
-        var typeAutorisation = dto.Type ?? dto.TypeAutorisation;
-        if (string.IsNullOrWhiteSpace(typeAutorisation))
+        if (string.IsNullOrWhiteSpace(dto.TypeAutorisation))
             return BadRequest(new { message = "Le type d'autorisation est obligatoire." });
 
-        var dateStr = dto.Date ?? dto.DateDemande;
-        if (string.IsNullOrWhiteSpace(dateStr))
+        if (dto.DateDemande == default)
             return BadRequest(new { message = "La date de la demande est obligatoire." });
-
-        var heureDepartStr = dto.HeureDepart ?? dto.HeureSortie;
-        var heureRetourStr = dto.HeureRetour;
 
         if (!string.IsNullOrWhiteSpace(dto.Telephone))
         {
@@ -51,12 +71,11 @@ public class DemandeAutorisationController : ControllerBase
             if (string.IsNullOrWhiteSpace(dto.Motif))
                 return BadRequest(new { message = "Le motif est obligatoire." });
 
-            if (string.IsNullOrWhiteSpace(heureDepartStr) || string.IsNullOrWhiteSpace(heureRetourStr))
+            if (!dto.HeureSortie.HasValue || !dto.HeureRetour.HasValue)
                 return BadRequest(new { message = "L'heure de début et l'heure de fin sont obligatoires." });
 
-            if (!TimeOnly.TryParse(heureDepartStr, out var hDebut) ||
-                !TimeOnly.TryParse(heureRetourStr, out var hFin))
-                return BadRequest(new { message = "Format d'heure invalide (HH:mm attendu)." });
+            var hDebut = dto.HeureSortie.Value;
+            var hFin   = dto.HeureRetour.Value;
 
             if (hFin <= hDebut)
                 return BadRequest(new { message = "L'heure de fin doit être après l'heure de début." });
@@ -70,63 +89,133 @@ public class DemandeAutorisationController : ControllerBase
             if (hFin > debutMax)
                 return BadRequest(new { message = "L'heure de fin ne peut pas dépasser 17h20." });
 
-            if (typeAutorisation.Contains("personnel", StringComparison.OrdinalIgnoreCase))
+            if (dto.TypeAutorisation.Contains("personnel", StringComparison.OrdinalIgnoreCase))
             {
                 var duree = CalculerDureeMinutes(hDebut, hFin);
                 if (duree > 90)
                     return BadRequest(new
                     {
-                        message = $"Durée calculée : {duree} min. La durée maximale pour une autorisation personnelle est de 1h30 (90 min). La pause déjeuner 12h00–13h00 est exclue du calcul."
+                        message = $"Durée calculée : {duree} min. La durée maximale pour une autorisation personnelle est de 1h30 (90 min)."
                     });
             }
         }
 
-        var statut = dto.EstBrouillon
-            ? "Brouillon"
-            : "En attente de validation du supérieur hiérarchique";
-
-        DateOnly.TryParse(dateStr, out var dateDemande);
-        TimeOnly.TryParse(heureDepartStr ?? "", out var heureSortie);
-        TimeOnly.TryParse(heureRetourStr ?? "", out var heureRetour);
+        var employe = await _db.Employes.FirstOrDefaultAsync(e => e.Matricule == dto.Matricule.Trim());
 
         var entity = new DemandeAutorisation
         {
-            NomComplet = (dto.NomComplet ?? string.Empty).Trim(),
-            Matricule = dto.Matricule.Trim(),
-            GradeFonction = string.IsNullOrWhiteSpace(dto.GradeFonction) ? null : dto.GradeFonction.Trim(),
-            TypeAutorisation = typeAutorisation.Trim(),
-            DateDemande = dateDemande,
-            HeureSortie = dto.EstBrouillon ? null : heureSortie,
-            HeureRetour = dto.EstBrouillon ? null : heureRetour,
-            Motif = string.IsNullOrWhiteSpace(dto.Motif) ? null : dto.Motif.Trim(),
-            Destination = string.IsNullOrWhiteSpace(dto.Destination) ? null : dto.Destination.Trim(),
-            Telephone = string.IsNullOrWhiteSpace(dto.Telephone) ? null : dto.Telephone.Trim(),
-            Statut = statut,
-            CreatedAt = DateTime.UtcNow
+            NomComplet            = employe?.NomComplet ?? dto.Matricule.Trim(),
+            Matricule             = dto.Matricule.Trim(),
+            Direction             = employe?.Direction ?? "",
+            Service               = employe?.Service   ?? "",
+            GradeFonction         = string.IsNullOrWhiteSpace(dto.GradeFonction) ? null : dto.GradeFonction.Trim(),
+            SuperieurHierarchique = employe?.SuperieurHierarchique ?? "",
+            TypeAutorisation      = dto.TypeAutorisation.Trim(),
+            DateDemande           = dto.DateDemande,
+            HeureSortie           = dto.HeureSortie,
+            HeureRetour           = dto.HeureRetour,
+            DureeMinutes          = dto.HeureSortie.HasValue && dto.HeureRetour.HasValue
+                                     ? (int)CalculerDureeMinutes(dto.HeureSortie.Value, dto.HeureRetour.Value)
+                                     : null,
+            Motif                 = string.IsNullOrWhiteSpace(dto.Motif) ? string.Empty : dto.Motif.Trim(),
+            Destination           = string.IsNullOrWhiteSpace(dto.Destination) ? null : dto.Destination.Trim(),
+            Telephone             = string.IsNullOrWhiteSpace(dto.Telephone) ? null : dto.Telephone.Trim(),
+            Statut                = dto.EstBrouillon
+                                     ? "Brouillon"
+                                     : "En attente de validation du supérieur hiérarchique",
+            CreatedAt             = DateTime.UtcNow
         };
 
         _db.DemandesAutorisations.Add(entity);
         await _db.SaveChangesAsync();
 
+        // Notification soumission → N+1
+        if (!dto.EstBrouillon && employe?.SuperieurHierarchiqueMatricule != null)
+        {
+            await _notif.CreerNotificationAsync(
+                employe.SuperieurHierarchiqueMatricule,
+                "n1", "autorisation", entity.Id, "soumission",
+                $"Une nouvelle demande d'autorisation de {entity.NomComplet} est en attente de votre validation.");
+        }
+
         return CreatedAtAction(nameof(GetById), new { id = entity.Id },
             new { id = entity.Id, statut = entity.Statut });
     }
 
-    [HttpGet("api/autorisations-sortie")]
-    [HttpGet("api/DemandeAutorisation")]
-    [HttpGet("api/demandes-autorisation")]
-    [HttpGet("api/conge/demande-autorisation")]
-    public async Task<IActionResult> GetAll()
-        => Ok(await _db.DemandesAutorisations.AsNoTracking().ToListAsync());
-
-    [HttpGet("api/autorisations-sortie/{id:int}")]
-    [HttpGet("api/DemandeAutorisation/{id:int}")]
-    [HttpGet("api/demandes-autorisation/{id:int}")]
-    [HttpGet("api/conge/demande-autorisation/{id:int}")]
-    public async Task<IActionResult> GetById(int id)
+    // POST /api/demandes-autorisation/{id}/valider-n1
+    [HttpPost("{id}/valider-n1")]
+    [Authorize(Roles = "n1,admin")]
+    public async Task<IActionResult> ValiderN1(int id, [FromBody] AutorisationActionDto dto)
     {
         var d = await _db.DemandesAutorisations.FindAsync(id);
-        return d == null ? NotFound() : Ok(d);
+        if (d == null) return NotFound();
+        if (d.Statut != "En attente de validation du supérieur hiérarchique")
+            return BadRequest(new { message = $"Statut incorrect : {d.Statut}" });
+
+        d.Statut    = "Validée";
+        d.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        await _notif.CreerNotificationAsync(
+            d.Matricule, "employe", "autorisation", id, "validation",
+            $"Votre demande d'autorisation du {d.DateDemande:dd/MM/yyyy} a été validée par votre supérieur hiérarchique.");
+
+        await _notif.NotifierRoleAsync("rh", "autorisation", id, "validation",
+            $"La demande d'autorisation de {d.NomComplet} du {d.DateDemande:dd/MM/yyyy} a été validée. À prendre en compte pour le suivi mensuel.");
+
+        return Ok(new { statut = d.Statut });
+    }
+
+    // POST /api/demandes-autorisation/{id}/rejeter-n1
+    [HttpPost("{id}/rejeter-n1")]
+    [Authorize(Roles = "n1,admin")]
+    public async Task<IActionResult> RejeterN1(int id, [FromBody] AutorisationActionDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Commentaire))
+            return BadRequest(new { message = "Le motif de rejet est obligatoire." });
+
+        var d = await _db.DemandesAutorisations.FindAsync(id);
+        if (d == null) return NotFound();
+        if (d.Statut != "En attente de validation du supérieur hiérarchique")
+            return BadRequest(new { message = $"Statut incorrect : {d.Statut}" });
+
+        d.Statut    = "Rejetée";
+        d.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        await _notif.CreerNotificationAsync(
+            d.Matricule, "employe", "autorisation", id, "rejet",
+            $"Votre demande d'autorisation du {d.DateDemande:dd/MM/yyyy} a été rejetée par votre supérieur hiérarchique. Motif : {dto.Commentaire}");
+
+        return Ok(new { statut = d.Statut });
+    }
+
+    // POST /api/demandes-autorisation/{id}/annuler
+    [HttpPost("{id}/annuler")]
+    public async Task<IActionResult> Annuler(int id, [FromBody] AutorisationActionDto dto)
+    {
+        var d = await _db.DemandesAutorisations.FindAsync(id);
+        if (d == null) return NotFound();
+
+        var annulables = new[] { "Brouillon", "En attente de validation du supérieur hiérarchique" };
+        if (!annulables.Contains(d.Statut))
+            return BadRequest(new { message = $"Impossible d'annuler une demande au statut : {d.Statut}" });
+
+        var employe = await _db.Employes.FirstOrDefaultAsync(e => e.Matricule == d.Matricule);
+
+        d.Statut    = "Annulée";
+        d.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        if (employe?.SuperieurHierarchiqueMatricule != null)
+        {
+            await _notif.CreerNotificationAsync(
+                employe.SuperieurHierarchiqueMatricule,
+                "n1", "autorisation", id, "annulation",
+                $"La demande d'autorisation de {d.NomComplet} du {d.DateDemande:dd/MM/yyyy} a été annulée.");
+        }
+
+        return Ok(new { statut = d.Statut });
     }
 
     private static double CalculerDureeMinutes(TimeOnly debut, TimeOnly fin)
@@ -134,53 +223,36 @@ public class DemandeAutorisationController : ControllerBase
         double total = (fin - debut).TotalMinutes;
         if (total <= 0) return 0;
 
-        var pauseD = new TimeOnly(12, 0);
-        var pauseF = new TimeOnly(13, 0);
+        var pauseD   = new TimeOnly(12, 0);
+        var pauseF   = new TimeOnly(13, 0);
         var overlapD = debut > pauseD ? debut : pauseD;
-        var overlapF = fin < pauseF ? fin : pauseF;
+        var overlapF = fin   < pauseF ? fin   : pauseF;
 
         if (overlapF > overlapD)
             total -= (overlapF - overlapD).TotalMinutes;
 
         return Math.Round(Math.Max(0, total), 1);
     }
-    [HttpPatch("api/autorisations-sortie/{id:int}/statut")]
-    [HttpPatch("api/demandes-autorisation/{id:int}/statut")]
-    public async Task<IActionResult> UpdateStatut(int id, [FromBody] UpdateStatutDto dto)
-    {
-        var entity = await _db.DemandesAutorisations.FindAsync(id);
-        if (entity == null) return NotFound();
-        entity.Statut = dto.Statut;
-        await _db.SaveChangesAsync();
-        return Ok(new { id = entity.Id, statut = entity.Statut });
-    }
 }
 
-// ── DTO ──────────────────────────────────────────────────────
+// ── DTOs ───────────────────────────────────────────────────────────────────────
+
 public sealed class CreateDemandeAutorisationDto
 {
-    public string? Type { get; set; }
-    public string? TypeAutorisation { get; set; }
-    public string Matricule { get; set; } = string.Empty;
-    public string? NomComplet { get; set; }
-    public string? GradeFonction { get; set; }
-    public string? Direction { get; set; }
-    public string? Service { get; set; }
-    public string? SuperieurHierarchique { get; set; }
-    public string? Date { get; set; }
-    public string? DateDemande { get; set; }
-    public string? HeureDepart { get; set; }
-    public string? HeureSortie { get; set; }
-    public string? HeureRetour { get; set; }
-    public string? Duree { get; set; }
-    public string? Motif { get; set; }
-    public string? Commentaire { get; set; }
-    public string? Destination { get; set; }
-    public string? Telephone { get; set; }
-    public bool EstBrouillon { get; set; }
+    public string   Matricule        { get; set; } = string.Empty;
+    public string?  GradeFonction    { get; set; }
+    public string   TypeAutorisation { get; set; } = string.Empty;
+    public DateOnly DateDemande      { get; set; }
+    public TimeOnly? HeureSortie     { get; set; }
+    public TimeOnly? HeureRetour     { get; set; }
+    public string?  Motif            { get; set; }
+    public string?  Destination      { get; set; }
+    public string?  Telephone        { get; set; }
+    public string?  Commentaire      { get; set; }
+    public bool     EstBrouillon     { get; set; }
 }
-public sealed class UpdateStatutDto
-{
-    public string Statut { get; set; } = string.Empty;
-    public string? Motif { get; set; }
-}
+
+public record AutorisationActionDto(
+    string AuteurMatricule,
+    string? Commentaire
+);

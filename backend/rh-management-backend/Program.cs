@@ -63,10 +63,8 @@ builder.Services.AddAuthorization();
 
 // ── INJECTION DE DÉPENDANCES (Services) ──────────────────────────────────────
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IDemandeCongeService, DemandeCongeService>();
-// Ajouter les autres services ici au fur et à mesure :
-// builder.Services.AddScoped<IDemandeAutorisationService, DemandeAutorisationService>();
-// builder.Services.AddScoped<IDemandeMaladieService, DemandeMaladieService>();
 
 // ── BUILD ─────────────────────────────────────────────────────────────────────
 var app = builder.Build();

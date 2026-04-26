@@ -34,8 +34,9 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("changer-mot-de-passe")]
     [HttpPost("change-password")]
-    [Authorize(Roles = "employe,n1,dg")]
+    [Authorize(Roles = "employe,n1,dg,rh,admin")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
     {
         var matricule = User.FindFirstValue("matricule");

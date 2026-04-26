@@ -90,7 +90,7 @@ public class AuthService : IAuthService
         if (dto.CurrentPassword == dto.NewPassword)
             return (false, "Le nouveau mot de passe doit être différent du mot de passe actuel.");
 
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        user.PasswordHash       = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
         user.MustChangePassword = false;
         await _db.SaveChangesAsync();
 

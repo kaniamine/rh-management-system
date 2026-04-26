@@ -1,106 +1,246 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using rh_management_backend.Data;
 using rh_management_backend.Models;
+using rh_management_backend.Services;
 
 namespace rh_management_backend.Controllers;
 
 [ApiController]
+[Route("api/demandes-maladie")]
+[Authorize]
 public class DemandeMaladieController : ControllerBase
 {
     private readonly RhDbContext _db;
+    private readonly NotificationService _notif;
 
-    public DemandeMaladieController(RhDbContext db)
+    public DemandeMaladieController(RhDbContext db, INotificationService notif)
     {
-        _db = db;
+        _db    = db;
+        _notif = (NotificationService)notif;
     }
 
-    [HttpPost("api/conges-maladie")]
-    [HttpPost("api/demandes-maladie")]
-    [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Create([FromForm] CreateDemandeMaladieDto? dto)
+    // GET /api/demandes-maladie?matricule=...&statut=...
+    [HttpGet]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] string? matricule,
+        [FromQuery] string? statut)
     {
-        if (dto == null)
-            return BadRequest(new { message = "Requête invalide." });
-
-        if (string.IsNullOrWhiteSpace(dto.Matricule))
-            return BadRequest(new { message = "Le matricule est obligatoire." });
-
-        if (string.IsNullOrWhiteSpace(dto.TypeMaladie))
-            return BadRequest(new { message = "Le type de maladie est obligatoire." });
-
-        if (string.IsNullOrWhiteSpace(dto.DateDebut) || string.IsNullOrWhiteSpace(dto.DateFin))
-            return BadRequest(new { message = "Les dates de début et de fin sont obligatoires." });
-
-        if (!DateOnly.TryParse(dto.DateDebut, out var dateDebut) ||
-            !DateOnly.TryParse(dto.DateFin, out var dateFin))
-            return BadRequest(new { message = "Format de date invalide (YYYY-MM-DD attendu)." });
-
-        if (dateFin < dateDebut)
-            return BadRequest(new { message = "La date de fin ne peut pas être antérieure à la date de début." });
-
-        if (dto.CertificatMedical == null)
-            return BadRequest(new { message = "Le certificat médical est obligatoire." });
-
-        var fichierNom = dto.CertificatMedical.FileName;
-
-        var entity = new DemandeMaladie
-        {
-            Matricule = dto.Matricule.Trim(),
-            Direction = dto.Direction?.Trim() ?? string.Empty,
-            Service = dto.Service?.Trim() ?? string.Empty,
-            TypeMaladie = dto.TypeMaladie.Trim(),
-            DateDebut = dateDebut,
-            DateFin = dateFin,
-            NombreJours = dto.NombreJours,
-            Commentaire = string.IsNullOrWhiteSpace(dto.Commentaire) ? null : dto.Commentaire.Trim(),
-            CertificatMedicalFichierNom = fichierNom,
-            Statut = "En attente de validation RH",
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _db.DemandesMaladie.Add(entity);
-        await _db.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetById), new { id = entity.Id },
-            new { id = entity.Id, statut = entity.Statut });
+        var q = _db.DemandesMaladie.AsQueryable();
+        if (!string.IsNullOrEmpty(matricule)) q = q.Where(d => d.Matricule == matricule);
+        if (!string.IsNullOrEmpty(statut))    q = q.Where(d => d.Statut    == statut);
+        return Ok(await q.OrderByDescending(d => d.CreatedAt).ToListAsync());
     }
 
-    [HttpGet("api/conges-maladie")]
-    [HttpGet("api/demandes-maladie")]
-    public async Task<IActionResult> GetAll()
-        => Ok(await _db.DemandesMaladie.AsNoTracking().ToListAsync());
-
-    [HttpGet("api/conges-maladie/{id:int}")]
-    [HttpGet("api/demandes-maladie/{id:int}")]
+    // GET /api/demandes-maladie/{id}
+    [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
         var d = await _db.DemandesMaladie.FindAsync(id);
         return d == null ? NotFound() : Ok(d);
     }
 
-    [HttpPatch("api/conges-maladie/{id:int}/statut")]
-    [HttpPatch("api/demandes-maladie/{id:int}/statut")]
-    public async Task<IActionResult> UpdateStatut(int id, [FromBody] UpdateStatutDto dto)
+    // POST /api/demandes-maladie — [FromForm] pour upload fichier
+    [HttpPost]
+    [Authorize(Roles = "employe,n1")]
+    public async Task<IActionResult> Create([FromForm] CreateMaladieFormDto dto)
     {
-        var entity = await _db.DemandesMaladie.FindAsync(id);
-        if (entity == null) return NotFound();
-        entity.Statut = dto.Statut;
+        if (string.IsNullOrWhiteSpace(dto.Matricule))
+            return BadRequest(new { message = "Le matricule est obligatoire." });
+
+        var employe = await _db.Employes.FirstOrDefaultAsync(e => e.Matricule == dto.Matricule.Trim());
+        if (employe == null)
+            return BadRequest(new { message = "Employé introuvable." });
+
+        if (!dto.EstBrouillon && dto.CertificatMedical == null && string.IsNullOrWhiteSpace(dto.CertificatMedicalFichierNom))
+            return BadRequest(new { message = "Le certificat médical est obligatoire." });
+
+        if (!DateOnly.TryParse(dto.DateDebut, out var dateDebut) ||
+            !DateOnly.TryParse(dto.DateFin,   out var dateFin))
+            return BadRequest(new { message = "Format de date invalide (attendu : yyyy-MM-dd)." });
+
+        if (dateFin < dateDebut)
+            return BadRequest(new { message = "La date de fin doit être postérieure ou égale à la date de début." });
+
+        int nbJours = dateFin.DayNumber - dateDebut.DayNumber + 1;
+        bool exempte = dto.TypeMaladie is "Congé maternité" or "Congé pour chirurgie";
+
+        string? nomFichier = null;
+        if (dto.CertificatMedical != null)
+            nomFichier = $"{dto.Matricule}_{DateTime.UtcNow:yyyyMMddHHmmss}_{dto.CertificatMedical.FileName}";
+        else if (!string.IsNullOrWhiteSpace(dto.CertificatMedicalFichierNom))
+            nomFichier = dto.CertificatMedicalFichierNom;
+
+        var entity = new DemandeMaladie
+        {
+            Matricule                   = employe.Matricule,
+            NomComplet                  = employe.NomComplet,
+            Direction                   = employe.Direction ?? "",
+            Service                     = employe.Service   ?? "",
+            TypeMaladie                 = dto.TypeMaladie ?? "Maladie simple",
+            DateDebut                   = dateDebut,
+            DateFin                     = dateFin,
+            NombreJours                 = nbJours,
+            ExempteAssiduité            = exempte,
+            CertificatMedicalFichierNom = nomFichier,
+            Commentaire                 = string.IsNullOrWhiteSpace(dto.Commentaire) ? null : dto.Commentaire.Trim(),
+            Statut                      = dto.EstBrouillon ? "Brouillon" : "En attente de validation RH",
+            CreatedAt                   = DateTime.UtcNow
+        };
+
+        _db.DemandesMaladie.Add(entity);
+
+        _db.HistoriqueActions.Add(new HistoriqueAction
+        {
+            TypeDemande     = "maladie",
+            DemandeId       = 0,
+            Action          = dto.EstBrouillon ? "Brouillon" : "Soumission",
+            AuteurMatricule = employe.Matricule,
+            AuteurRole      = "employe",
+            Timestamp       = DateTime.UtcNow
+        });
+
         await _db.SaveChangesAsync();
-        return Ok(new { id = entity.Id, statut = entity.Statut });
+
+        var log = _db.HistoriqueActions.Local.Last();
+        log.DemandeId = entity.Id;
+        await _db.SaveChangesAsync();
+
+        if (!dto.EstBrouillon)
+        {
+            await _notif.NotifierRoleAsync("rh", "maladie", entity.Id, "soumission",
+                $"Une nouvelle demande de congé de maladie de {entity.NomComplet} est en attente de validation. Un certificat médical a été joint.");
+        }
+
+        return CreatedAtAction(nameof(GetById), new { id = entity.Id },
+            new { entity.Id, entity.Statut });
+    }
+
+    // POST /api/demandes-maladie/{id}/valider — RH
+    [HttpPost("{id}/valider")]
+    [Authorize(Roles = "rh,admin")]
+    public async Task<IActionResult> Valider(int id, [FromBody] ActionMaladieDto dto)
+    {
+        var d = await _db.DemandesMaladie.FindAsync(id);
+        if (d == null) return NotFound();
+        if (d.Statut != "En attente de validation RH")
+            return BadRequest(new { message = "Statut invalide." });
+
+        d.Statut    = "Validée";
+        d.UpdatedAt = DateTime.UtcNow;
+
+        _db.HistoriqueActions.Add(new HistoriqueAction
+        {
+            TypeDemande     = "maladie",
+            DemandeId       = id,
+            Action          = "Validation RH",
+            AuteurMatricule = dto.AuteurMatricule,
+            AuteurRole      = "rh",
+            Commentaire     = dto.Commentaire,
+            Timestamp       = DateTime.UtcNow
+        });
+
+        await _db.SaveChangesAsync();
+
+        await _notif.CreerNotificationAsync(
+            d.Matricule, "employe", "maladie", id, "validation",
+            "Votre demande de congé de maladie a été validée par la Direction RH.");
+
+        var employe = await _db.Employes.FirstOrDefaultAsync(e => e.Matricule == d.Matricule);
+        if (employe?.SuperieurHierarchiqueMatricule != null)
+        {
+            await _notif.CreerNotificationAsync(
+                employe.SuperieurHierarchiqueMatricule,
+                "n1", "maladie", id, "validation",
+                $"Information : la demande de congé de maladie de {d.NomComplet} a été validée par la Direction RH.");
+        }
+
+        return Ok(new { statut = d.Statut });
+    }
+
+    // POST /api/demandes-maladie/{id}/rejeter — RH
+    [HttpPost("{id}/rejeter")]
+    [Authorize(Roles = "rh,admin")]
+    public async Task<IActionResult> Rejeter(int id, [FromBody] ActionMaladieDto dto)
+    {
+        var d = await _db.DemandesMaladie.FindAsync(id);
+        if (d == null) return NotFound();
+        if (string.IsNullOrWhiteSpace(dto.Commentaire))
+            return BadRequest(new { message = "Motif obligatoire." });
+
+        d.Statut    = "Rejetée";
+        d.UpdatedAt = DateTime.UtcNow;
+
+        _db.HistoriqueActions.Add(new HistoriqueAction
+        {
+            TypeDemande     = "maladie",
+            DemandeId       = id,
+            Action          = "Rejet RH",
+            AuteurMatricule = dto.AuteurMatricule,
+            AuteurRole      = "rh",
+            Commentaire     = dto.Commentaire,
+            Timestamp       = DateTime.UtcNow
+        });
+
+        await _db.SaveChangesAsync();
+
+        await _notif.CreerNotificationAsync(
+            d.Matricule, "employe", "maladie", id, "rejet",
+            $"Votre demande de congé de maladie a été rejetée par la Direction RH. Motif : {dto.Commentaire}");
+
+        return Ok(new { statut = d.Statut });
+    }
+
+    // POST /api/demandes-maladie/{id}/annuler — Employé
+    [HttpPost("{id}/annuler")]
+    public async Task<IActionResult> Annuler(int id, [FromBody] ActionMaladieDto dto)
+    {
+        var d = await _db.DemandesMaladie.FindAsync(id);
+        if (d == null) return NotFound();
+
+        var annulables = new[] { "Brouillon", "En attente de validation RH" };
+        if (!annulables.Contains(d.Statut))
+            return BadRequest(new { message = $"Impossible d'annuler une demande au statut : {d.Statut}" });
+
+        d.Statut    = "Annulée";
+        d.UpdatedAt = DateTime.UtcNow;
+
+        _db.HistoriqueActions.Add(new HistoriqueAction
+        {
+            TypeDemande     = "maladie",
+            DemandeId       = id,
+            Action          = "Annulation",
+            AuteurMatricule = dto.AuteurMatricule,
+            AuteurRole      = "employe",
+            Commentaire     = dto.Commentaire,
+            Timestamp       = DateTime.UtcNow
+        });
+
+        await _db.SaveChangesAsync();
+
+        await _notif.NotifierRoleAsync("rh", "maladie", id, "annulation",
+            $"La demande de congé de maladie de {d.NomComplet} a été annulée par l'employé.");
+
+        return Ok(new { statut = d.Statut });
     }
 }
 
-// ── DTO ──────────────────────────────────────────────────────
-public sealed class CreateDemandeMaladieDto
+// ── DTOs ──────────────────────────────────────────────────────────────────────
+
+public class CreateMaladieFormDto
 {
-    public string TypeMaladie { get; set; } = string.Empty;
-    public string Matricule { get; set; } = string.Empty;
-    public string? Direction { get; set; }
-    public string? Service { get; set; }
-    public string DateDebut { get; set; } = string.Empty;
-    public string DateFin { get; set; } = string.Empty;
-    public int NombreJours { get; set; }
-    public string? Commentaire { get; set; }
-    public IFormFile? CertificatMedical { get; set; }
+    public string?    Matricule                   { get; set; }
+    public string?    TypeMaladie                 { get; set; }
+    public string?    DateDebut                   { get; set; }
+    public string?    DateFin                     { get; set; }
+    public IFormFile? CertificatMedical           { get; set; }
+    public string?    CertificatMedicalFichierNom { get; set; }
+    public string?    Commentaire                 { get; set; }
+    public bool       EstBrouillon                { get; set; }
 }
+
+public record ActionMaladieDto(
+    string AuteurMatricule,
+    string? Commentaire
+);

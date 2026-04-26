@@ -21,6 +21,7 @@ public class User
     public bool MustChangePassword { get; set; } = true;
     public int NombreConnexions { get; set; } = 0;
 
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [ForeignKey(nameof(Employe))]
