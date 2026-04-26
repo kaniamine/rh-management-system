@@ -69,8 +69,8 @@ export const routes: Routes = [
   },
   {
     path: 'profil',
-    loadChildren: () =>
-      import('./features/profil/profil-module').then(m => m.ProfilModule),
+    loadComponent: () =>
+      import('./features/profil/profil').then(m => m.Profil),
     canActivate: [authGuard]
   },
   {

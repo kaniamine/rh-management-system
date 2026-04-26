@@ -118,7 +118,7 @@ export class EmployeeDashboard implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.loadError = err.error?.message ?? `Erreur ${err.status} lors du chargement.`;
-        this.loading   = false;
+        this.loading = false;
       }
     });
   }

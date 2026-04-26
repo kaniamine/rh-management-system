@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(taskkill /PID 20496 /F)",
+      "Bash(taskkill /PID 20660 /F)",
+      "Bash(taskkill *)",
+      "Bash(npm install *)",
+      "Read(//c/Users/natal/source/repos/kaniamine/rh-management-system/**)",
+      "Bash(grep -rn *)",
+      "Bash(dotnet restore *)",
+      "Bash(sqlcmd -S localhost -E -d rh_management_db -Q \"SELECT Matricule, Role, IsActive FROM Users WHERE Matricule = 'EMP001';\")",
+      "Bash(sqlcmd *)",
+      "Bash(powershell -Command ' *)",
+      "Bash(cat)",
+      "Bash(dotnet script *)",
+      "Bash(mkdir -p /tmp/hashgen)",
+      "Read(//tmp/**)",
+      "Bash(dotnet new *)",
+      "Bash(dotnet add *)",
+      "Bash(dotnet run *)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet ef *)",
+      "Bash(git fetch *)",
+      "Bash(git stash *)"
+    ]
+  }
+}

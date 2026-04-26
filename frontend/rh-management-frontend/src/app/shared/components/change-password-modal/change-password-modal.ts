@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth.service';
@@ -11,7 +11,6 @@ import { AuthService } from '../../../core/auth.service';
   styleUrls: ['./change-password-modal.css']
 })
 export class ChangePasswordModal {
-  @Input() matricule = '';
   @Output() passwordChanged = new EventEmitter<void>();
 
   ancienMotDePasse  = '';
@@ -75,7 +74,7 @@ export class ChangePasswordModal {
     }
 
     this.loading = true;
-    this.auth.changePassword(this.matricule, this.ancienMotDePasse, this.nouveauMotDePasse)
+    this.auth.changePassword(this.ancienMotDePasse, this.nouveauMotDePasse, this.confirmMotDePasse)
       .subscribe({
         next: () => {
           this.loading = false;

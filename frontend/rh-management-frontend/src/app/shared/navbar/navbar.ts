@@ -1,6 +1,7 @@
 import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, NavigationEnd } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/auth.service';
 import { NotificationService } from '../../core/notification.service';
@@ -20,22 +21,49 @@ interface NavItem {
   styleUrls: ['./navbar.css']
 })
 export class Navbar implements OnInit {
-  private readonly router = inject(Router);
-  private readonly auth   = inject(AuthService);
-  readonly notifSvc       = inject(NotificationService);
+  private readonly router    = inject(Router);
+  private readonly auth      = inject(AuthService);
+  private readonly sanitizer = inject(DomSanitizer);
+  readonly notifSvc          = inject(NotificationService);
 
   mobileOpen     = false;
   currentRoute   = '';
   showNotifPanel = false;
+  showUserMenu   = false;
 
   get currentRole(): string { return this.auth.role ?? 'employe'; }
 
   get currentUser() {
+    const nomComplet = this.auth.session?.nomComplet ?? '';
+    const stored     = this.auth.session?.initiales  ?? '';
+    const initiales  = stored || this.computeInitiales(nomComplet);
     return {
-      nom:       this.auth.session?.nomComplet ?? '',
-      matricule: this.auth.session?.matricule  ?? '',
-      initiales: this.auth.session?.initiales  ?? ''
+      nom:       nomComplet,
+      matricule: this.auth.session?.matricule ?? '',
+      initiales
     };
+  }
+
+  private computeInitiales(nomComplet: string): string {
+    const parts = nomComplet.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '';
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
+  safeHtml(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
+
+  timeAgo(ts: string): string {
+    if (!ts) return '';
+    const diff = Date.now() - new Date(ts).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1)  return 'À l\'instant';
+    if (m < 60) return `Il y a ${m} min`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `Il y a ${h} h`;
+    return `Il y a ${Math.floor(h / 24)} j`;
   }
 
   get roleLabel(): string {
@@ -91,7 +119,13 @@ export class Navbar implements OnInit {
 
   toggleNotifPanel(): void {
     this.showNotifPanel = !this.showNotifPanel;
+    this.showUserMenu   = false;
     if (this.showNotifPanel) this.notifSvc.load();
+  }
+
+  toggleUserMenu(): void {
+    this.showUserMenu   = !this.showUserMenu;
+    this.showNotifPanel = false;
   }
 
   markAllRead(): void { this.notifSvc.markAllAsRead(); }
@@ -102,6 +136,9 @@ export class Navbar implements OnInit {
     const target = event.target as HTMLElement;
     if (!target.closest('.notif-btn') && !target.closest('.notif-panel')) {
       this.showNotifPanel = false;
+    }
+    if (!target.closest('.user-menu-wrapper')) {
+      this.showUserMenu = false;
     }
     if (!target.closest('.navbar-mobile-toggle') && !target.closest('.navbar-mobile-menu')) {
       this.mobileOpen = false;

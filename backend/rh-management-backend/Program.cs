@@ -92,7 +92,5 @@ using (var scope = app.Services.CreateScope())
 }
 
 
-Console.WriteLine(BCrypt.Net.BCrypt.HashPassword("0000"));
-
 app.MapControllers();
 app.Run();

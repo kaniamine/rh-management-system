@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { AuthService } from '../../../core/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -11,18 +12,17 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class Login {
-  private router = inject(Router);
-  private http   = inject(HttpClient);
+export class Login implements OnInit {
+  private router      = inject(Router);
+  private http        = inject(HttpClient);
+  private authService = inject(AuthService);
 
-  // Champs du formulaire
   email      = '';
   motDePasse = '';
   showPassword = false;
   errorMessage = '';
   loading      = false;
 
-  // Modale première connexion
   showChangePasswordModal = false;
   newPassword      = '';
   confirmPassword  = '';
@@ -33,6 +33,17 @@ export class Login {
 
   private currentUser: any = null;
 
+  ngOnInit(): void {
+    if (this.authService.isLoggedIn) {
+      const role = this.authService.role;
+      if (this.authService.session?.premiereConnexion && role !== 'rh' && role !== 'admin') {
+        this.showChangePasswordModal = true;
+      } else {
+        this.router.navigate([this.authService.getHomeRoute()]);
+      }
+    }
+  }
+
   onLogin(): void {
     if (!this.email || !this.motDePasse) {
       this.errorMessage = 'Veuillez remplir tous les champs.';
@@ -41,27 +52,29 @@ export class Login {
     this.loading      = true;
     this.errorMessage = '';
 
-    this.http.post<any>('/api/auth/login', {
-      matricule: this.email,
-      password:  this.motDePasse
-    }).subscribe({
-      next: (user) => {
-        console.log('[LOGIN] Success:', user);
+    this.authService.login(this.email, this.motDePasse).subscribe({
+      next: () => {
         this.loading     = false;
-        this.currentUser = user;
-        // Clé lue par AuthService, authGuard et la navbar
-        sessionStorage.setItem('user_session', JSON.stringify(user));
+        const session    = this.authService.session;
+        this.currentUser = session;
 
-        if (user.premiereConnexion === true && user.role !== 'rh') {
+        if (session?.premiereConnexion && session.role !== 'rh' && session.role !== 'admin') {
           this.showChangePasswordModal = true;
         } else {
-          this.navigateToDashboard(user.role);
+          this.navigateToDashboard(session?.role ?? '');
         }
       },
-      error: (err: HttpErrorResponse) => {
-        console.error('[LOGIN] Error:', err);
-        this.loading      = false;
-        this.errorMessage = err.error?.message || 'Matricule ou mot de passe incorrect.';
+      error: (err) => {
+        this.loading = false;
+        if (err.status === 0) {
+          this.errorMessage = 'Serveur inaccessible. Vérifiez que le backend est démarré (port 5130).';
+        } else if (err.status === 401 || err.status === 400) {
+          this.errorMessage = err.error?.message ?? 'Matricule ou mot de passe incorrect.';
+        } else if (err.status === 404) {
+          this.errorMessage = 'Endpoint d\'authentification introuvable (404).';
+        } else {
+          this.errorMessage = 'Matricule ou mot de passe incorrect.';
+        }
       }
     });
   }
@@ -86,16 +99,15 @@ export class Login {
     this.changeLoading = true;
 
     this.http.post<any>('/api/auth/changer-mot-de-passe', {
-      matricule:        this.currentUser.matricule,
-      ancienMotDePasse: '0000',
+      matricule:         this.currentUser?.matricule,
+      ancienMotDePasse:  '0000',
       nouveauMotDePasse: this.newPassword
     }).subscribe({
       next: () => {
         this.changeLoading = false;
-        const updated = { ...this.currentUser, premiereConnexion: false };
-        sessionStorage.setItem('user_session', JSON.stringify(updated));
+        this.authService.markPasswordChanged();
         this.showChangePasswordModal = false;
-        this.navigateToDashboard(this.currentUser.role);
+        this.navigateToDashboard(this.authService.session?.role ?? '');
       },
       error: (err: HttpErrorResponse) => {
         this.changeLoading = false;

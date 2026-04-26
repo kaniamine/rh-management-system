@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using rh_management_backend.Data;
 
@@ -11,9 +12,11 @@ using rh_management_backend.Data;
 namespace rh_management_backend.Data.Migrations
 {
     [DbContext(typeof(RhDbContext))]
-    partial class RhDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260424204549_AddNombreConnexionsAndUser5")]
+    partial class AddNombreConnexionsAndUser5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -511,7 +514,7 @@ namespace rh_management_backend.Data.Migrations
                             Matricule = "EMP001",
                             MustChangePassword = false,
                             NombreConnexions = 0,
-                            PasswordHash = "$2a$11$wSAQN1/IpviIviSFmY3dFOqWEusALRb9M2nDmaMb7TNYIbQrBz4UC",
+                            PasswordHash = "$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lp02",
                             Role = "employe"
                         },
                         new
@@ -523,7 +526,7 @@ namespace rh_management_backend.Data.Migrations
                             Matricule = "SH001",
                             MustChangePassword = false,
                             NombreConnexions = 0,
-                            PasswordHash = "$2a$11$wSAQN1/IpviIviSFmY3dFOqWEusALRb9M2nDmaMb7TNYIbQrBz4UC",
+                            PasswordHash = "$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lp02",
                             Role = "n1"
                         },
                         new
@@ -535,7 +538,7 @@ namespace rh_management_backend.Data.Migrations
                             Matricule = "DG001",
                             MustChangePassword = false,
                             NombreConnexions = 0,
-                            PasswordHash = "$2a$11$wSAQN1/IpviIviSFmY3dFOqWEusALRb9M2nDmaMb7TNYIbQrBz4UC",
+                            PasswordHash = "$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lp02",
                             Role = "dg"
                         },
                         new
@@ -547,7 +550,7 @@ namespace rh_management_backend.Data.Migrations
                             Matricule = "RH001",
                             MustChangePassword = false,
                             NombreConnexions = 0,
-                            PasswordHash = "$2a$11$wSAQN1/IpviIviSFmY3dFOqWEusALRb9M2nDmaMb7TNYIbQrBz4UC",
+                            PasswordHash = "$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lp02",
                             Role = "rh"
                         },
                         new
