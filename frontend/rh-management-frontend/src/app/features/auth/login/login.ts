@@ -45,7 +45,7 @@ export class Login implements OnInit {
     this.loading      = true;
     this.errorMessage = '';
 
-    this.auth.login(this.matricule, this.password).subscribe({
+    this.auth.login(this.matricule.trim(), this.password).subscribe({
       next: () => {
         this.loading = false;
         const role = this.auth.role;
@@ -55,9 +55,17 @@ export class Login implements OnInit {
           this.router.navigate([this.auth.getHomeRoute()]);
         }
       },
-      error: () => {
+      error: (err) => {
         this.loading      = false;
-        this.errorMessage = 'Matricule ou mot de passe incorrect.';
+        if (err.status === 0) {
+          this.errorMessage = 'Serveur inaccessible. Vérifiez que le backend est démarré (port 5130).';
+        } else if (err.status === 401 || err.status === 400) {
+          this.errorMessage = err.error?.message ?? 'Matricule ou mot de passe incorrect.';
+        } else if (err.status === 404) {
+          this.errorMessage = 'Endpoint d\'authentification introuvable (404).';
+        } else {
+          this.errorMessage = 'Matricule ou mot de passe incorrect.';
+        }
       }
     });
   }

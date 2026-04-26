@@ -19,7 +19,9 @@
       "Bash(dotnet add *)",
       "Bash(dotnet run *)",
       "Bash(dotnet build *)",
-      "Bash(dotnet ef *)"
+      "Bash(dotnet ef *)",
+      "Bash(git fetch *)",
+      "Bash(git stash *)"
     ]
   }
 }
