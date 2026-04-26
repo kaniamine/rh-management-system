@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace rh_management_backend.DTOs.Auth;
 
@@ -8,8 +8,11 @@ public record LoginDto(
 );
 
 public record LoginResponseDto(
+    int Id,
     string Matricule,
     string Role,
+    string Nom,
+    string Prenom,
     string NomComplet,
     string Initiales,
     string Direction,
@@ -19,12 +22,11 @@ public record LoginResponseDto(
     string? SuperieurHierarchiqueMatricule,
     string Token,
     DateTime ExpiresAt,
-    bool PremiereConnexion,
+    bool MustChangePassword,
     int NombreConnexions
 );
 
 public record ChangePasswordDto(
-    [Required] string Matricule,
-    [Required] string AncienMotDePasse,
-    [Required] string NouveauMotDePasse
+    [Required] string CurrentPassword,
+    [Required, MinLength(6)] string NewPassword
 );

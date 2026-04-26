@@ -1,7 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../../core/auth.service';
 
@@ -28,7 +27,7 @@ interface DemandeConge {
 @Component({
   selector: 'app-dg-validations',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './dg-validations.html',
   styleUrls: ['./dg-validations.css']
 })

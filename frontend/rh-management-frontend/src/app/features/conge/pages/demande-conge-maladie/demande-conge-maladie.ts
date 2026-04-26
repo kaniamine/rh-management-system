@@ -142,21 +142,7 @@ export class DemandeCongeArrMaladie {
   submitDemande(): void {
     this.submitting = true;
 
-    const formData = new FormData();
-    formData.append('typeMaladie', this.form.typeMaladie);
-    formData.append('matricule', this.auth.session?.matricule ?? '');
-    formData.append('direction', this.auth.session?.direction ?? '');
-    formData.append('service',   this.auth.session?.service   ?? '');
-    formData.append('dateDebut', this.form.dateDebut);
-    formData.append('dateFin', this.form.dateFin);
-    formData.append('nombreJours', this.nombreJours.toString());
-    if (this.form.commentaire.trim()) {
-      formData.append('commentaire', this.form.commentaire.trim());
-    }
-    if (this.certificatFile) {
-      formData.append('certificatMedical', this.certificatFile);
-    }
-
+    const formData = this.buildFormData(false);
     this.http
       .post<{ id: number; statut: string }>('http://localhost:5130/api/demandes-maladie', formData)
       .subscribe({
@@ -185,8 +171,41 @@ export class DemandeCongeArrMaladie {
   }
 
   saveDraft(): void {
-    this.successMessage = 'Brouillon enregistré.';
     this.errorMessage = null;
+    this.successMessage = null;
+
+    const formData = this.buildFormData(true);
+    this.http
+      .post<{ id: number; statut: string }>('http://localhost:5130/api/demandes-maladie', formData)
+      .subscribe({
+        next: (res) => {
+          this.successMessage = `Brouillon enregistré (réf. #${res.id}).`;
+        },
+        error: (err: HttpErrorResponse) => {
+          const msg = err.error?.message ?? err.message;
+          this.errorMessage = typeof msg === 'string' ? msg : "Échec de l'enregistrement du brouillon.";
+        }
+      });
+  }
+
+  private buildFormData(estBrouillon: boolean): FormData {
+    const formData = new FormData();
+    formData.append('typeMaladie',  this.form.typeMaladie);
+    formData.append('nomComplet',   this.auth.session?.nomComplet  ?? '');
+    formData.append('matricule',    this.auth.session?.matricule   ?? '');
+    formData.append('direction',    this.auth.session?.direction   ?? '');
+    formData.append('service',      this.auth.session?.service     ?? '');
+    formData.append('dateDebut',    this.form.dateDebut);
+    formData.append('dateFin',      this.form.dateFin);
+    formData.append('nombreJours',  this.nombreJours.toString());
+    formData.append('estBrouillon', estBrouillon ? 'true' : 'false');
+    if (this.form.commentaire.trim()) {
+      formData.append('commentaire', this.form.commentaire.trim());
+    }
+    if (this.certificatFile) {
+      formData.append('certificatMedical', this.certificatFile);
+    }
+    return formData;
   }
 
   private resetForm(): void {

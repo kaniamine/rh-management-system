@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../../../core/auth.service';
 
 @Component({
   selector: 'app-home-employee',
@@ -12,9 +13,11 @@ import { HttpClient } from '@angular/common/http';
 })
 export class HomeEmployee implements OnInit {
   private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
 
-  // Matricule de l'employé connecté — à remplacer par AuthService en prod
-  private readonly matricule = 'EMP-2026-014';
+  private readonly matricule = this.auth.session?.matricule ?? 'EMP-2026-014';
+
+  get role(): string { return this.auth.role; }
 
   employee = {
     nom: '',

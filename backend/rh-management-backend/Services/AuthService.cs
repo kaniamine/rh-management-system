@@ -1,4 +1,4 @@
-﻿// AuthService.cs
+// AuthService.cs
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -59,8 +59,11 @@ public class AuthService : IAuthService
         Console.WriteLine($"[LOGIN] Returning response for {user.Matricule} / role={user.Role}");
 
         return new LoginResponseDto(
+            Id: user.Id,
             Matricule: user.Matricule,
             Role: user.Role,
+            Nom: user.Employe.Nom,
+            Prenom: user.Employe.Prenom,
             NomComplet: user.Employe.NomComplet,
             Initiales: initiales,
             Direction: user.Employe.Direction ?? string.Empty,
@@ -70,23 +73,28 @@ public class AuthService : IAuthService
             SuperieurHierarchiqueMatricule: user.Employe.SuperieurHierarchiqueMatricule,
             Token: token,
             ExpiresAt: expires,
-            PremiereConnexion: user.PremiereConnexion,
+            MustChangePassword: user.MustChangePassword,
             NombreConnexions: user.NombreConnexions
         );
     }
 
-    public async Task<bool> ChangePasswordAsync(ChangePasswordDto dto)
+    public async Task<(bool ok, string? error)> ChangePasswordAsync(string matricule, ChangePasswordDto dto)
     {
-        var user = await _db.Users
-            .FirstOrDefaultAsync(u => u.Matricule == dto.Matricule && u.IsActive);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Matricule == matricule && u.IsActive);
+        if (user == null)
+            return (false, "Utilisateur introuvable.");
 
-        if (user == null) return false;
-        if (!BCrypt.Net.BCrypt.Verify(dto.AncienMotDePasse, user.PasswordHash)) return false;
+        if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+            return (false, "Mot de passe actuel incorrect.");
 
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NouveauMotDePasse);
-        user.PremiereConnexion = false;
+        if (dto.CurrentPassword == dto.NewPassword)
+            return (false, "Le nouveau mot de passe doit être différent du mot de passe actuel.");
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        user.MustChangePassword = false;
         await _db.SaveChangesAsync();
-        return true;
+
+        return (true, null);
     }
 
     private string GenerateJwtToken(string matricule, string role)

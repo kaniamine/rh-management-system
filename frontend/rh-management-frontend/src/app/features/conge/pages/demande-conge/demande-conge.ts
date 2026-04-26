@@ -47,7 +47,9 @@ export class DemandeConge {
     };
   }
 
-  readonly soldeCongesJours = 12;
+  get soldeCongesJours(): number {
+    return this.auth.session?.soldeConges ?? 0;
+  }
   readonly demandesEnAttente = 2;
 
   form = {
@@ -71,7 +73,7 @@ export class DemandeConge {
     const cur = new Date(debut);
     while (cur <= fin) {
       const dow = cur.getDay();
-      if (dow !== 0) jours++;
+      if (dow !== 0 && dow !== 6) jours++;
       cur.setDate(cur.getDate() + 1);
     }
     return jours;
@@ -90,13 +92,18 @@ export class DemandeConge {
   }
 
   get isMotifObligatoire(): boolean {
-    return this.form.typeConge === 'Congé exceptionnel de courte durée' ||
-           this.form.typeConge === 'Congé de décès';
+    return this.form.typeConge === 'Congé exceptionnel de courte durée';
   }
 
+  private readonly typesSansVerifSolde = new Set([
+    'Congé sans solde',
+    'Congé maternité',
+    'Congé de décès',
+    'Congé compensatoire'
+  ]);
+
   get soldeInsuffisant(): boolean {
-    if (this.form.typeConge === 'Congé sans solde') return false;
-    if (this.form.typeConge === 'Congé maternité') return false;
+    if (this.typesSansVerifSolde.has(this.form.typeConge)) return false;
     return this.dureeJours > 0 && this.dureeJours > this.soldeCongesJours;
   }
 

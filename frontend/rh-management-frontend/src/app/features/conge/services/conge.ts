@@ -67,8 +67,13 @@ export class Conge {
       { auteurMatricule, commentaire });
   }
 
-  cloturer(id: number, auteurMatricule: string): Observable<any> {
+  cloturer(id: number, auteurMatricule: string, commentaire: string = ''): Observable<any> {
     return this.http.post(`${API_BASE_URL}/api/demandes-conge/${id}/cloturer`,
-      { auteurMatricule, commentaire: '' });
+      { auteurMatricule, commentaire });
+  }
+
+  annuler(id: number, auteurMatricule: string, commentaire: string = ''): Observable<any> {
+    return this.http.post(`${API_BASE_URL}/api/demandes-conge/${id}/annuler`,
+      { auteurMatricule, commentaire });
   }
 }

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using rh_management_backend.DTOs.Auth;
 using rh_management_backend.Services;
 
@@ -32,22 +34,19 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("changer-mot-de-passe")]
-    public async Task<IActionResult> ChangerMotDePasse([FromBody] ChangePasswordDto dto)
+    [HttpPost("change-password")]
+    [Authorize(Roles = "employe,n1,dg")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
     {
-        if (dto == null)
-            return BadRequest(new { message = "Requête invalide." });
+        var matricule = User.FindFirstValue("matricule");
+        if (string.IsNullOrEmpty(matricule))
+            return Unauthorized();
 
-        if (string.IsNullOrWhiteSpace(dto.Matricule) ||
-            string.IsNullOrWhiteSpace(dto.AncienMotDePasse) ||
-            string.IsNullOrWhiteSpace(dto.NouveauMotDePasse))
-            return BadRequest(new { message = "Tous les champs sont obligatoires." });
+        var (ok, error) = await _authService.ChangePasswordAsync(matricule, dto);
+        if (!ok)
+            return BadRequest(new { message = error });
 
-        var success = await _authService.ChangePasswordAsync(dto);
-        if (!success)
-            return BadRequest(new { message = "Matricule ou mot de passe incorrect." });
-
-        return Ok(new { message = "Mot de passe mis à jour avec succès." });
+        return Ok(new { message = "Mot de passe modifié avec succès." });
     }
 
     [HttpGet("hashtest")]
