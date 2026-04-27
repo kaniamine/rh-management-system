@@ -10,56 +10,23 @@ namespace rh_management_backend.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "PremiereConnexion",
-                table: "Users",
-                type: "bit",
-                nullable: false,
-                defaultValue: true);
-
-            migrationBuilder.AddColumn<int>(
-                name: "NombreConnexions",
-                table: "Users",
-                type: "int",
-                nullable: false,
-                defaultValue: 0);
-
-            migrationBuilder.UpdateData(
-                table: "Users",
-                keyColumn: "Id",
-                keyValue: 1,
-                columns: new[] { "PremiereConnexion", "NombreConnexions" },
-                values: new object[] { true, 0 });
-
-            migrationBuilder.UpdateData(
-                table: "Users",
-                keyColumn: "Id",
-                keyValue: 2,
-                columns: new[] { "PremiereConnexion", "NombreConnexions" },
-                values: new object[] { true, 0 });
-
-            migrationBuilder.UpdateData(
-                table: "Users",
-                keyColumn: "Id",
-                keyValue: 3,
-                columns: new[] { "PremiereConnexion", "NombreConnexions" },
-                values: new object[] { true, 0 });
-
-            migrationBuilder.UpdateData(
-                table: "Users",
-                keyColumn: "Id",
-                keyValue: 4,
-                columns: new[] { "PremiereConnexion", "NombreConnexions" },
-                values: new object[] { true, 0 });
+            // PremiereConnexion already added by AddPremiereConnexion migration
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (
+                    SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_NAME = 'Users'
+                    AND COLUMN_NAME = 'NombreConnexions'
+                )
+                BEGIN
+                    ALTER TABLE [Users]
+                    ADD [NombreConnexions] int NOT NULL DEFAULT 0;
+                END
+            ");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "PremiereConnexion",
-                table: "Users");
-
             migrationBuilder.DropColumn(
                 name: "NombreConnexions",
                 table: "Users");

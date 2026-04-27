@@ -48,42 +48,42 @@ export class ChangePasswordModal {
   }
 
   get canSubmit(): boolean {
-    return (
-      !!this.ancienMotDePasse &&
-      this.strength.score >= 5 &&
-      this.passwordsMatch &&
-      this.nouveauMotDePasse !== this.ancienMotDePasse
-    );
+    return this.nouveauMotDePasse.length >= 6 && this.passwordsMatch;
   }
 
   onSubmit(): void {
     this.errorMessage   = '';
     this.successMessage = '';
 
-    if (!this.ancienMotDePasse) {
-      this.errorMessage = 'Veuillez saisir votre mot de passe actuel.'; return;
-    }
-    if (this.strength.score < 5) {
-      this.errorMessage = 'Le nouveau mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.'; return;
-    }
-    if (this.nouveauMotDePasse === this.ancienMotDePasse) {
-      this.errorMessage = 'Le nouveau mot de passe doit être différent de l\'ancien.'; return;
+    if (this.nouveauMotDePasse.length < 6) {
+      this.errorMessage = 'Le mot de passe doit contenir au moins 6 caractères.';
+      return;
     }
     if (!this.passwordsMatch) {
-      this.errorMessage = 'Les mots de passe ne correspondent pas.'; return;
+      this.errorMessage = 'Les mots de passe ne correspondent pas.';
+      return;
     }
 
     this.loading = true;
-    this.auth.changePassword(this.ancienMotDePasse, this.nouveauMotDePasse, this.confirmMotDePasse)
+    // '0000' is the default password set by RH — backend verifies it
+    this.auth.changePassword('0000', this.nouveauMotDePasse, this.confirmMotDePasse)
       .subscribe({
         next: () => {
           this.loading = false;
+          // Update session so premiereConnexion = false — modal never comes back
           this.auth.markPasswordChanged();
+<<<<<<< HEAD
           this.passwordChanged.emit();
+=======
+          this.successMessage = 'Mot de passe modifié avec succès.';
+          // Emit after short delay so user sees the success message
+          setTimeout(() => this.passwordChanged.emit(), 800);
+>>>>>>> dd707c7423a8a8f0531d4584df3b2a511580008b
         },
         error: (err: any) => {
-          this.loading = false;
-          this.errorMessage = err?.error?.message ?? 'Mot de passe actuel incorrect.';
+          this.loading      = false;
+          this.errorMessage = err?.error?.message
+            ?? 'Erreur lors du changement de mot de passe.';
         }
       });
   }

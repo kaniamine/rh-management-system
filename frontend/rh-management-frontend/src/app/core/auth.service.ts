@@ -70,11 +70,18 @@ export class AuthService {
     );
   }
 
-  changePassword(ancienMotDePasse: string, nouveauMotDePasse: string, _confirmationMotDePasse: string) {
-    return this.http.post(`${this.API}/change-password`, {
-      currentPassword: ancienMotDePasse,
-      newPassword:     nouveauMotDePasse
-    });
+  changePassword(
+    ancienMotDePasse: string,
+    nouveauMotDePasse: string,
+    confirmationMotDePasse: string
+  ) {
+    return this.http.post(
+      'http://localhost:5130/api/auth/change-password',
+      {
+        currentPassword: ancienMotDePasse,
+        newPassword:     nouveauMotDePasse
+      }
+    );
   }
 
   markPasswordChanged(): void {

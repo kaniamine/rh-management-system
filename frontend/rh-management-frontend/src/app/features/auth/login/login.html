@@ -25,7 +25,7 @@
             name="email"
             class="input"
             placeholder="ex: EMP001"
-            [(ngModel)]="email"
+            [(ngModel)]="matricule"
           />
         </div>
         <div class="field">
@@ -37,7 +37,7 @@
               name="motDePasse"
               class="input password-input"
               placeholder="Saisir votre mot de passe"
-              [(ngModel)]="motDePasse"
+              [(ngModel)]="password"
             />
             <button type="button" class="toggle-password" (click)="showPassword = !showPassword">
               {{ showPassword ? 'Masquer' : 'Afficher' }}
@@ -49,6 +49,9 @@
             <input type="checkbox" />
             <span>Se souvenir de moi</span>
           </label>
+          <button type="button" class="forgot-password-btn" (click)="openForgotPassword()">
+            Mot de passe oublié ?
+          </button>
         </div>
         @if (errorMessage) {
           <div style="color:#c60c30;font-size:13px;margin-top:-4px;">{{ errorMessage }}</div>
@@ -63,3 +66,13 @@
     </section>
   </div>
 </div>
+<<<<<<< HEAD
+=======
+
+
+@if (showForgotPasswordModal) {
+  <app-forgot-password-modal
+    (closed)="closeForgotPassword()"
+  ></app-forgot-password-modal>
+}
+>>>>>>> dd707c7423a8a8f0531d4584df3b2a511580008b

@@ -22,29 +22,18 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponseDto?> LoginAsync(LoginDto dto)
     {
-        Console.WriteLine($"[LOGIN] Looking for matricule: {dto.Matricule}");
-
         var user = await _db.Users
             .Include(u => u.Employe)
             .FirstOrDefaultAsync(u => u.Matricule == dto.Matricule && u.IsActive);
 
-        Console.WriteLine($"[LOGIN] User found: {user != null}");
         if (user == null) return null;
 
-        var passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
-        Console.WriteLine($"[LOGIN] Password valid: {passwordValid}");
-        if (!passwordValid) return null;
+        if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash)) return null;
 
-        Console.WriteLine($"[LOGIN] Employe loaded: {user.Employe != null}");
-        if (user.Employe == null)
-        {
-            Console.WriteLine($"[LOGIN] ERROR: Employe navigation property is null for user {user.Matricule}");
-            return null;
-        }
+        if (user.Employe == null) return null;
 
         user.NombreConnexions++;
         await _db.SaveChangesAsync();
-        Console.WriteLine($"[LOGIN] NombreConnexions incremented to {user.NombreConnexions}");
 
         var token = GenerateJwtToken(user.Matricule, user.Role);
         var expires = DateTime.UtcNow.AddMinutes(
@@ -55,8 +44,6 @@ public class AuthService : IAuthService
         var initiales = (prenom.Length > 0 && nom.Length > 0)
             ? $"{prenom[0]}{nom[0]}".ToUpper()
             : (prenom + nom).ToUpper();
-
-        Console.WriteLine($"[LOGIN] Returning response for {user.Matricule} / role={user.Role}");
 
         return new LoginResponseDto(
             Id: user.Id,
@@ -90,7 +77,7 @@ public class AuthService : IAuthService
         if (dto.CurrentPassword == dto.NewPassword)
             return (false, "Le nouveau mot de passe doit être différent du mot de passe actuel.");
 
-        user.PasswordHash       = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        user.PasswordHash       = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword, 10);
         user.MustChangePassword = false;
         await _db.SaveChangesAsync();
 

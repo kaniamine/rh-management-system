@@ -36,6 +36,7 @@ export class DgValidations implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly API  = 'http://localhost:5130';
 
+  loading       = false;
   filterStatut  = '';
   filterEmploye = '';
   selectedDemande: DemandeConge | null = null;
@@ -59,11 +60,12 @@ export class DgValidations implements OnInit {
   }
 
   loadDemandes(): void {
+    this.loading = true;
     this.http.get<any[]>(
       `${this.API}/api/demandes-conge?statut=En%20attente%20de%20validation%20DG`
     ).subscribe({
-      next: (data) => { this.demandes = data; },
-      error: () => {}
+      next:  (data) => { this.demandes = data; this.loading = false; },
+      error: () => { this.loading = false; }
     });
   }
 

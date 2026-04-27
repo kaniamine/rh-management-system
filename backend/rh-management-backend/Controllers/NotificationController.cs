@@ -75,4 +75,29 @@ public class NotificationController : ControllerBase
         await _db.SaveChangesAsync();
         return Ok(new { marked = notifs.Count });
     }
+
+    // GET /api/notifications/reset-password-requests
+    [HttpGet("reset-password-requests")]
+    [Authorize(Roles = "rh,admin")]
+    public async Task<IActionResult> GetResetPasswordRequests()
+    {
+        var list = await _db.Notifications
+            .Where(n => n.DestinataireMatricule == "RH001"
+                     && n.Message.Contains("|||"))
+            .OrderByDescending(n => n.Timestamp)
+            .ToListAsync();
+
+        var result = list.Select(n => new
+        {
+            id        = n.Id,
+            matricule = n.Message.Split("|||").Length > 1
+                          ? n.Message.Split("|||")[1].Trim()
+                          : "???",
+            message   = n.Message,
+            isRead    = n.IsRead,
+            timestamp = n.Timestamp
+        });
+
+        return Ok(result);
+    }
 }

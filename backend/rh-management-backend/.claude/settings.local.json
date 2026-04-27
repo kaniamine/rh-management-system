@@ -21,7 +21,8 @@
       "Bash(dotnet build *)",
       "Bash(dotnet ef *)",
       "Bash(git fetch *)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "PowerShell(Stop-Process *)"
     ]
   }
 }

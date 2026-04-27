@@ -1,42 +1,67 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth.service';
+import { ForgotPasswordModal } from '../../../shared/components/forgot-password-modal/forgot-password-modal';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule, CommonModule, ForgotPasswordModal],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
 export class Login implements OnInit {
+<<<<<<< HEAD
   private router      = inject(Router);
   private authService = inject(AuthService);
 
   email        = '';
   motDePasse   = '';
+=======
+  private router     = inject(Router);
+  private auth       = inject(AuthService);
+  private platformId = inject(PLATFORM_ID);
+
+  private get isBrowser(): boolean { return isPlatformBrowser(this.platformId); }
+
+  matricule    = '';
+  password     = '';
+>>>>>>> dd707c7423a8a8f0531d4584df3b2a511580008b
   showPassword = false;
   errorMessage = '';
   loading      = false;
 
+<<<<<<< HEAD
   ngOnInit(): void {
     if (this.authService.isLoggedIn) {
       this.router.navigate([this.authService.getHomeRoute()]);
+=======
+  showForgotPasswordModal = false;
+
+  openForgotPassword():  void { this.showForgotPasswordModal = true; }
+  closeForgotPassword(): void { this.showForgotPasswordModal = false; }
+
+  ngOnInit(): void {
+    if (!this.isBrowser) return;
+    if (this.auth.isLoggedIn) {
+      this.router.navigate([this.auth.getHomeRoute()]);
+>>>>>>> dd707c7423a8a8f0531d4584df3b2a511580008b
     }
   }
 
   onLogin(): void {
-    if (!this.email || !this.motDePasse) {
-      this.errorMessage = 'Veuillez remplir tous les champs.';
+    if (!this.matricule || !this.password) {
+      this.errorMessage = 'Veuillez saisir votre matricule et mot de passe.';
       return;
     }
     this.loading      = true;
     this.errorMessage = '';
 
-    this.authService.login(this.email, this.motDePasse).subscribe({
+    this.auth.login(this.matricule, this.password).subscribe({
       next: () => {
+<<<<<<< HEAD
         this.loading = false;
         this.router.navigate([this.authService.getHomeRoute()]);
       },
@@ -51,6 +76,15 @@ export class Login implements OnInit {
         } else {
           this.errorMessage = 'Matricule ou mot de passe incorrect.';
         }
+=======
+        this.loading = false;
+        // Always navigate to home — modal will show there if needed
+        this.router.navigate([this.auth.getHomeRoute()]);
+      },
+      error: () => {
+        this.loading      = false;
+        this.errorMessage = 'Matricule ou mot de passe incorrect.';
+>>>>>>> dd707c7423a8a8f0531d4584df3b2a511580008b
       }
     });
   }

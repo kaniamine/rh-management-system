@@ -64,6 +64,7 @@ export class ResponsableValidations implements OnInit {
     };
   }
 
+  loading          = false;
   activeTab: TypeDemande | 'all' = 'all';
   selectedDemande: Demande | null = null;
   showRejectModal  = false;
@@ -81,6 +82,7 @@ export class ResponsableValidations implements OnInit {
   }
 
   loadDemandes(): void {
+    this.loading = true;
     forkJoin({
       conges: this.congeService.getDemandes(undefined, 'En attente de validation N+1')
         .pipe(catchError(() => of([]))),
@@ -125,8 +127,9 @@ export class ResponsableValidations implements OnInit {
         } as Demande));
 
         this.demandes = [...mappedConges, ...mappedAutorisations];
+        this.loading = false;
       },
-      error: () => {}
+      error: () => { this.loading = false; }
     });
   }
 

@@ -74,9 +74,15 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+<<<<<<< HEAD
     path: 'mon-profil',
     loadComponent: () =>
       import('./features/mon-profil/mon-profil').then(m => m.MonProfil),
+=======
+    path: 'reinitialisation-mdp',
+    loadComponent: () =>
+      import('./features/dashboard-rh/reset-password-requests/reset-password-requests').then(m => m.ResetPasswordRequests),
+>>>>>>> dd707c7423a8a8f0531d4584df3b2a511580008b
     canActivate: [authGuard]
   },
   {

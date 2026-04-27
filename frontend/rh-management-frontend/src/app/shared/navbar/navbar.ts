@@ -5,6 +5,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/auth.service';
 import { NotificationService } from '../../core/notification.service';
+import { ChangePasswordModal } from '../components/change-password-modal/change-password-modal';
 
 interface NavItem {
   label: string;
@@ -16,7 +17,7 @@ interface NavItem {
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ChangePasswordModal],
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.css']
 })
@@ -26,10 +27,11 @@ export class Navbar implements OnInit {
   private readonly sanitizer = inject(DomSanitizer);
   readonly notifSvc          = inject(NotificationService);
 
-  mobileOpen     = false;
-  currentRoute   = '';
-  showNotifPanel = false;
-  showUserMenu   = false;
+  mobileOpen              = false;
+  currentRoute            = '';
+  showNotifPanel          = false;
+  showUserMenu            = false;
+  showChangePasswordModal = false;
 
   get currentRole(): string { return this.auth.role ?? 'employe'; }
 
@@ -80,6 +82,7 @@ export class Navbar implements OnInit {
   get homeRoute(): string { return this.auth.getHomeRoute(); }
 
   readonly allNavItems: NavItem[] = [
+<<<<<<< HEAD
     { label: 'Accueil',                route: '/home-employee',               roles: ['employe'],        icon: '🏠' },
     { label: 'Accueil RH',             route: '/home-rh',                     roles: ['rh', 'admin'],    icon: '🏢' },
     { label: 'Demande de congé',        route: '/conge',                       roles: ['employe', 'n1'],  icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 3v1.5h9V3a.75.75 0 0 1 1.5 0v1.5h.75a3 3 0 0 1 3 3v11.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3H6V3a.75.75 0 0 1 .75-.75Zm13.5 9a1.5 1.5 0 0 0-1.5-1.5H5.25a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-7.5ZM12 10.5a.75.75 0 0 1 .75.75v1.5h1.5a.75.75 0 0 1 0 1.5h-1.5v1.5a.75.75 0 0 1-1.5 0v-1.5h-1.5a.75.75 0 0 1 0-1.5h1.5v-1.5A.75.75 0 0 1 12 10.5Z" clip-rule="evenodd"/></svg>' },
@@ -91,6 +94,20 @@ export class Navbar implements OnInit {
     { label: 'Tableau de bord RH',      route: '/dashboard-rh',                roles: ['rh', 'admin'],    icon: '📊' },
     { label: 'Personnel',               route: '/personnel',                   roles: ['rh', 'admin'],    icon: '👥' },
     { label: 'Mon Profil',              route: '/mon-profil',                  roles: ['employe', 'n1', 'dg', 'rh', 'admin'], icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd"/></svg>' }
+=======
+    { label: 'Accueil',               route: '/home-employee',              roles: ['employe'],       icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>' },
+    { label: 'Accueil RH',            route: '/home-rh',                    roles: ['rh', 'admin'],   icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>' },
+    { label: 'Demande de congé',       route: '/conge',                      roles: ['employe', 'n1'], icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' },
+    { label: 'Autorisation de sortie', route: '/conge/demande-autorisation', roles: ['employe', 'n1'], icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' },
+    { label: 'Congé maladie',          route: '/conge/demande-maladie',      roles: ['employe', 'n1'], icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>' },
+    { label: 'Mes demandes',           route: '/dashboard-employee',         roles: ['employe', 'n1'], icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>' },
+    { label: 'Espace Responsable',     route: '/responsable',                roles: ['n1', 'admin'],   icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>' },
+    { label: 'Direction Générale',     route: '/dg',                         roles: ['dg', 'admin'],   icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>' },
+    { label: 'Tableau de bord RH',     route: '/dashboard-rh',               roles: ['rh', 'admin'],   icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>' },
+    { label: 'Personnel',              route: '/personnel',                   roles: ['rh', 'admin'],   icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+    { label: 'Réinit. mots de passe', route: '/reinitialisation-mdp',        roles: ['rh', 'admin'],   icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' },
+    { label: 'Mon Profil',             route: '/profil',                      roles: ['employe', 'n1', 'dg', 'rh', 'admin'], icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' }
+>>>>>>> dd707c7423a8a8f0531d4584df3b2a511580008b
   ];
 
   get navItems(): NavItem[] {
@@ -108,6 +125,14 @@ export class Navbar implements OnInit {
     this.currentRoute = this.router.url;
     this.notifSvc.load();
     this.notifSvc.startPolling();
+    // Show forced password change modal if needed
+    if (this.auth.session?.premiereConnexion === true) {
+      this.showChangePasswordModal = true;
+    }
+  }
+
+  onPasswordChanged(): void {
+    this.showChangePasswordModal = false;
   }
 
   isActive(route: string): boolean {
