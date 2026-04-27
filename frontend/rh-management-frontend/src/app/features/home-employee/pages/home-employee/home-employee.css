@@ -23,7 +23,7 @@
 }
 
 .hero-content { display: flex; align-items: center; gap: 20px; }
-.hero-logo { height: 40px; width: auto; object-fit: contain; flex-shrink: 0; margin-right: 4px; }
+.hero-logo { height: 100px; width: auto; object-fit: contain; flex-shrink: 0; margin-right: 4px; }
 
 .hero-avatar {
   width: 64px;

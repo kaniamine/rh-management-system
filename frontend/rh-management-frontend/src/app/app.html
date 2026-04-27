@@ -2,3 +2,7 @@
 <main [class.with-navbar]="showNavbar">
   <router-outlet></router-outlet>
 </main>
+
+@if (showFirstLoginModal) {
+  <app-change-password-modal></app-change-password-modal>
+}

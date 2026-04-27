@@ -11,10 +11,5 @@ export const authGuard: CanActivateFn = () => {
     return false;
   }
 
-  if (auth.session?.premiereConnexion === true) {
-    router.navigate(['/login']);
-    return false;
-  }
-
   return true;
 };

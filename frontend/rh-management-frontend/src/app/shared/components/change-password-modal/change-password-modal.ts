@@ -79,8 +79,7 @@ export class ChangePasswordModal {
         next: () => {
           this.loading = false;
           this.auth.markPasswordChanged();
-          this.successMessage = 'Mot de passe modifié avec succès.';
-          setTimeout(() => this.passwordChanged.emit(), 1200);
+          this.passwordChanged.emit();
         },
         error: (err: any) => {
           this.loading = false;

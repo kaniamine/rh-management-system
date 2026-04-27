@@ -19,6 +19,13 @@ export class HomeEmployee implements OnInit {
 
   get role(): string { return this.auth.role; }
 
+  computeInitiales(nom: string): string {
+    const parts = nom.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '';
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
   employee = {
     nom: '',
     matricule: this.matricule,

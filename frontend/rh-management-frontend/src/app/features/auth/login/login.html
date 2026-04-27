@@ -63,34 +63,3 @@
     </section>
   </div>
 </div>
-
-<!-- MODALE PREMIÈRE CONNEXION -->
-@if (showChangePasswordModal) {
-<div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#fff;border-radius:20px;padding:40px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:16px;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
-    <div style="font-size:40px;text-align:center;">🔐</div>
-    <h2 style="margin:0;font-size:22px;font-weight:800;text-align:center;color:#111;">Changement de mot de passe obligatoire</h2>
-    <p style="margin:0;font-size:14px;color:#5e6167;text-align:center;line-height:1.6;">Pour votre sécurité, vous devez définir un nouveau mot de passe avant de continuer.</p>
-    <div class="field">
-      <label>Nouveau mot de passe <span class="required">*</span></label>
-      <div class="password-wrapper">
-        <input [type]="showNewPassword ? 'text' : 'password'" class="input password-input" [(ngModel)]="newPassword" name="newPassword" placeholder="Nouveau mot de passe" />
-        <button type="button" class="toggle-password" (click)="showNewPassword = !showNewPassword">{{ showNewPassword ? 'Masquer' : 'Afficher' }}</button>
-      </div>
-    </div>
-    <div class="field">
-      <label>Confirmer le mot de passe <span class="required">*</span></label>
-      <div class="password-wrapper">
-        <input [type]="showConfirmPassword ? 'text' : 'password'" class="input password-input" [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Confirmer le mot de passe" />
-        <button type="button" class="toggle-password" (click)="showConfirmPassword = !showConfirmPassword">{{ showConfirmPassword ? 'Masquer' : 'Afficher' }}</button>
-      </div>
-    </div>
-    @if (changeError) {
-      <div style="color:#c60c30;font-size:13px;">{{ changeError }}</div>
-    }
-    <button type="button" class="login-btn" (click)="onSaveNewPassword()" [disabled]="changeLoading">
-      {{ changeLoading ? 'Enregistrement...' : 'Enregistrer mon mot de passe' }}
-    </button>
-  </div>
-</div>
-}
