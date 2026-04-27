@@ -36,17 +36,19 @@ export class HomeRh implements OnInit {
   ];
 
   demandesEnAttente: any[] = [];
+  loading = false;
 
   ngOnInit(): void {
     this.loadDemandes();
   }
 
   loadDemandes(): void {
+    this.loading = true;
     this.http.get<any[]>(
       `${this.API}/api/demandes-conge?statut=Valid%C3%A9e%20%E2%80%93%20En%20traitement%20RH`
     ).subscribe({
-      next:  (data) => { this.demandesEnAttente = data; },
-      error: () => {}
+      next:  (data) => { this.demandesEnAttente = data; this.loading = false; },
+      error: () => { this.loading = false; }
     });
   }
 

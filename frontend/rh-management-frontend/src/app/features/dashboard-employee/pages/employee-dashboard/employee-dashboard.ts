@@ -33,12 +33,12 @@ interface Demande {
   styleUrl: './employee-dashboard.css'
 })
 export class EmployeeDashboard implements OnInit {
-  private readonly auth            = inject(AuthService);
-  private readonly congeService    = inject(Conge);
-  private readonly autoService     = inject(Autorisation);
-  private readonly maladieService  = inject(Maladie);
+  private readonly auth           = inject(AuthService);
+  private readonly congeService   = inject(Conge);
+  private readonly autoService    = inject(Autorisation);
+  private readonly maladieService = inject(Maladie);
 
-  loading = true;
+  loading      = true;
   activeTab: TypeDemande = 'all';
   filterStatut = '';
   selectedDemande: Demande | null = null;
@@ -65,7 +65,7 @@ export class EmployeeDashboard implements OnInit {
 
   chargerDemandes(): void {
     const matricule = this.auth.session?.matricule ?? '';
-    this.loadError = null;
+    this.loadError  = null;
 
     forkJoin({
       conges:        this.congeService.getDemandes(matricule).pipe(catchError(() => of([]))),
@@ -81,7 +81,7 @@ export class EmployeeDashboard implements OnInit {
           dateCreation: c.createdAt?.substring(0, 10) ?? '',
           dateDebut:    c.dateDebut ?? '',
           dateFin:      c.dateFin ?? undefined,
-          duree:        c.typeDuree ?? (c.dureeJours != null ? `${c.dureeJours} jour(s)` : ''),
+          duree:        c.dureeJours != null ? `${c.dureeJours} jour(s)` : '',
           motif:        c.motif ?? '',
           statut:       c.statut ?? ''
         }));
@@ -151,13 +151,8 @@ export class EmployeeDashboard implements OnInit {
     return icons[type] ?? '📄';
   }
 
-  openDetail(d: Demande): void {
-    this.selectedDemande = d;
-  }
-
-  closeDetail(): void {
-    this.selectedDemande = null;
-  }
+  openDetail(d: Demande): void  { this.selectedDemande = d; }
+  closeDetail(): void           { this.selectedDemande = null; }
 
   canCancel(d: Demande): boolean {
     return (
@@ -174,14 +169,11 @@ export class EmployeeDashboard implements OnInit {
     this.actionLoading = true;
     const matricule = this.auth.session?.matricule ?? '';
 
-    let obs$;
-    if (d.type === 'conge') {
-      obs$ = this.congeService.annuler(d.id, matricule);
-    } else if (d.type === 'autorisation') {
-      obs$ = this.autoService.annuler(d.id, matricule);
-    } else {
-      obs$ = this.maladieService.annuler(d.id, matricule);
-    }
+    const obs$ = d.type === 'conge'
+      ? this.congeService.annuler(d.id, matricule)
+      : d.type === 'autorisation'
+        ? this.autoService.annuler(d.id, matricule)
+        : this.maladieService.annuler(d.id, matricule);
 
     obs$.subscribe({
       next: () => {
@@ -189,9 +181,7 @@ export class EmployeeDashboard implements OnInit {
         this.closeDetail();
         this.chargerDemandes();
       },
-      error: () => {
-        this.actionLoading = false;
-      }
+      error: () => { this.actionLoading = false; }
     });
   }
 }

@@ -48,35 +48,38 @@ export class ChangePasswordModal {
   }
 
   get canSubmit(): boolean {
-    return !!this.ancienMotDePasse && this.strength.score >= 3 && this.passwordsMatch;
+    return this.nouveauMotDePasse.length >= 6 && this.passwordsMatch;
   }
 
   onSubmit(): void {
     this.errorMessage   = '';
     this.successMessage = '';
 
-    if (!this.ancienMotDePasse) {
-      this.errorMessage = 'Veuillez saisir votre mot de passe actuel.'; return;
-    }
-    if (this.strength.score < 3) {
-      this.errorMessage = 'Le nouveau mot de passe est trop faible.'; return;
+    if (this.nouveauMotDePasse.length < 6) {
+      this.errorMessage = 'Le mot de passe doit contenir au moins 6 caractères.';
+      return;
     }
     if (!this.passwordsMatch) {
-      this.errorMessage = 'Les mots de passe ne correspondent pas.'; return;
+      this.errorMessage = 'Les mots de passe ne correspondent pas.';
+      return;
     }
 
     this.loading = true;
-    this.auth.changePassword(this.ancienMotDePasse, this.nouveauMotDePasse, this.confirmMotDePasse)
+    // '0000' is the default password set by RH — backend verifies it
+    this.auth.changePassword('0000', this.nouveauMotDePasse, this.confirmMotDePasse)
       .subscribe({
         next: () => {
           this.loading = false;
+          // Update session so premiereConnexion = false — modal never comes back
           this.auth.markPasswordChanged();
           this.successMessage = 'Mot de passe modifié avec succès.';
-          setTimeout(() => this.passwordChanged.emit(), 1200);
+          // Emit after short delay so user sees the success message
+          setTimeout(() => this.passwordChanged.emit(), 800);
         },
         error: (err: any) => {
-          this.loading = false;
-          this.errorMessage = err?.error?.message ?? 'Mot de passe actuel incorrect.';
+          this.loading      = false;
+          this.errorMessage = err?.error?.message
+            ?? 'Erreur lors du changement de mot de passe.';
         }
       });
   }

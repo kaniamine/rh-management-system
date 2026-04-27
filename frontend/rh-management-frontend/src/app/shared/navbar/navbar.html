@@ -144,3 +144,9 @@
 
   </div>
 </nav>
+
+@if (showChangePasswordModal) {
+  <app-change-password-modal
+    (passwordChanged)="onPasswordChanged()"
+  ></app-change-password-modal>
+}

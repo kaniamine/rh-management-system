@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace rh_management_backend.Models;
@@ -19,9 +19,8 @@ public class User
 
     public bool IsActive { get; set; } = true;
     public bool MustChangePassword { get; set; } = true;
-
-    // ← NOUVEAU : compteur de connexions
     public int NombreConnexions { get; set; } = 0;
+
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

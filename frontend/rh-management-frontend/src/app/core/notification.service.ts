@@ -46,7 +46,7 @@ export class NotificationService {
     const matricule = this.auth.session?.matricule;
     if (!matricule) return;
     // FIX: query param au lieu de path segment
-    interval(30000).pipe(
+    interval(60000).pipe(
       switchMap(() => this.http.get<Notification[]>(`${this.API}?matricule=${encodeURIComponent(matricule)}`))
     ).subscribe({
       next: (data) => this._notifs.next(data),

@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,31 +13,39 @@ namespace rh_management_backend.Controllers;
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService _auth;
-    public AuthController(IAuthService auth) => _auth = auth;
+    private readonly IAuthService _authService;
 
-    /// POST /api/auth/login
-    /// Body: { "matricule": "EMP001", "password": "0000" }
+    public AuthController(IAuthService authService)
+    {
+        _authService = authService;
+    }
+
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        var result = await _auth.LoginAsync(dto);
+        if (dto == null)
+            return BadRequest(new { message = "Requete invalide." });
+
+        if (string.IsNullOrWhiteSpace(dto.Matricule) || string.IsNullOrWhiteSpace(dto.Password))
+            return BadRequest(new { message = "Matricule et mot de passe obligatoires." });
+
+        var result = await _authService.LoginAsync(dto);
+
         if (result == null)
             return Unauthorized(new { message = "Matricule ou mot de passe incorrect." });
 
         return Ok(result);
     }
 
-    /// POST /api/auth/change-password
     [HttpPost("change-password")]
-    [Authorize(Roles = "employe,n1,dg")]
+    [Authorize]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
     {
         var matricule = User.FindFirstValue("matricule");
         if (string.IsNullOrEmpty(matricule))
             return Unauthorized();
 
-        var (ok, error) = await _auth.ChangePasswordAsync(matricule, dto);
+        var (ok, error) = await _authService.ChangePasswordAsync(matricule, dto);
         if (!ok)
             return BadRequest(new { message = error });
 

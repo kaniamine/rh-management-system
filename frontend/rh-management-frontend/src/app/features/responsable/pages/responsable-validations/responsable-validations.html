@@ -61,6 +61,9 @@
   </div>
 
   <!-- DEMANDE LIST -->
+  @if (loading) {
+    <div class="loading-spinner">Chargement...</div>
+  } @else {
   <div class="demande-list">
     @for (d of filteredDemandes; track d.id) {
       <div class="demande-row" [class.selected]="selectedDemande?.id === d.id" (click)="selectDemande(d)">
@@ -102,6 +105,7 @@
       </div>
     }
   </div>
+  }
 
   <!-- DETAIL PANEL -->
   @if (selectedDemande) {

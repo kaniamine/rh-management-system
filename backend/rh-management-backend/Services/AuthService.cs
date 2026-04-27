@@ -1,4 +1,4 @@
-﻿// AuthService.cs
+// AuthService.cs
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -27,15 +27,23 @@ public class AuthService : IAuthService
             .FirstOrDefaultAsync(u => u.Matricule == dto.Matricule && u.IsActive);
 
         if (user == null) return null;
+
         if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash)) return null;
 
-        
-        user.NombreConnexions += 1;
+        if (user.Employe == null) return null;
+
+        user.NombreConnexions++;
         await _db.SaveChangesAsync();
 
         var token = GenerateJwtToken(user.Matricule, user.Role);
         var expires = DateTime.UtcNow.AddMinutes(
             _config.GetValue<int>("Jwt:ExpiresInMinutes", 480));
+
+        var prenom = user.Employe.Prenom ?? string.Empty;
+        var nom = user.Employe.Nom ?? string.Empty;
+        var initiales = (prenom.Length > 0 && nom.Length > 0)
+            ? $"{prenom[0]}{nom[0]}".ToUpper()
+            : (prenom + nom).ToUpper();
 
         return new LoginResponseDto(
             Id: user.Id,
@@ -44,7 +52,7 @@ public class AuthService : IAuthService
             Nom: user.Employe.Nom,
             Prenom: user.Employe.Prenom,
             NomComplet: user.Employe.NomComplet,
-            Initiales: $"{user.Employe.Prenom[0]}{user.Employe.Nom[0]}".ToUpper(),
+            Initiales: initiales,
             Direction: user.Employe.Direction ?? string.Empty,
             Service: user.Employe.Service ?? string.Empty,
             Fonction: user.Employe.Fonction ?? string.Empty,
@@ -52,7 +60,8 @@ public class AuthService : IAuthService
             SuperieurHierarchiqueMatricule: user.Employe.SuperieurHierarchiqueMatricule,
             Token: token,
             ExpiresAt: expires,
-            MustChangePassword: user.MustChangePassword
+            MustChangePassword: user.MustChangePassword,
+            NombreConnexions: user.NombreConnexions
         );
     }
 
@@ -68,7 +77,7 @@ public class AuthService : IAuthService
         if (dto.CurrentPassword == dto.NewPassword)
             return (false, "Le nouveau mot de passe doit être différent du mot de passe actuel.");
 
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        user.PasswordHash       = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword, 10);
         user.MustChangePassword = false;
         await _db.SaveChangesAsync();
 

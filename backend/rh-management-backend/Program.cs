@@ -63,10 +63,8 @@ builder.Services.AddAuthorization();
 
 // ── INJECTION DE DÉPENDANCES (Services) ──────────────────────────────────────
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IDemandeCongeService, DemandeCongeService>();
-// Ajouter les autres services ici au fur et à mesure :
-// builder.Services.AddScoped<IDemandeAutorisationService, DemandeAutorisationService>();
-// builder.Services.AddScoped<IDemandeMaladieService, DemandeMaladieService>();
 
 // ── BUILD ─────────────────────────────────────────────────────────────────────
 var app = builder.Build();
@@ -88,11 +86,10 @@ if (!app.Environment.IsDevelopment())
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<RhDbContext>();
-    db.Database.Migrate();
+    if (db.Database.GetPendingMigrations().Any())
+        db.Database.Migrate();
 }
 
-
-Console.WriteLine(BCrypt.Net.BCrypt.HashPassword("0000"));
 
 app.MapControllers();
 app.Run();

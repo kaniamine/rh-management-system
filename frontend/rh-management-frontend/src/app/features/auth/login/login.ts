@@ -1,30 +1,30 @@
 import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth.service';
-import { ChangePasswordModal } from '../../../shared/components/change-password-modal/change-password-modal';
 import { ForgotPasswordModal } from '../../../shared/components/forgot-password-modal/forgot-password-modal';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, CommonModule, ChangePasswordModal, ForgotPasswordModal],
+  imports: [FormsModule, CommonModule, ForgotPasswordModal],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
 export class Login implements OnInit {
-  private readonly auth       = inject(AuthService);
-  private readonly router     = inject(Router);
-  private readonly isBrowser  = isPlatformBrowser(inject(PLATFORM_ID));
+  private router     = inject(Router);
+  private auth       = inject(AuthService);
+  private platformId = inject(PLATFORM_ID);
+
+  private get isBrowser(): boolean { return isPlatformBrowser(this.platformId); }
 
   matricule    = '';
   password     = '';
+  showPassword = false;
   errorMessage = '';
   loading      = false;
 
-  showPasswordModal      = false;
   showForgotPasswordModal = false;
 
   openForgotPassword():  void { this.showForgotPasswordModal = true; }
@@ -33,12 +33,7 @@ export class Login implements OnInit {
   ngOnInit(): void {
     if (!this.isBrowser) return;
     if (this.auth.isLoggedIn) {
-      const role = this.auth.role;
-      if (this.auth.session?.premiereConnexion && role !== 'rh' && role !== 'admin') {
-        this.showPasswordModal = true;
-      } else {
-        this.router.navigate([this.auth.getHomeRoute()]);
-      }
+      this.router.navigate([this.auth.getHomeRoute()]);
     }
   }
 
@@ -53,22 +48,13 @@ export class Login implements OnInit {
     this.auth.login(this.matricule, this.password).subscribe({
       next: () => {
         this.loading = false;
-        const role = this.auth.role;
-        if (this.auth.session?.premiereConnexion && role !== 'rh' && role !== 'admin') {
-          this.showPasswordModal = true;
-        } else {
-          this.router.navigate([this.auth.getHomeRoute()]);
-        }
+        // Always navigate to home — modal will show there if needed
+        this.router.navigate([this.auth.getHomeRoute()]);
       },
       error: () => {
         this.loading      = false;
         this.errorMessage = 'Matricule ou mot de passe incorrect.';
       }
     });
-  }
-
-  onPasswordChanged(): void {
-    this.showPasswordModal = false;
-    this.router.navigate([this.auth.getHomeRoute()]);
   }
 }

@@ -5,6 +5,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/auth.service';
 import { NotificationService } from '../../core/notification.service';
+import { ChangePasswordModal } from '../components/change-password-modal/change-password-modal';
 
 interface NavItem {
   label: string;
@@ -16,7 +17,7 @@ interface NavItem {
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ChangePasswordModal],
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.css']
 })
@@ -26,10 +27,11 @@ export class Navbar implements OnInit {
   private readonly sanitizer = inject(DomSanitizer);
   readonly notifSvc          = inject(NotificationService);
 
-  mobileOpen     = false;
-  currentRoute   = '';
-  showNotifPanel = false;
-  showUserMenu   = false;
+  mobileOpen              = false;
+  currentRoute            = '';
+  showNotifPanel          = false;
+  showUserMenu            = false;
+  showChangePasswordModal = false;
 
   get currentRole(): string { return this.auth.role ?? 'employe'; }
 
@@ -90,7 +92,8 @@ export class Navbar implements OnInit {
     { label: 'Direction Générale',     route: '/dg',                         roles: ['dg', 'admin'],   icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>' },
     { label: 'Tableau de bord RH',     route: '/dashboard-rh',               roles: ['rh', 'admin'],   icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>' },
     { label: 'Personnel',              route: '/personnel',                   roles: ['rh', 'admin'],   icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
-    { label: 'Réinit. mots de passe', route: '/reinitialisation-mdp',        roles: ['rh', 'admin'],   icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' }
+    { label: 'Réinit. mots de passe', route: '/reinitialisation-mdp',        roles: ['rh', 'admin'],   icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' },
+    { label: 'Mon Profil',             route: '/profil',                      roles: ['employe', 'n1', 'dg', 'rh', 'admin'], icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' }
   ];
 
   get navItems(): NavItem[] {
@@ -108,6 +111,14 @@ export class Navbar implements OnInit {
     this.currentRoute = this.router.url;
     this.notifSvc.load();
     this.notifSvc.startPolling();
+    // Show forced password change modal if needed
+    if (this.auth.session?.premiereConnexion === true) {
+      this.showChangePasswordModal = true;
+    }
+  }
+
+  onPasswordChanged(): void {
+    this.showChangePasswordModal = false;
   }
 
   isActive(route: string): boolean {

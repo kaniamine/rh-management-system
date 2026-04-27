@@ -41,16 +41,16 @@ export class RhDashboard implements OnInit {
   private readonly autoService    = inject(Autorisation);
   private readonly maladieService = inject(Maladie);
 
-  loading = true;
+  loading         = true;
   activeTab: TypeDemande = 'all';
-  filterStatut = '';
-  filterEmploye = '';
+  filterStatut    = '';
+  filterEmploye   = '';
   filterDateDebut = '';
-  filterDateFin = '';
+  filterDateFin   = '';
   selectedDemande: DemandeRH | null = null;
   showRejectModal = false;
-  rejectMotif = '';
-  actionLoading = false;
+  rejectMotif     = '';
+  actionLoading   = false;
 
   demandes: DemandeRH[] = [];
 
@@ -132,9 +132,7 @@ export class RhDashboard implements OnInit {
           .sort((a, b) => b.dateCreation.localeCompare(a.dateCreation));
         this.loading = false;
       },
-      error: () => {
-        this.loading = false;
-      }
+      error: () => { this.loading = false; }
     });
   }
 
@@ -169,7 +167,7 @@ export class RhDashboard implements OnInit {
   openDetail(d: DemandeRH): void {
     this.selectedDemande = d;
     this.showRejectModal = false;
-    this.rejectMotif = '';
+    this.rejectMotif     = '';
   }
 
   closeDetail(): void {
@@ -185,13 +183,13 @@ export class RhDashboard implements OnInit {
 
     const obs$ = type === 'conge'
       ? this.congeService.cloturer(id, matricule)
-      : (type === 'maladie'
-          ? this.maladieService.valider(id, matricule)
-          : this.autoService.validerN1(id, matricule));
+      : type === 'maladie'
+        ? this.maladieService.valider(id, matricule)
+        : this.autoService.validerN1(id, matricule);
 
     obs$.subscribe({
       next: () => {
-        this.actionLoading = false;
+        this.actionLoading   = false;
         this.selectedDemande = null;
         this.loadDemandes();
       },
@@ -205,7 +203,7 @@ export class RhDashboard implements OnInit {
     const matricule = this.auth.session?.matricule ?? '';
     this.maladieService.valider(this.selectedDemande.id, matricule).subscribe({
       next: () => {
-        this.actionLoading = false;
+        this.actionLoading   = false;
         this.selectedDemande = null;
         this.loadDemandes();
       },
@@ -213,15 +211,8 @@ export class RhDashboard implements OnInit {
     });
   }
 
-  openRejectModal(): void {
-    this.showRejectModal = true;
-    this.rejectMotif = '';
-  }
-
-  closeRejectModal(): void {
-    this.showRejectModal = false;
-    this.rejectMotif = '';
-  }
+  openRejectModal(): void  { this.showRejectModal = true;  this.rejectMotif = ''; }
+  closeRejectModal(): void { this.showRejectModal = false; this.rejectMotif = ''; }
 
   rejeter(): void {
     if (!this.selectedDemande || !this.rejectMotif.trim()) return;
@@ -235,10 +226,10 @@ export class RhDashboard implements OnInit {
 
     obs$.subscribe({
       next: () => {
-        this.actionLoading = false;
+        this.actionLoading   = false;
         this.showRejectModal = false;
         this.selectedDemande = null;
-        this.rejectMotif = '';
+        this.rejectMotif     = '';
         this.loadDemandes();
       },
       error: () => { this.actionLoading = false; }
@@ -267,9 +258,9 @@ export class RhDashboard implements OnInit {
     ];
     const csv = rows.map(r => r.join(';')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
     a.download = `demandes-rh-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);

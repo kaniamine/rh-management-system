@@ -130,6 +130,9 @@
   </section>
 
   <!-- BOTTOM GRID -->
+  @if (loading) {
+    <div class="loading-spinner">Chargement...</div>
+  } @else {
   <div class="bottom-grid">
 
     <!-- Recent requests -->
@@ -180,5 +183,6 @@
     </section>
 
   </div>
+  }
 
 </div>

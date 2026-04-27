@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using rh_management_backend.Data;
 
@@ -11,9 +12,11 @@ using rh_management_backend.Data;
 namespace rh_management_backend.Data.Migrations
 {
     [DbContext(typeof(RhDbContext))]
-    partial class RhDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260419181547_EnrichNotification")]
+    partial class EnrichNotification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -366,22 +369,6 @@ namespace rh_management_backend.Data.Migrations
                             SoldeConges = 30,
                             SoldeCongesJours = 30,
                             SuperieurHierarchiqueMatricule = "DG001"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Direction = "Direction Informatique",
-                            Fonction = "Développeur",
-                            IsActive = true,
-                            Matricule = "EMP002",
-                            Nom = "Bouazizi",
-                            NomComplet = "",
-                            Prenom = "Amine",
-                            Service = "Développement",
-                            SoldeConges = 30,
-                            SoldeCongesJours = 30,
-                            SuperieurHierarchiqueMatricule = "SH001"
                         });
                 });
 
@@ -492,12 +479,6 @@ namespace rh_management_backend.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<bool>("MustChangePassword")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("NombreConnexions")
-                        .HasColumnType("int");
-
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -524,9 +505,7 @@ namespace rh_management_backend.Data.Migrations
                             EmployeId = 1,
                             IsActive = true,
                             Matricule = "EMP001",
-                            MustChangePassword = false,
-                            NombreConnexions = 0,
-                            PasswordHash = "$2a$11$wSAQN1/IpviIviSFmY3dFOqWEusALRb9M2nDmaMb7TNYIbQrBz4UC",
+                            PasswordHash = "$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lp02",
                             Role = "employe"
                         },
                         new
@@ -536,9 +515,7 @@ namespace rh_management_backend.Data.Migrations
                             EmployeId = 2,
                             IsActive = true,
                             Matricule = "SH001",
-                            MustChangePassword = false,
-                            NombreConnexions = 0,
-                            PasswordHash = "$2a$11$wSAQN1/IpviIviSFmY3dFOqWEusALRb9M2nDmaMb7TNYIbQrBz4UC",
+                            PasswordHash = "$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lp02",
                             Role = "n1"
                         },
                         new
@@ -548,9 +525,7 @@ namespace rh_management_backend.Data.Migrations
                             EmployeId = 3,
                             IsActive = true,
                             Matricule = "DG001",
-                            MustChangePassword = false,
-                            NombreConnexions = 0,
-                            PasswordHash = "$2a$11$wSAQN1/IpviIviSFmY3dFOqWEusALRb9M2nDmaMb7TNYIbQrBz4UC",
+                            PasswordHash = "$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lp02",
                             Role = "dg"
                         },
                         new
@@ -560,22 +535,8 @@ namespace rh_management_backend.Data.Migrations
                             EmployeId = 4,
                             IsActive = true,
                             Matricule = "RH001",
-                            MustChangePassword = false,
-                            NombreConnexions = 0,
-                            PasswordHash = "$2a$11$wSAQN1/IpviIviSFmY3dFOqWEusALRb9M2nDmaMb7TNYIbQrBz4UC",
+                            PasswordHash = "$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lp02",
                             Role = "rh"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            EmployeId = 5,
-                            IsActive = true,
-                            Matricule = "EMP002",
-                            MustChangePassword = true,
-                            NombreConnexions = 0,
-                            PasswordHash = "$2a$11$wSAQN1/IpviIviSFmY3dFOqWEusALRb9M2nDmaMb7TNYIbQrBz4UC",
-                            Role = "employe"
                         });
                 });
 

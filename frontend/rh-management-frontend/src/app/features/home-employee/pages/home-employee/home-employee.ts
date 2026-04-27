@@ -35,6 +35,7 @@ export class HomeEmployee implements OnInit {
   recentRequests: { type: string; date: string; statut: string }[] = [];
 
   notifications: string[] = [];
+  loading = true;
 
   ngOnInit(): void {
     this.loadEmploye();
@@ -93,10 +94,12 @@ export class HomeEmployee implements OnInit {
             .filter(d => d.statut && d.statut !== 'Brouillon')
             .slice(0, 3)
             .map(d => this.buildNotification(d));
+          this.loading = false;
         },
         error: () => {
           this.recentRequests = [];
           this.notifications = ['Impossible de charger vos notifications.'];
+          this.loading = false;
         }
       });
   }

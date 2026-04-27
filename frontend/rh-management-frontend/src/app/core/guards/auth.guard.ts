@@ -11,10 +11,7 @@ export const authGuard: CanActivateFn = () => {
     return false;
   }
 
-  if (auth.session?.premiereConnexion === true) {
-    router.navigate(['/login']);
-    return false;
-  }
-
+  // Allow entry even if premiereConnexion = true
+  // The navbar will show the forced change password modal on top
   return true;
 };

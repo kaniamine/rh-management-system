@@ -54,8 +54,6 @@ export class ResponsableValidations implements OnInit {
   private readonly autoService  = inject(Autorisation);
   private readonly auth         = inject(AuthService);
 
-  loading = true;
-
   get responsable() {
     return {
       nomComplet:  this.auth.session?.nomComplet ?? '',
@@ -66,6 +64,7 @@ export class ResponsableValidations implements OnInit {
     };
   }
 
+  loading          = false;
   activeTab: TypeDemande | 'all' = 'all';
   selectedDemande: Demande | null = null;
   showRejectModal  = false;
@@ -83,6 +82,7 @@ export class ResponsableValidations implements OnInit {
   }
 
   loadDemandes(): void {
+    this.loading = true;
     forkJoin({
       conges: this.congeService.getDemandes(undefined, 'En attente de validation N+1')
         .pipe(catchError(() => of([]))),
@@ -129,9 +129,7 @@ export class ResponsableValidations implements OnInit {
         this.demandes = [...mappedConges, ...mappedAutorisations];
         this.loading = false;
       },
-      error: () => {
-        this.loading = false;
-      }
+      error: () => { this.loading = false; }
     });
   }
 
@@ -160,14 +158,14 @@ export class ResponsableValidations implements OnInit {
 
   selectDemande(d: Demande): void {
     this.selectedDemande = d;
-    this.showRejectModal = false;
+    this.showRejectModal  = false;
     this.showApproveModal = false;
-    this.rejectMotif = '';
+    this.rejectMotif      = '';
   }
 
   closeDetail(): void {
-    this.selectedDemande = null;
-    this.showRejectModal = false;
+    this.selectedDemande  = null;
+    this.showRejectModal  = false;
     this.showApproveModal = false;
   }
 
@@ -209,9 +207,9 @@ export class ResponsableValidations implements OnInit {
   }
 
   openRejectModal(): void {
-    this.showRejectModal = true;
+    this.showRejectModal  = true;
     this.showApproveModal = false;
-    this.rejectMotif = '';
+    this.rejectMotif      = '';
   }
 
   closeModals(): void {

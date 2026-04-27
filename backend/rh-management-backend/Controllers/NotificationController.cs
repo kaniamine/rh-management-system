@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using rh_management_backend.Data;
 using rh_management_backend.Models;
+using rh_management_backend.Services;
 
 namespace rh_management_backend.Controllers;
 
@@ -12,7 +13,13 @@ namespace rh_management_backend.Controllers;
 public class NotificationController : ControllerBase
 {
     private readonly RhDbContext _db;
-    public NotificationController(RhDbContext db) => _db = db;
+    private readonly NotificationService _notif;
+
+    public NotificationController(RhDbContext db, INotificationService notif)
+    {
+        _db    = db;
+        _notif = (NotificationService)notif;
+    }
 
     // GET /api/notifications?matricule=EMP001
     [HttpGet]
@@ -21,7 +28,7 @@ public class NotificationController : ControllerBase
         var list = await _db.Notifications
             .Where(n => n.DestinataireMatricule == matricule)
             .OrderByDescending(n => n.Timestamp)
-            .Take(20)
+            .Take(50)
             .ToListAsync();
         return Ok(list);
     }
@@ -33,6 +40,17 @@ public class NotificationController : ControllerBase
         var count = await _db.Notifications
             .CountAsync(n => n.DestinataireMatricule == matricule && !n.IsRead);
         return Ok(new { count });
+    }
+
+    // GET /api/notifications/demande?typeDemande=conge&demandeId=42  (RH uniquement)
+    [HttpGet("demande")]
+    [Authorize(Roles = "rh,admin")]
+    public async Task<IActionResult> GetParDemande(
+        [FromQuery] string typeDemande,
+        [FromQuery] int demandeId)
+    {
+        var list = await _notif.GetNotificationsParDemandeAsync(typeDemande, demandeId);
+        return Ok(list);
     }
 
     // POST /api/notifications/{id}/lire

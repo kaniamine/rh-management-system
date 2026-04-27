@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace rh_management_backend.Models;
 
@@ -8,6 +8,19 @@ public class Notification
 
     [Required, MaxLength(20)]
     public string DestinataireMatricule { get; set; } = string.Empty;
+
+    [MaxLength(50)]
+    public string? DestinataireRole { get; set; }
+
+    // conge | autorisation | maladie
+    [MaxLength(50)]
+    public string? TypeDemande { get; set; }
+
+    public int? DemandeId { get; set; }
+
+    // soumission | validation | rejet | annulation | cloture
+    [MaxLength(50)]
+    public string? Action { get; set; }
 
     [Required]
     public string Message { get; set; } = string.Empty;

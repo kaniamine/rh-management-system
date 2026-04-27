@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace rh_management_backend.DTOs.Auth;
 
@@ -22,7 +22,8 @@ public record LoginResponseDto(
     string? SuperieurHierarchiqueMatricule,
     string Token,
     DateTime ExpiresAt,
-    bool MustChangePassword
+    bool MustChangePassword,
+    int NombreConnexions
 );
 
 public record ChangePasswordDto(
