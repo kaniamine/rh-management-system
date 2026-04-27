@@ -74,6 +74,12 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'reinitialisation-mdp',
+    loadComponent: () =>
+      import('./features/dashboard-rh/reset-password-requests/reset-password-requests').then(m => m.ResetPasswordRequests),
+    canActivate: [authGuard]
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/login/login').then(m => m.Login)

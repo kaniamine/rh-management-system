@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/auth.service';
 import { ChangePasswordModal } from '../../../shared/components/change-password-modal/change-password-modal';
+import { ForgotPasswordModal } from '../../../shared/components/forgot-password-modal/forgot-password-modal';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, CommonModule, ChangePasswordModal],
+  imports: [FormsModule, CommonModule, ChangePasswordModal, ForgotPasswordModal],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
@@ -23,7 +24,11 @@ export class Login implements OnInit {
   errorMessage = '';
   loading      = false;
 
-  showPasswordModal = false;
+  showPasswordModal      = false;
+  showForgotPasswordModal = false;
+
+  openForgotPassword():  void { this.showForgotPasswordModal = true; }
+  closeForgotPassword(): void { this.showForgotPasswordModal = false; }
 
   ngOnInit(): void {
     if (!this.isBrowser) return;

@@ -214,8 +214,24 @@
 .form-options {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-top: -4px;
 }
+
+.forgot-password-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0D776E;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+.forgot-password-btn:hover { color: #0b665f; }
 
 .remember-me {
   display: flex;

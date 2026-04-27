@@ -47,6 +47,9 @@
             <input type="checkbox" />
             <span>Se souvenir de moi</span>
           </label>
+          <button type="button" class="forgot-password-btn" (click)="openForgotPassword()">
+            Mot de passe oublié ?
+          </button>
         </div>
         @if (errorMessage) {
           <p style="color:#c60c30; font-size:14px; margin:0;">{{ errorMessage }}</p>
@@ -66,4 +69,10 @@
   <app-change-password-modal
     (passwordChanged)="onPasswordChanged()"
   ></app-change-password-modal>
+}
+
+@if (showForgotPasswordModal) {
+  <app-forgot-password-modal
+    (closed)="closeForgotPassword()"
+  ></app-forgot-password-modal>
 }
