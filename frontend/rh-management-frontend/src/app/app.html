@@ -4,5 +4,5 @@
 </main>
 
 @if (showFirstLoginModal) {
-  <app-change-password-modal></app-change-password-modal>
+  <app-change-password-modal (passwordChanged)="onFirstLoginPasswordChanged()"></app-change-password-modal>
 }

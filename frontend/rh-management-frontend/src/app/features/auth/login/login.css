@@ -287,6 +287,33 @@
   color: #a7a9ac;
 }
 
+/* ── Forgot password ─────────────────────────────────────── */
+.forgot-link {
+  display: block;
+  text-align: right;
+  font-size: 13px;
+  color: #ff5800;
+  cursor: pointer;
+  margin-top: 4px;
+  margin-bottom: 0;
+  text-decoration: none;
+}
+.forgot-link:hover { text-decoration: underline; }
+
+.forgot-form {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #ebebeb;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.forgot-title    { font-size: 16px; font-weight: 600; color: #2a2d32; margin: 0; }
+.forgot-subtitle { font-size: 13px; color: #888; margin: 0; line-height: 1.5; }
+
+.form-error   { color: #c60c30; font-size: 13px; margin: 0; }
+.form-success { color: #0D776E; font-size: 13px; margin: 0; }
+
 /* ── Animations ───────────────────────────────────────────── */
 @keyframes fadeInLeft {
   from { opacity: 0; transform: translateX(-20px); }

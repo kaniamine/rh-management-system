@@ -12,6 +12,13 @@ import { AuthService } from '../../../../core/auth.service';
   styleUrl: './home-rh.css'
 })
 export class HomeRh implements OnInit {
+  getInitiales(nom: string): string {
+    const parts = (nom ?? '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
   private readonly API  = 'http://localhost:5130';

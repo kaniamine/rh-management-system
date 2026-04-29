@@ -72,13 +72,7 @@ export class ChangePasswordModal {
           this.loading = false;
           // Update session so premiereConnexion = false — modal never comes back
           this.auth.markPasswordChanged();
-<<<<<<< HEAD
           this.passwordChanged.emit();
-=======
-          this.successMessage = 'Mot de passe modifié avec succès.';
-          // Emit after short delay so user sees the success message
-          setTimeout(() => this.passwordChanged.emit(), 800);
->>>>>>> dd707c7423a8a8f0531d4584df3b2a511580008b
         },
         error: (err: any) => {
           this.loading      = false;

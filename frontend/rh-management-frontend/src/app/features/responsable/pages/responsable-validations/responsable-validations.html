@@ -5,7 +5,7 @@
     <div class="vpage-header-left">
       <img src="assets/logo.png" alt="Al Baraka Assurances" class="page-logo" />
       <div class="page-logo-divider"></div>
-      <div class="resp-avatar">{{ responsable.nomComplet.charAt(0) }}</div>
+      <div class="resp-avatar">{{ getInitiales(responsable.nomComplet) }}</div>
       <div>
         <h1>Espace Responsable N+1</h1>
         <p>{{ responsable.nomComplet }} · {{ responsable.service }} · {{ responsable.equipeCount }} collaborateurs</p>

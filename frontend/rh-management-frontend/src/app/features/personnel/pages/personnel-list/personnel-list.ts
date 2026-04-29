@@ -36,14 +36,15 @@ export class PersonnelList {
   ];
 
   newEmployee = {
-    matricule: '',
-    nom: '',
-    prenom: '',
-    direction: 'IT',
-    service: '',
-    fonction: '',
-    role: 'Employé',
-    solde: 0
+    matricule:  '',
+    nom:        '',
+    prenom:     '',
+    direction:  'IT',
+    service:    '',
+    fonction:   '',
+    role:       'Employé',
+    solde:      0,
+    telephone:  ''
   };
 
   openModal() {
@@ -74,13 +75,14 @@ export class PersonnelList {
 
     this.newEmployee = {
       matricule: '',
-      nom: '',
-      prenom: '',
+      nom:       '',
+      prenom:    '',
       direction: 'IT',
-      service: '',
-      fonction: '',
-      role: 'Employé',
-      solde: 0
+      service:   '',
+      fonction:  '',
+      role:      'Employé',
+      solde:     0,
+      telephone: ''
     };
 
     this.closeModal();

@@ -43,15 +43,13 @@
               {{ showPassword ? 'Masquer' : 'Afficher' }}
             </button>
           </div>
+          <a class="forgot-link" (click)="showForgotForm = !showForgotForm">Mot de passe oublié ?</a>
         </div>
         <div class="form-options">
           <label class="remember-me">
             <input type="checkbox" />
             <span>Se souvenir de moi</span>
           </label>
-          <button type="button" class="forgot-password-btn" (click)="openForgotPassword()">
-            Mot de passe oublié ?
-          </button>
         </div>
         @if (errorMessage) {
           <div style="color:#c60c30;font-size:13px;margin-top:-4px;">{{ errorMessage }}</div>
@@ -60,14 +58,37 @@
           {{ loading ? 'Connexion...' : 'Se connecter' }}
         </button>
       </form>
+      @if (showForgotForm) {
+        <div class="forgot-form">
+          <h3 class="forgot-title">Réinitialisation du mot de passe</h3>
+          <p class="forgot-subtitle">
+            Saisissez votre matricule et votre numéro de téléphone enregistré.
+            La RH sera notifiée et vous recevrez un SMS avec un mot de passe temporaire.
+          </p>
+          <div class="field">
+            <label>Matricule <span class="required">*</span></label>
+            <input type="text" class="input" [(ngModel)]="forgotMatricule"
+                   name="forgotMatricule" placeholder="ex: EMP001" />
+          </div>
+          <div class="field">
+            <label>Numéro de téléphone <span class="required">*</span></label>
+            <input type="tel" class="input" [(ngModel)]="forgotTelephone"
+                   name="forgotTelephone" placeholder="ex: +21698XXXXXX" />
+          </div>
+          @if (forgotError)   { <p class="form-error">{{ forgotError }}</p> }
+          @if (forgotSuccess) { <p class="form-success">{{ forgotSuccess }}</p> }
+          <button type="button" class="login-btn" (click)="onForgotPassword()"
+                  [disabled]="forgotLoading">
+            {{ forgotLoading ? 'Envoi en cours...' : 'Envoyer la demande à la RH' }}
+          </button>
+        </div>
+      }
       <div class="login-footer">
         En cas de problème d'accès, contactez la Direction des Ressources Humaines.
       </div>
     </section>
   </div>
 </div>
-<<<<<<< HEAD
-=======
 
 
 @if (showForgotPasswordModal) {
@@ -75,4 +96,3 @@
     (closed)="closeForgotPassword()"
   ></app-forgot-password-modal>
 }
->>>>>>> dd707c7423a8a8f0531d4584df3b2a511580008b

@@ -116,14 +116,15 @@ export class ResetPasswordRequests implements OnInit {
     req.resetting = true;
 
     this.http
-      .post<any>(`${API}/api/auth/reset-password`, { matricule: req.matricule })
+      .post<any>(`${API}/api/auth/reinitialiser-mot-de-passe`, { matricule: req.matricule })
       .subscribe({
         next: () => {
           req.resetting = false;
           req.done      = true;
           this.notifs.load();
         },
-        error: () => {
+        error: (err) => {
+          console.error('[RESET ERROR]', err);
           req.resetting = false;
         }
       });
@@ -169,16 +170,21 @@ export class ResetPasswordRequests implements OnInit {
     this.manualError     = '';
 
     this.http
-      .post<any>(`${API}/api/auth/reset-password`, { matricule: mat })
+      .post<any>(`${API}/api/auth/reinitialiser-mot-de-passe`, { matricule: mat })
       .subscribe({
         next: () => {
           this.manualResetting = false;
           this.manualDone      = true;
           this.notifs.load();
         },
-        error: () => {
+        error: (err) => {
+          console.error('[RESET ERROR]', err);
           this.manualResetting = false;
-          this.manualError = 'Erreur lors de la réinitialisation.';
+          this.manualError =
+            err?.error?.message ??
+            err?.error?.Message ??
+            err?.message ??
+            'Erreur lors de la réinitialisation.';
         }
       });
   }

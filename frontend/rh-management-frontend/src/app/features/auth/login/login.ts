@@ -1,6 +1,7 @@
-import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, ChangeDetectorRef, inject } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth.service';
 import { ForgotPasswordModal } from '../../../shared/components/forgot-password-modal/forgot-password-modal';
@@ -13,41 +14,71 @@ import { ForgotPasswordModal } from '../../../shared/components/forgot-password-
   styleUrl: './login.css'
 })
 export class Login implements OnInit {
-<<<<<<< HEAD
-  private router      = inject(Router);
-  private authService = inject(AuthService);
-
-  email        = '';
-  motDePasse   = '';
-=======
   private router     = inject(Router);
   private auth       = inject(AuthService);
   private platformId = inject(PLATFORM_ID);
+  private cdr        = inject(ChangeDetectorRef);
+  private http       = inject(HttpClient);
 
   private get isBrowser(): boolean { return isPlatformBrowser(this.platformId); }
 
   matricule    = '';
   password     = '';
->>>>>>> dd707c7423a8a8f0531d4584df3b2a511580008b
   showPassword = false;
   errorMessage = '';
   loading      = false;
 
-<<<<<<< HEAD
-  ngOnInit(): void {
-    if (this.authService.isLoggedIn) {
-      this.router.navigate([this.authService.getHomeRoute()]);
-=======
   showForgotPasswordModal = false;
+
+  showForgotForm  = false;
+  forgotMatricule = '';
+  forgotTelephone = '';
+  forgotError     = '';
+  forgotSuccess   = '';
+  forgotLoading   = false;
 
   openForgotPassword():  void { this.showForgotPasswordModal = true; }
   closeForgotPassword(): void { this.showForgotPasswordModal = false; }
+
+  onForgotPassword(): void {
+    this.forgotError   = '';
+    this.forgotSuccess = '';
+    if (!this.forgotMatricule.trim() || !this.forgotTelephone.trim()) {
+      this.forgotError = 'Veuillez remplir tous les champs.';
+      this.cdr.detectChanges();
+      return;
+    }
+    this.forgotLoading = true;
+    this.http.post('http://localhost:5130/api/auth/mot-de-passe-oublie', {
+      matricule: this.forgotMatricule.trim(),
+      telephone: this.forgotTelephone.trim()
+    }).subscribe({
+      next: () => {
+        this.forgotSuccess  = 'Votre demande a été transmise à la RH. '
+          + 'Vous recevrez un SMS avec votre nouveau mot de passe temporaire.';
+        this.forgotLoading  = false;
+        this.forgotMatricule = '';
+        this.forgotTelephone = '';
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        console.error('Forgot password error:', err);
+        this.forgotError =
+          err?.error?.message ??
+          err?.error?.Message ??
+          err?.error?.title ??
+          err?.message ??
+          'Erreur lors de l\'envoi. Veuillez réessayer.';
+        this.forgotLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   ngOnInit(): void {
     if (!this.isBrowser) return;
     if (this.auth.isLoggedIn) {
       this.router.navigate([this.auth.getHomeRoute()]);
->>>>>>> dd707c7423a8a8f0531d4584df3b2a511580008b
     }
   }
 
@@ -61,11 +92,11 @@ export class Login implements OnInit {
 
     this.auth.login(this.matricule, this.password).subscribe({
       next: () => {
-<<<<<<< HEAD
         this.loading = false;
-        this.router.navigate([this.authService.getHomeRoute()]);
+        this.cdr.detectChanges();
+        this.router.navigate([this.auth.getHomeRoute()]);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.loading = false;
         if (err.status === 0) {
           this.errorMessage = 'Serveur inaccessible. Vérifiez que le backend est démarré (port 5130).';
@@ -76,15 +107,7 @@ export class Login implements OnInit {
         } else {
           this.errorMessage = 'Matricule ou mot de passe incorrect.';
         }
-=======
-        this.loading = false;
-        // Always navigate to home — modal will show there if needed
-        this.router.navigate([this.auth.getHomeRoute()]);
-      },
-      error: () => {
-        this.loading      = false;
-        this.errorMessage = 'Matricule ou mot de passe incorrect.';
->>>>>>> dd707c7423a8a8f0531d4584df3b2a511580008b
+        this.cdr.detectChanges();
       }
     });
   }

@@ -26,6 +26,8 @@ export class App implements OnInit {
     return this.auth.isLoggedIn && this.auth.session?.premiereConnexion === true;
   }
 
+  onFirstLoginPasswordChanged(): void {}
+
   ngOnInit(): void {
     this.router.events
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
