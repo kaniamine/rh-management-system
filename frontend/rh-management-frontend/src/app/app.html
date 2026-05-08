@@ -6,3 +6,7 @@
 @if (showFirstLoginModal) {
   <app-change-password-modal (passwordChanged)="onFirstLoginPasswordChanged()"></app-change-password-modal>
 }
+
+@if (auth.isLoggedIn) {
+  <app-baraka-chatbot></app-baraka-chatbot>
+}

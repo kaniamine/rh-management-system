@@ -1,236 +1,347 @@
-<div class="rh-page">
+<div class="an-page">
 
   <!-- HEADER -->
-  <div class="rh-header">
-    <div class="rh-header-brand">
-      <img src="assets/logo.png" alt="Al Baraka Assurances" class="page-logo" />
-      <div class="rh-header-divider"></div>
+  <div class="an-header">
+    <div class="an-header-left">
+      <img src="assets/logo.png" class="an-logo" alt="Al Baraka Assurances" />
+      <div class="an-divider"></div>
       <div>
-        <h1>Tableau de bord — Direction RH</h1>
-        <p>Gestion complète des demandes RH : congés, autorisations et maladies.</p>
+        <h1 class="an-title">Tableau de bord analytique</h1>
+        <p class="an-subtitle">Direction des Ressources Humaines — Al Baraka Assurances</p>
       </div>
     </div>
-    <div class="header-actions">
-      <a routerLink="/home-rh" class="header-btn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <div class="an-actions">
+      <a routerLink="/home-rh" class="an-btn-ghost">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
         Accueil RH
       </a>
-      <button class="header-btn-primary" (click)="exportCSV()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Exporter CSV
+      <button class="an-btn-refresh" (click)="load()" [disabled]="loading">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <polyline points="23 4 23 10 17 10"/>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        Actualiser
+      </button>
+      <button class="an-btn-pdf" (click)="exportPDF()"
+              [disabled]="exporting || loading || !data">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        {{ exporting ? 'Génération…' : 'Exporter PDF' }}
       </button>
     </div>
   </div>
 
-  <!-- KPI STRIP -->
-  <div class="kpi-strip">
-    <div class="kpi-card">
-      <span class="kpi-lbl">Total demandes</span>
-      <strong class="kpi-val">{{ kpis.total }}</strong>
-    </div>
-    <div class="kpi-card kpi-orange">
-      <span class="kpi-lbl">En attente</span>
-      <strong class="kpi-val">{{ kpis.enAttente }}</strong>
-    </div>
-    <div class="kpi-card kpi-teal">
-      <span class="kpi-lbl">Validées</span>
-      <strong class="kpi-val">{{ kpis.validees }}</strong>
-    </div>
-    <div class="kpi-card kpi-red">
-      <span class="kpi-lbl">Rejetées</span>
-      <strong class="kpi-val">{{ kpis.rejetees }}</strong>
-    </div>
-    <div class="kpi-card">
-      <span class="kpi-lbl">Clôturées</span>
-      <strong class="kpi-val">{{ kpis.cloturees }}</strong>
-    </div>
-  </div>
-
-  <!-- TABS -->
-  <div class="tabs-bar">
-    <div class="tabs">
-      <button class="tab" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">
-        Toutes ({{ demandes.length }})
-      </button>
-      <button class="tab" [class.active]="activeTab === 'conge'" (click)="activeTab = 'conge'">
-        Congés ({{ countByType('conge') }})
-      </button>
-      <button class="tab" [class.active]="activeTab === 'autorisation'" (click)="activeTab = 'autorisation'">
-        Autorisations ({{ countByType('autorisation') }})
-      </button>
-      <button class="tab" [class.active]="activeTab === 'maladie'" (click)="activeTab = 'maladie'">
-        Maladies ({{ countByType('maladie') }})
-      </button>
-    </div>
-  </div>
-
-  <!-- FILTERS -->
-  <div class="filters-row">
-    <select class="filter-select" [(ngModel)]="filterStatut">
-      <option value="">Tous les statuts</option>
-      <option value="En attente de validation N+1">En attente N+1</option>
-      <option value="En attente de validation RH">En attente RH</option>
-      <option value="Validée – En traitement RH">En traitement RH</option>
-      <option value="Validée">Validée</option>
-      <option value="Clôturée">Clôturée</option>
-      <option value="Rejetée">Rejetée</option>
-    </select>
-    <input class="filter-input" type="text" placeholder="Employé / Matricule…" [(ngModel)]="filterEmploye" />
-    <input class="filter-input filter-date" type="date" [(ngModel)]="filterDateDebut" />
-    <input class="filter-input filter-date" type="date" [(ngModel)]="filterDateFin" />
-  </div>
-
-  <!-- LIST -->
-  @if (!selectedDemande) {
-    <div class="demande-list">
-      @for (d of filteredDemandes; track d.id) {
-        <div class="demande-row" (click)="openDetail(d)">
-          <div class="drow-type" [ngClass]="'dtype-' + d.type">
-            @if (d.type === 'conge') {
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
-            } @else if (d.type === 'autorisation') {
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            } @else {
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-            }
-          </div>
-          <div class="drow-employee">
-            <strong>{{ d.employe }}</strong>
-            <span>{{ d.matricule }} · {{ d.direction }}</span>
-          </div>
-          <div class="drow-type-label">{{ d.sousType }}</div>
-          <div class="drow-period">{{ d.dateDebut }}{{ d.dateFin ? ' → ' + d.dateFin : '' }} · {{ d.duree }}</div>
-          <div class="drow-meta">
-            <span class="drow-ref">{{ d.refNo }}</span>
-            <span class="drow-statut" [ngClass]="'st-' + getStatutClass(d.statut)">{{ d.statut }}</span>
-          </div>
-          @if (canCloturer(d) || canValiderMaladie(d) || canReject(d)) {
-            <div class="drow-actions" (click)="$event.stopPropagation()">
-              @if (canValiderMaladie(d)) {
-                <button class="abtn abtn-teal" (click)="openDetail(d); validerMaladie()">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  Valider
-                </button>
-              }
-              @if (canCloturer(d)) {
-                <button class="abtn abtn-teal" (click)="openDetail(d)">Clôturer</button>
-              }
-            </div>
-          }
-        </div>
-      }
-      @if (filteredDemandes.length === 0) {
-        <div class="empty-state">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#a7a9ac" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <p>Aucune demande correspondant à ce filtre.</p>
-        </div>
-      }
+  <!-- LOADING -->
+  @if (loading) {
+    <div class="an-loading">
+      <div class="an-spinner"></div>
+      <p>Chargement des données analytiques…</p>
     </div>
   }
 
-  <!-- DETAIL PANEL -->
-  @if (selectedDemande && !showRejectModal) {
-    <div class="detail-panel">
-      <div class="detail-inner">
-        <div class="detail-head">
-          <div>
-            <h3>{{ selectedDemande.refNo }} — {{ selectedDemande.sousType }}</h3>
-            <p>{{ selectedDemande.employe }} · {{ selectedDemande.direction }}</p>
-          </div>
-          <button class="close-btn" (click)="closeDetail()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
+  <!-- ERROR -->
+  @if (error && !loading) {
+    <div class="an-error">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error }}
+    </div>
+  }
+
+  @if (!loading && !error && data) {
+
+    <!-- KPI ROW 1 — Volume -->
+    <div class="kpi-section-label">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/>
+        <rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      Volume &amp; Répartition
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card" style="--accent:#ff5800">
+        <div class="kpi-icon-wrap" style="background:rgba(255,88,0,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="#ff5800" stroke-width="2" stroke-linecap="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
         </div>
-
-        <div class="detail-cols">
-          <div>
-            <p class="section-title">Informations de la demande</p>
-            <div class="detail-grid">
-              <div class="detail-row"><span>Type</span><strong>{{ selectedDemande.sousType }}</strong></div>
-              <div class="detail-row"><span>Employé</span><strong>{{ selectedDemande.employe }}</strong></div>
-              <div class="detail-row"><span>Matricule</span><strong>{{ selectedDemande.matricule }}</strong></div>
-              <div class="detail-row"><span>Direction</span><strong>{{ selectedDemande.direction }}</strong></div>
-              <div class="detail-row">
-                <span>Période</span>
-                <strong>{{ selectedDemande.dateDebut }}@if (selectedDemande.dateFin) { → {{ selectedDemande.dateFin }}}</strong>
-              </div>
-              <div class="detail-row"><span>Durée</span><strong>{{ selectedDemande.duree }}</strong></div>
-              <div class="detail-row detail-row-full"><span>Motif</span><strong>{{ selectedDemande.motif }}</strong></div>
-              <div class="detail-row"><span>Soumis le</span><strong>{{ selectedDemande.dateCreation }}</strong></div>
-              @if (selectedDemande.certificat) {
-                <div class="detail-row detail-row-full">
-                  <span>Certificat médical</span>
-                  <strong class="cert-link">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                    {{ selectedDemande.certificat }}
-                  </strong>
-                </div>
-              }
-            </div>
-          </div>
-
-          <div>
-            <p class="section-title">Statut &amp; Actions RH</p>
-            <div class="detail-grid">
-              <div class="detail-row detail-row-full">
-                <span>Statut courant</span>
-                <span class="drow-statut" [ngClass]="'st-' + getStatutClass(selectedDemande.statut)">{{ selectedDemande.statut }}</span>
-              </div>
-            </div>
-
-            <div class="action-block">
-              <div class="action-btns">
-                @if (canValiderMaladie(selectedDemande)) {
-                  <button class="abtn abtn-teal w100" (click)="validerMaladie()" [disabled]="actionLoading">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    Valider le congé maladie
-                  </button>
-                }
-                @if (canCloturer(selectedDemande)) {
-                  <button class="abtn abtn-teal w100" (click)="cloturer()" [disabled]="actionLoading">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    Clôturer la demande
-                  </button>
-                }
-                @if (canReject(selectedDemande)) {
-                  <button class="abtn abtn-danger w100" (click)="openRejectModal()" [disabled]="actionLoading">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    Rejeter
-                  </button>
-                }
-                @if (!canValiderMaladie(selectedDemande) && !canCloturer(selectedDemande) && !canReject(selectedDemande)) {
-                  <p class="no-action">Aucune action disponible pour ce statut.</p>
-                }
-              </div>
-            </div>
-          </div>
+        <div class="kpi-info">
+          <span class="kpi-lbl">Total demandes</span>
+          <strong class="kpi-val">{{ data.totalDemandes }}</strong>
+        </div>
+      </div>
+      <div class="kpi-card" style="--accent:#0D776E">
+        <div class="kpi-icon-wrap" style="background:rgba(13,119,110,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="#0D776E" stroke-width="2" stroke-linecap="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-lbl">Congés</span>
+          <strong class="kpi-val">{{ data.totalConges }}</strong>
+        </div>
+      </div>
+      <div class="kpi-card" style="--accent:#3b82f6">
+        <div class="kpi-icon-wrap" style="background:rgba(59,130,246,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="#3b82f6" stroke-width="2" stroke-linecap="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-lbl">Autorisations</span>
+          <strong class="kpi-val">{{ data.totalAutorisations }}</strong>
+        </div>
+      </div>
+      <div class="kpi-card" style="--accent:#8b5cf6">
+        <div class="kpi-icon-wrap" style="background:rgba(139,92,246,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="#8b5cf6" stroke-width="2" stroke-linecap="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-lbl">Maladies</span>
+          <strong class="kpi-val">{{ data.totalMaladies }}</strong>
+        </div>
+      </div>
+      <div class="kpi-card" style="--accent:#64748b">
+        <div class="kpi-icon-wrap" style="background:rgba(100,116,139,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="#64748b" stroke-width="2" stroke-linecap="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-lbl">Employés actifs</span>
+          <strong class="kpi-val">{{ data.totalEmployes }}</strong>
         </div>
       </div>
     </div>
-  }
 
-  <!-- REJECT MODAL -->
-  @if (showRejectModal && selectedDemande) {
-    <div class="modal-back">
-      <div class="modal-box">
-        <div class="modal-icon danger">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <!-- KPI ROW 2 — Performance -->
+    <div class="kpi-section-label">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+      Indicateurs de performance
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card" style="--accent:#22c55e">
+        <div class="kpi-icon-wrap" style="background:rgba(34,197,94,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="#22c55e" stroke-width="2" stroke-linecap="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
         </div>
-        <h3>Rejeter la demande</h3>
-        <p>
-          Vous rejetez <strong>{{ selectedDemande.refNo }}</strong>
-          de <strong>{{ selectedDemande.employe }}</strong>.
-          L'employé sera notifié avec le motif indiqué.
-        </p>
-        <textarea class="modal-input" rows="4" placeholder="Motif du rejet (obligatoire)…" [(ngModel)]="rejectMotif" [disabled]="actionLoading"></textarea>
-        <div class="modal-actions">
-          <button class="mbtn mbtn-ghost" (click)="closeRejectModal()" [disabled]="actionLoading">Annuler</button>
-          <button class="mbtn mbtn-danger" (click)="rejeter()" [disabled]="actionLoading || !rejectMotif.trim()">
-            {{ actionLoading ? 'En cours…' : 'Confirmer le rejet' }}
-          </button>
+        <div class="kpi-info">
+          <span class="kpi-lbl">Demandes validées</span>
+          <strong class="kpi-val">{{ data.validees }}</strong>
+          <span class="kpi-sub">{{ data.tauxValidation }}% de taux</span>
+        </div>
+      </div>
+      <div class="kpi-card" style="--accent:#f59e0b">
+        <div class="kpi-icon-wrap" style="background:rgba(245,158,11,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="#f59e0b" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-lbl">En attente</span>
+          <strong class="kpi-val">{{ data.enAttente }}</strong>
+          <span class="kpi-sub">À traiter</span>
+        </div>
+      </div>
+      <div class="kpi-card" style="--accent:#c60c30">
+        <div class="kpi-icon-wrap" style="background:rgba(198,12,48,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="#c60c30" stroke-width="2" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-lbl">Rejetées / Annulées</span>
+          <strong class="kpi-val">{{ data.rejetees }}</strong>
+          <span class="kpi-sub">{{ data.tauxRejet }}% de taux</span>
+        </div>
+      </div>
+      <div class="kpi-card" style="--accent:#ff5800">
+        <div class="kpi-icon-wrap" style="background:rgba(255,88,0,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="#ff5800" stroke-width="2" stroke-linecap="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-lbl">Jours congés pris</span>
+          <strong class="kpi-val">{{ data.totalJoursConge }}</strong>
+          <span class="kpi-sub">Congés validés</span>
+        </div>
+      </div>
+      <div class="kpi-card" style="--accent:#3b82f6">
+        <div class="kpi-icon-wrap" style="background:rgba(59,130,246,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="#3b82f6" stroke-width="2" stroke-linecap="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-lbl">Jours maladie</span>
+          <strong class="kpi-val">{{ data.totalJoursMaladie }}</strong>
+          <span class="kpi-sub">Congés maladie validés</span>
         </div>
       </div>
     </div>
-  }
 
+    <!-- DOUGHNUT — Répartition par type (standalone) -->
+    <div class="chart-card chart-standalone">
+      <div class="chart-head">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+        </svg>
+        <span>Répartition par type de demande</span>
+      </div>
+      <div class="chart-body"><canvas #c2></canvas></div>
+      <div class="type-summary">
+        @for (t of data.repartitionParType; track $index) {
+          <div class="type-row">
+            <span class="type-dot" [style.background]="getTypeColor(t)"></span>
+            <span class="type-name">{{ getTypeName(t) }}</span>
+            <strong>{{ getTypeCount(t) }}</strong>
+          </div>
+        }
+        @if (!data.repartitionParType.length) {
+          <p style="color:#bbb;font-size:12px">Aucune donnée</p>
+        }
+      </div>
+    </div>
+
+    <!-- CHARTS ROW 2 -->
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="chart-head">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          <span>Demandes par statut</span>
+        </div>
+        <div class="chart-body chart-body-tall"><canvas #c3></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          </svg>
+          <span>Demandes par direction</span>
+        </div>
+        <div class="chart-body"><canvas #c4></canvas></div>
+      </div>
+    </div>
+
+    <!-- CHART ROW 3 -->
+    <div class="chart-row-single">
+      <div class="chart-card chart-medium">
+        <div class="chart-head">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>Taux de validation par type de demande (%)</span>
+        </div>
+        <div class="chart-body-sm"><canvas #c5></canvas></div>
+        <div class="rate-summary">
+          <div class="rate-item">
+            <span>Congés</span>
+            <div class="rate-bar-wrap">
+              <div class="rate-bar" style="--accent:#ff5800"
+                   [style.width]="data.tauxValidationConge + '%'"></div>
+            </div>
+            <strong>{{ data.tauxValidationConge | number:'1.0-1' }}%</strong>
+          </div>
+          <div class="rate-item">
+            <span>Autorisations</span>
+            <div class="rate-bar-wrap">
+              <div class="rate-bar" style="--accent:#0D776E"
+                   [style.width]="data.tauxValidationAuto + '%'"></div>
+            </div>
+            <strong>{{ data.tauxValidationAuto | number:'1.0-1' }}%</strong>
+          </div>
+          <div class="rate-item">
+            <span>Maladies</span>
+            <div class="rate-bar-wrap">
+              <div class="rate-bar" style="--accent:#3b82f6"
+                   [style.width]="data.tauxValidationMaladie + '%'"></div>
+            </div>
+            <strong>{{ data.tauxValidationMaladie | number:'1.0-1' }}%</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insight card -->
+      <div class="insight-card">
+        <div class="insight-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+               stroke="#ff5800" stroke-width="1.8" stroke-linecap="round">
+            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <span class="insight-lbl">Solde moyen de congés</span>
+        <strong class="insight-val">{{ data.moyenneSoldeConges | number:'1.1-1' }}</strong>
+<span class="insight-unit">jours / employé</span>
+        <div class="insight-divider"></div>
+        <div class="insight-stat">
+          <span>Demandes clôturées</span>
+          <strong>{{ data.cloturees }}</strong>
+        </div>
+        <div class="insight-stat">
+          <span>Taux validation global</span>
+          <strong style="color:#0D776E">{{ data.tauxValidation | number:'1.0-1' }}%</strong>
+        </div>
+        <div class="insight-stat">
+          <span>Total employés</span>
+          <strong>{{ data.totalEmployes }}</strong>
+        </div>
+      </div>
+    </div>
+
+  }
 </div>

@@ -19,13 +19,6 @@ export class HomeEmployee implements OnInit {
 
   get role(): string { return this.auth.role; }
 
-  computeInitiales(nom: string): string {
-    const parts = nom.trim().split(/\s+/).filter(Boolean);
-    if (!parts.length) return '';
-    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
-  }
-
   employee = {
     nom: '',
     matricule: this.matricule,
@@ -34,9 +27,7 @@ export class HomeEmployee implements OnInit {
   };
 
   stats = [
-    { label: 'Solde de congés', value: '-- j', tone: 'orange' },
-    { label: 'Demandes en attente', value: '--', tone: 'green' },
-    { label: 'Autorisations ce mois', value: '--', tone: 'gray' }
+    { label: 'Demandes en attente', value: '--', tone: 'green' }
   ];
 
   recentRequests: { type: string; date: string; statut: string }[] = [];
@@ -57,15 +48,8 @@ export class HomeEmployee implements OnInit {
           this.employee.nom = emp.nomComplet ?? `${emp.prenom ?? ''} ${emp.nom ?? ''}`.trim();
           this.employee.poste = emp.fonction ?? '';
           this.employee.service = emp.service ?? '';
-
-          // Mettre à jour le solde de congés
-          const solde = emp.soldeConges ?? emp.soldeCongesJours ?? 0;
-          this.stats[0].value = `${solde} j`;
         },
-        error: () => {
-          // Fallback si API indisponible
-          this.stats[0].value = '-- j';
-        }
+        error: () => {}
       });
   }
 
@@ -78,16 +62,7 @@ export class HomeEmployee implements OnInit {
           const enAttente = demandes.filter(d =>
             d.statut?.startsWith('En attente')
           ).length;
-          this.stats[1].value = `${enAttente}`;
-
-          // Compter les autorisations ce mois
-          const moisCourant = new Date().getMonth();
-          const autorisationsMois = demandes.filter(d => {
-            const date = new Date(d.createdAt ?? d.dateCreation ?? '');
-            return date.getMonth() === moisCourant &&
-              (d.typeConge ?? '').toLowerCase().includes('autorisation');
-          }).length;
-          this.stats[2].value = `${autorisationsMois}`;
+          this.stats[0].value = `${enAttente}`;
 
           // 5 demandes récentes
           this.recentRequests = demandes.slice(0, 5).map(d => ({

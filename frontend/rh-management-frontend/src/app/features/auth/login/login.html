@@ -26,6 +26,7 @@
             class="input"
             placeholder="ex: EMP001"
             [(ngModel)]="matricule"
+            (keydown.enter)="onLogin()"
           />
         </div>
         <div class="field">
@@ -38,6 +39,7 @@
               class="input password-input"
               placeholder="Saisir votre mot de passe"
               [(ngModel)]="password"
+              (keydown.enter)="onLogin()"
             />
             <button type="button" class="toggle-password" (click)="showPassword = !showPassword">
               {{ showPassword ? 'Masquer' : 'Afficher' }}

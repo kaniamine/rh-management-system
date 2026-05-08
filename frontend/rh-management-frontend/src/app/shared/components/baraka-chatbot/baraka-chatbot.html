@@ -1,0 +1,88 @@
+<!-- Floating toggle button -->
+<button class="baraka-fab" (click)="toggle()" [class.open]="isOpen" aria-label="AlBaraka Assistant">
+  @if (!isOpen) {
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.37 5.07L2 22l4.93-1.37A9.94 9.94 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2z" fill="white"/>
+      <circle cx="8" cy="12" r="1.2" fill="#E85D04"/>
+      <circle cx="12" cy="12" r="1.2" fill="#E85D04"/>
+      <circle cx="16" cy="12" r="1.2" fill="#E85D04"/>
+    </svg>
+    <span class="baraka-fab-label">AlBaraka</span>
+  } @else {
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path d="M18 6L6 18M6 6l12 12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+  }
+</button>
+
+<!-- Chat window -->
+@if (isOpen) {
+  <div class="baraka-window">
+
+    <!-- Header -->
+    <div class="baraka-header">
+      <div class="baraka-header-avatar">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.37 5.07L2 22l4.93-1.37A9.94 9.94 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2z" fill="white"/>
+          <circle cx="8" cy="12" r="1.2" fill="#E85D04"/>
+          <circle cx="12" cy="12" r="1.2" fill="#E85D04"/>
+          <circle cx="16" cy="12" r="1.2" fill="#E85D04"/>
+        </svg>
+      </div>
+      <div class="baraka-header-info">
+        <span class="baraka-header-name">AlBaraka Assistant</span>
+        <span class="baraka-header-status">
+          <span class="baraka-status-dot"></span>En ligne
+        </span>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="baraka-messages">
+      @for (msg of messages; track $index) {
+        <div class="baraka-msg" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+          @if (msg.role === 'assistant') {
+            <div class="baraka-msg-avatar">B</div>
+          }
+          <div class="baraka-msg-bubble" [innerHTML]="formatMessage(msg.content)"></div>
+        </div>
+      }
+      @if (isTyping) {
+        <div class="baraka-msg assistant">
+          <div class="baraka-msg-avatar">B</div>
+          <div class="baraka-msg-bubble baraka-typing">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Quick replies (shown only before first user message) -->
+    @if (messages.length === 1) {
+      <div class="baraka-quick-replies">
+        @for (q of quickReplies; track q) {
+          <button class="baraka-quick-btn" (click)="sendQuickReply(q)">{{ q }}</button>
+        }
+      </div>
+    }
+
+    <!-- Input area -->
+    <div class="baraka-input-area">
+      <textarea
+        class="baraka-input"
+        rows="1"
+        placeholder="Posez votre question…"
+        [(ngModel)]="userInput"
+        (keydown)="onKeydown($event)"
+        (input)="cdr.detectChanges()"
+        [disabled]="isTyping"
+      ></textarea>
+      <button class="baraka-send" (click)="send()" [disabled]="!userInput.trim() || isTyping" aria-label="Envoyer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+}

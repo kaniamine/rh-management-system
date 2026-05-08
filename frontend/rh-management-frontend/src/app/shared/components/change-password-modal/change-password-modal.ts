@@ -65,8 +65,9 @@ export class ChangePasswordModal {
     }
 
     this.loading = true;
-    // '0000' is the default password set by RH — backend verifies it
-    this.auth.changePassword('0000', this.nouveauMotDePasse, this.confirmMotDePasse)
+    console.log('[MODAL] ancienMotDePasse field value:', this.ancienMotDePasse);
+    console.log('[MODAL] nouveauMotDePasse field value:', this.nouveauMotDePasse);
+    this.auth.changePassword(this.ancienMotDePasse, this.nouveauMotDePasse, this.confirmMotDePasse)
       .subscribe({
         next: () => {
           this.loading = false;

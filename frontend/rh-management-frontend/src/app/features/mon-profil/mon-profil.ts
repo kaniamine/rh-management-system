@@ -36,7 +36,7 @@ export class MonProfil implements OnInit {
   get initiales(): string {
     const nom = this.session?.nomComplet ?? '';
     const parts = nom.trim().split(/\s+/).filter(Boolean);
-    if (!parts.length) return '?';
+    if (!parts.length) return '';
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
   }
