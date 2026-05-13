@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using rh_management_backend.Data;
+using rh_management_backend.Models;
 
 namespace rh_management_backend.Controllers;
 
@@ -12,6 +13,76 @@ public class EmployeController : ControllerBase
 {
     private readonly RhDbContext _db;
     public EmployeController(RhDbContext db) => _db = db;
+
+    public record CreateEmployeDto(
+        string Matricule,
+        string Nom,
+        string Prenom,
+        string? Direction,
+        string? Service,
+        string? Fonction,
+        string? SuperieurHierarchiqueMatricule,
+        int SoldeConges = 30
+    );
+
+    // POST /api/employes — création employé + compte utilisateur (RH/admin)
+    [HttpPost]
+    [Authorize(Roles = "rh,admin")]
+    public async Task<IActionResult> Create([FromBody] CreateEmployeDto dto)
+    {
+        Console.WriteLine($"[EMPLOYE CREATE] Received: {dto.Matricule} {dto.Nom} {dto.Prenom}");
+
+        var matricule = dto.Matricule.Trim().ToUpper();
+
+        if (await _db.Employes.AnyAsync(e => e.Matricule == matricule))
+            return Conflict(new { message = "Ce matricule est déjà utilisé." });
+
+        var employe = new Employe
+        {
+            Matricule = matricule,
+            Nom = dto.Nom.Trim(),
+            Prenom = dto.Prenom.Trim(),
+            NomComplet = $"{dto.Nom.Trim()} {dto.Prenom.Trim()}",
+            Direction = dto.Direction?.Trim(),
+            Service = dto.Service?.Trim(),
+            Fonction = dto.Fonction?.Trim(),
+            SuperieurHierarchiqueMatricule = dto.SuperieurHierarchiqueMatricule?.Trim().ToUpper(),
+            SoldeConges = dto.SoldeConges,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _db.Employes.Add(employe);
+        await _db.SaveChangesAsync();
+        Console.WriteLine($"[EMPLOYE CREATE] ✅ Saved to DB with Id={employe.Id}");
+
+        var user = new User
+        {
+            Matricule = matricule,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("0000"),
+            Role = "employe",
+            IsActive = true,
+            MustChangePassword = true,
+            NombreConnexions = 0,
+            EmployeId = employe.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _db.Users.Add(user);
+        await _db.SaveChangesAsync();
+        Console.WriteLine($"[EMPLOYE CREATE] ✅ User account created for {user.Matricule}");
+
+        return CreatedAtAction(nameof(GetByMatricule), new { matricule = employe.Matricule }, new
+        {
+            employe.Id,
+            employe.Matricule,
+            employe.NomComplet,
+            employe.Direction,
+            employe.Service,
+            employe.Fonction,
+            employe.SoldeConges
+        });
+    }
 
     // GET /api/employes — réservé RH/admin
     [HttpGet]
