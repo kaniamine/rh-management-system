@@ -9,6 +9,9 @@ using rh_management_backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Give in-flight requests up to 10 s to finish before the host force-stops.
+builder.WebHost.UseShutdownTimeout(TimeSpan.FromSeconds(10));
+
 // ── JSON ──────────────────────────────────────────────────────────────────────
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -31,8 +34,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
+        var allowedOrigins = builder.Configuration
+            .GetSection("AllowedOrigins")
+            .Get<string[]>()
+            ?? ["http://localhost:4200", "https://localhost:4200", "http://localhost", "https://localhost"];
+
         policy
-            .WithOrigins("http://localhost:4200", "https://localhost:4200")
+            .WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -65,6 +73,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IDemandeCongeService, DemandeCongeService>();
+builder.Services.AddScoped<IRhStatisticsService, RhStatisticsService>();
 
 // ── BUILD ─────────────────────────────────────────────────────────────────────
 var app = builder.Build();
@@ -86,10 +95,19 @@ if (!app.Environment.IsDevelopment())
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<RhDbContext>();
-    if (db.Database.GetPendingMigrations().Any())
-        db.Database.Migrate();
+    db.Database.Migrate();
 }
 
 
 app.MapControllers();
+
+// Log clean start/stop so you can confirm the port is released on shutdown.
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+lifetime.ApplicationStarted.Register(() =>
+    app.Logger.LogInformation("Backend started on {Urls}", string.Join(", ", builder.WebHost.GetSetting("urls") ?? "http://localhost:5131")));
+lifetime.ApplicationStopping.Register(() =>
+    app.Logger.LogInformation("Backend shutting down — draining requests…"));
+lifetime.ApplicationStopped.Register(() =>
+    app.Logger.LogInformation("Backend stopped. Port released."));
+
 app.Run();

@@ -490,6 +490,9 @@ namespace rh_management_backend.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("PremiereConnexion")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -515,6 +518,7 @@ namespace rh_management_backend.Data.Migrations
                             MustChangePassword = false,
                             NombreConnexions = 0,
                             PasswordHash = "$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lp02",
+                            PremiereConnexion = true,
                             Role = "employe"
                         },
                         new
@@ -527,6 +531,7 @@ namespace rh_management_backend.Data.Migrations
                             MustChangePassword = false,
                             NombreConnexions = 0,
                             PasswordHash = "$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lp02",
+                            PremiereConnexion = true,
                             Role = "n1"
                         },
                         new
@@ -539,6 +544,7 @@ namespace rh_management_backend.Data.Migrations
                             MustChangePassword = false,
                             NombreConnexions = 0,
                             PasswordHash = "$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lp02",
+                            PremiereConnexion = true,
                             Role = "dg"
                         },
                         new
@@ -551,6 +557,7 @@ namespace rh_management_backend.Data.Migrations
                             MustChangePassword = false,
                             NombreConnexions = 0,
                             PasswordHash = "$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lp02",
+                            PremiereConnexion = true,
                             Role = "rh"
                         },
                         new
@@ -563,6 +570,7 @@ namespace rh_management_backend.Data.Migrations
                             MustChangePassword = true,
                             NombreConnexions = 0,
                             PasswordHash = "$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lp02",
+                            PremiereConnexion = true,
                             Role = "employe"
                         });
                 });

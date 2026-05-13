@@ -22,7 +22,9 @@
       "Bash(dotnet ef *)",
       "Bash(git fetch *)",
       "Bash(git stash *)",
-      "PowerShell(Stop-Process *)"
+      "PowerShell(Stop-Process *)",
+      "Bash(npx ng *)",
+      "Bash(dotnet test *)"
     ]
   }
 }

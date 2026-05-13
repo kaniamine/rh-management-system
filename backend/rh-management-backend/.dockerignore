@@ -1,0 +1,6 @@
+bin/
+obj/
+.vs/
+BenchmarkSuite1/
+*.user
+.gitignore
