@@ -174,10 +174,15 @@ RÈGLES :
       ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     });
 
+    // OpenAI-compatible format (Groq)
     const body = {
-      system: this.buildSystemPrompt(),
-      messages: conversationHistory,
-      max_tokens: 1000
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: this.buildSystemPrompt() },
+        ...conversationHistory
+      ],
+      max_tokens: 1000,
+      stream: false
     };
 
     try {
@@ -185,7 +190,10 @@ RÈGLES :
         this.http.post('http://localhost:5130/api/chatbot/message', body, { headers })
       );
 
-      const reply = data?.content?.[0]?.text ?? "Je suis désolé, je n'ai pas pu traiter votre demande.";
+      const reply = data?.choices?.[0]?.message?.content
+        ?? data?.content?.[0]?.text
+        ?? data?.error
+        ?? "Je suis désolé, je n'ai pas pu traiter votre demande. Veuillez réessayer.";
 
       this.messages = [...this.messages, { role: 'assistant', content: reply, time: this.getTime() }];
 
