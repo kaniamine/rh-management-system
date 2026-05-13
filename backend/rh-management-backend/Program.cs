@@ -70,6 +70,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 // ── INJECTION DE DÉPENDANCES (Services) ──────────────────────────────────────
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<ISmsService, SmsService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IDemandeCongeService, DemandeCongeService>();
