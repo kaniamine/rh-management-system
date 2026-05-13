@@ -38,6 +38,12 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'consulter-demandes',
+    loadChildren: () =>
+      import('./features/consulter-demandes/consulter-demandes-module').then(m => m.ConsulterDemandesModule),
+    canActivate: [authGuard]
+  },
+  {
     path: 'personnel',
     loadChildren: () =>
       import('./features/personnel/personnel-module').then(m => m.PersonnelModule),
@@ -71,6 +77,12 @@ export const routes: Routes = [
     path: 'profil',
     loadComponent: () =>
       import('./features/profil/profil').then(m => m.Profil),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'mon-profil',
+    loadComponent: () =>
+      import('./features/mon-profil/mon-profil').then(m => m.MonProfil),
     canActivate: [authGuard]
   },
   {

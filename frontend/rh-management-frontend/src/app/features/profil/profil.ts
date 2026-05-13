@@ -27,6 +27,15 @@ export class Profil {
 
   get session() { return this.auth.session; }
 
+  get initiales(): string {
+    const stored = this.session?.initiales ?? '';
+    if (stored) return stored;
+    const parts = (this.session?.nomComplet ?? '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
   get roleLabel(): string {
     const map: Record<string, string> = {
       employe: 'Employé',

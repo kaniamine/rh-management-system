@@ -2,3 +2,11 @@
 <main [class.with-navbar]="showNavbar">
   <router-outlet></router-outlet>
 </main>
+
+@if (showFirstLoginModal) {
+  <app-change-password-modal (passwordChanged)="onFirstLoginPasswordChanged()"></app-change-password-modal>
+}
+
+@if (auth.isLoggedIn) {
+  <app-baraka-chatbot></app-baraka-chatbot>
+}

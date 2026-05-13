@@ -1,0 +1,459 @@
+<div class="cd-page">
+
+  <!-- HEADER -->
+  <div class="cd-header">
+    <div class="cd-header-left">
+      <img src="assets/logo.png" class="cd-logo" alt="Al Baraka Assurances" />
+      <div class="cd-divider"></div>
+      <div>
+        <h1 class="cd-title">Consulter les demandes</h1>
+        <p class="cd-subtitle">Validation, clôture et historique des demandes RH</p>
+      </div>
+    </div>
+    <div class="cd-actions">
+      <a routerLink="/home-rh" class="cd-btn-ghost">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Accueil RH
+      </a>
+      <button class="cd-btn-refresh" (click)="load()" [disabled]="loading">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <polyline points="23 4 23 10 17 10"/>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        Actualiser
+      </button>
+      <button class="cd-btn-export" (click)="exportCSV()"
+              [disabled]="loading || !allDemandes.length">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Exporter CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  @if (loading) {
+    <div class="cd-loading">
+      <div class="cd-spinner"></div>
+      <p>Chargement des demandes…</p>
+    </div>
+  }
+
+  <!-- ERROR -->
+  @if (error && !loading) {
+    <div class="cd-error">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error }}
+      <button class="cd-btn-ghost" style="margin-left:12px" (click)="load()">Réessayer</button>
+    </div>
+  }
+
+  @if (!loading && !error) {
+
+    <!-- KPI STRIP -->
+    <div class="kpi-row">
+      <div class="kpi-card" style="--accent:#ff5800">
+        <div class="kpi-icon-wrap" style="background:rgba(255,88,0,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="#ff5800" stroke-width="2" stroke-linecap="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-lbl">Total</span>
+          <strong class="kpi-val">{{ counts.toutes }}</strong>
+        </div>
+      </div>
+      <div class="kpi-card" style="--accent:#0D776E">
+        <div class="kpi-icon-wrap" style="background:rgba(13,119,110,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="#0D776E" stroke-width="2" stroke-linecap="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-lbl">Congés</span>
+          <strong class="kpi-val">{{ counts.conge }}</strong>
+        </div>
+      </div>
+      <div class="kpi-card" style="--accent:#3b82f6">
+        <div class="kpi-icon-wrap" style="background:rgba(59,130,246,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="#3b82f6" stroke-width="2" stroke-linecap="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-lbl">Maladies</span>
+          <strong class="kpi-val">{{ counts.maladie }}</strong>
+        </div>
+      </div>
+      <div class="kpi-card" style="--accent:#8b5cf6">
+        <div class="kpi-icon-wrap" style="background:rgba(139,92,246,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="#8b5cf6" stroke-width="2" stroke-linecap="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-lbl">Autorisations</span>
+          <strong class="kpi-val">{{ counts.autorisation }}</strong>
+        </div>
+      </div>
+      <div class="kpi-card" style="--accent:#f59e0b">
+        <div class="kpi-icon-wrap" style="background:rgba(245,158,11,0.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="#f59e0b" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-lbl">En attente</span>
+          <strong class="kpi-val">{{ counts.enAttente }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="cd-tabs">
+      <button class="cd-tab" [class.cd-tab--active]="activeTab === 'toutes'"
+              (click)="activeTab = 'toutes'">
+        Toutes
+        <span class="cd-tab-badge">{{ counts.toutes }}</span>
+      </button>
+      <button class="cd-tab" [class.cd-tab--active]="activeTab === 'conge'"
+              (click)="activeTab = 'conge'">
+        Congés
+        <span class="cd-tab-badge" style="background:rgba(255,88,0,0.12);color:#ff5800">
+          {{ counts.conge }}
+        </span>
+      </button>
+      <button class="cd-tab" [class.cd-tab--active]="activeTab === 'maladie'"
+              (click)="activeTab = 'maladie'">
+        Maladies
+        <span class="cd-tab-badge" style="background:rgba(59,130,246,0.12);color:#3b82f6">
+          {{ counts.maladie }}
+        </span>
+      </button>
+      <button class="cd-tab" [class.cd-tab--active]="activeTab === 'autorisation'"
+              (click)="activeTab = 'autorisation'">
+        Autorisations
+        <span class="cd-tab-badge" style="background:rgba(139,92,246,0.12);color:#8b5cf6">
+          {{ counts.autorisation }}
+        </span>
+      </button>
+    </div>
+
+    <!-- FILTER ROW -->
+    <div class="cd-filter-row">
+      <div class="cd-filter-input-wrap">
+        <svg class="cd-filter-icon" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input class="cd-input" type="text"
+               placeholder="Rechercher employé ou matricule…"
+               [(ngModel)]="filterSearch" />
+      </div>
+      <select class="cd-select" [(ngModel)]="filterStatut">
+        <option value="">Tous les statuts</option>
+        @for (s of allStatuts; track s) {
+          <option [value]="s">{{ s }}</option>
+        }
+      </select>
+      <div class="cd-filter-input-wrap">
+        <svg class="cd-filter-icon" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <input class="cd-input cd-input--date" type="date"
+               [(ngModel)]="filterDate"
+               title="Filtrer par date de début (à partir de)" />
+      </div>
+      @if (filterSearch || filterStatut || filterDate) {
+        <button class="cd-btn-clear" (click)="clearFilters()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          Effacer
+        </button>
+      }
+    </div>
+
+    <!-- EMPTY STATE -->
+    @if (!filtered.length) {
+      <div class="cd-empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+             stroke="#ccc" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        <p>Aucune demande trouvée pour ces critères.</p>
+      </div>
+    }
+
+    <!-- TABLE -->
+    @if (filtered.length) {
+      <div class="cd-table-wrap">
+        <table class="cd-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Employé</th>
+              <th>Début</th>
+              <th>Fin</th>
+              <th>Statut</th>
+              <th>Motif</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of filtered; track d.id + '-' + d._type) {
+              <tr>
+                <td>
+                  <span class="type-badge"
+                        [style.background]="typeColor(d._type) + '18'"
+                        [style.color]="typeColor(d._type)">
+                    {{ d.typeLabel }}
+                  </span>
+                </td>
+                <td>
+                  <div class="employe-cell">
+                    <div class="employe-avatar"
+                         [style.background]="typeColor(d._type) + '22'"
+                         [style.color]="typeColor(d._type)">
+                      {{ d.employe.charAt(0).toUpperCase() }}
+                    </div>
+                    <div>
+                      <strong>{{ d.employe || '—' }}</strong>
+                      <small class="mat-sub">{{ d.matricule }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ formatDate(d.dateDebut) }}</td>
+                <td>{{ formatDate(d.dateFin) }}</td>
+                <td>
+                  <span class="statut-badge"
+                        [style.color]="statutColor(d.statut)"
+                        [style.background]="statutColor(d.statut) + '18'">
+                    {{ d.statut || '—' }}
+                  </span>
+                </td>
+                <td class="motif-cell">{{ d.motif || '—' }}</td>
+                <td>
+                  <div class="action-btns">
+                    @if (canCloturer(d)) {
+                      <button class="btn-action btn-cloture"
+                              (click)="openCloturer(d)">Clôturer</button>
+                    }
+                    @if (canApprouver(d)) {
+                      <button class="btn-action btn-approve"
+                              (click)="openApprouver(d)">Approuver</button>
+                    }
+                    @if (canRejeter(d)) {
+                      <button class="btn-action btn-reject"
+                              (click)="openReject(d)">Rejeter</button>
+                    }
+                    @if (!canCloturer(d) && !canApprouver(d) && !canRejeter(d)) {
+                      <span class="no-action">—</span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="cd-count-hint">
+        {{ filtered.length }} demande{{ filtered.length > 1 ? 's' : '' }} affichée{{ filtered.length > 1 ? 's' : '' }}
+      </p>
+    }
+
+  }
+</div>
+
+<!-- ═══════════════════════════ CLÔTURER MODAL ═══════════════════════════ -->
+@if (cloturerTarget) {
+  <div class="modal-backdrop" (click)="closeCloturer()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <div class="modal-head-icon" style="background:rgba(100,116,139,0.1)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="#64748b" stroke-width="2" stroke-linecap="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <span>Clôturer la demande</span>
+        <button class="modal-close" (click)="closeCloturer()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-info-row">
+          <span>Employé</span>
+          <strong>{{ cloturerTarget.employe }}</strong>
+        </div>
+        <div class="modal-info-row">
+          <span>Période</span>
+          <strong>{{ formatDate(cloturerTarget.dateDebut) }} → {{ formatDate(cloturerTarget.dateFin) }}</strong>
+        </div>
+        <div class="modal-info-row">
+          <span>Statut actuel</span>
+          <strong [style.color]="statutColor(cloturerTarget.statut)">{{ cloturerTarget.statut }}</strong>
+        </div>
+        <label class="modal-label">Commentaire <span style="color:#bbb">(optionnel)</span></label>
+        <textarea class="modal-textarea" rows="3"
+                  placeholder="Observation de clôture…"
+                  [(ngModel)]="cloturerComment"></textarea>
+        @if (cloturerError) {
+          <div class="modal-error">{{ cloturerError }}</div>
+        }
+      </div>
+      <div class="modal-foot">
+        <button class="btn-modal-cancel" (click)="closeCloturer()">Annuler</button>
+        <button class="btn-modal-cloture" (click)="confirmCloturer()"
+                [disabled]="cloturerLoading">
+          {{ cloturerLoading ? 'Clôture en cours…' : 'Confirmer la clôture' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════ APPROUVER MODAL ══════════════════════════ -->
+@if (approuverTarget) {
+  <div class="modal-backdrop" (click)="closeApprouver()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <div class="modal-head-icon" style="background:rgba(34,197,94,0.1)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="#22c55e" stroke-width="2" stroke-linecap="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <span>Approuver la demande</span>
+        <button class="modal-close" (click)="closeApprouver()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-info-row">
+          <span>Employé</span>
+          <strong>{{ approuverTarget.employe }}</strong>
+        </div>
+        <div class="modal-info-row">
+          <span>Type</span>
+          <strong>{{ approuverTarget.typeLabel }}</strong>
+        </div>
+        <div class="modal-info-row">
+          <span>Date</span>
+          <strong>{{ formatDate(approuverTarget.dateDebut) }}</strong>
+        </div>
+        <label class="modal-label">Commentaire <span style="color:#bbb">(optionnel)</span></label>
+        <textarea class="modal-textarea" rows="3"
+                  placeholder="Observation…"
+                  [(ngModel)]="approuverComment"></textarea>
+        @if (approuverError) {
+          <div class="modal-error">{{ approuverError }}</div>
+        }
+      </div>
+      <div class="modal-foot">
+        <button class="btn-modal-cancel" (click)="closeApprouver()">Annuler</button>
+        <button class="btn-modal-approve" (click)="confirmApprouver()"
+                [disabled]="approuverLoading">
+          {{ approuverLoading ? 'Approbation…' : 'Confirmer l\'approbation' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════ REJETER MODAL ════════════════════════════ -->
+@if (rejectTarget) {
+  <div class="modal-backdrop" (click)="closeReject()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <div class="modal-head-icon" style="background:rgba(198,12,48,0.1)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="#c60c30" stroke-width="2" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </div>
+        <span>Rejeter la demande</span>
+        <button class="modal-close" (click)="closeReject()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-info-row">
+          <span>Employé</span>
+          <strong>{{ rejectTarget.employe }}</strong>
+        </div>
+        <div class="modal-info-row">
+          <span>Type</span>
+          <strong>{{ rejectTarget.typeLabel }}</strong>
+        </div>
+        <div class="modal-info-row">
+          <span>Statut</span>
+          <strong [style.color]="statutColor(rejectTarget.statut)">{{ rejectTarget.statut }}</strong>
+        </div>
+        <label class="modal-label">
+          Motif de rejet <span style="color:#c60c30">*</span>
+        </label>
+        <textarea class="modal-textarea modal-textarea--required" rows="3"
+                  placeholder="Motif obligatoire…"
+                  [(ngModel)]="rejectComment"></textarea>
+        @if (rejectError) {
+          <div class="modal-error">{{ rejectError }}</div>
+        }
+      </div>
+      <div class="modal-foot">
+        <button class="btn-modal-cancel" (click)="closeReject()">Annuler</button>
+        <button class="btn-modal-reject" (click)="confirmReject()"
+                [disabled]="rejectLoading">
+          {{ rejectLoading ? 'Rejet en cours…' : 'Confirmer le rejet' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

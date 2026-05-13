@@ -41,13 +41,13 @@
       </div>
     </a>
 
-    <a routerLink="/conge" class="qa-card qa-teal">
+    <a routerLink="/consulter-demandes" class="qa-card qa-teal">
       <div class="qa-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       </div>
       <div class="qa-text">
         <strong>Consulter les demandes</strong>
-        <span>Demandes de congé et autorisations</span>
+        <span>Validation, clôture et historique des demandes RH</span>
       </div>
       <div class="qa-arrow">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -118,6 +118,19 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </a>
+
+    <a routerLink="/home-rh/reset-password" class="qa-card qa-neutral">
+      <div class="qa-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a5 5 0 0 0-5 5v3H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V11a2 2 0 0 0-2-2h-2V6a5 5 0 0 0-5-5zm0 2a3 3 0 0 1 3 3v3H9V6a3 3 0 0 1 3-3zm0 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>
+      </div>
+      <div class="qa-text">
+        <strong>Réinitialisation MDP</strong>
+        <span>Traiter les demandes de mot de passe oublié</span>
+      </div>
+      <div class="qa-arrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </a>
   </div>
 
   <!-- BOTTOM GRID: Recent + Alerts -->
@@ -141,7 +154,7 @@
       <div class="recent-list">
         @for (item of recentItems; track item.employe) {
           <div class="recent-row">
-            <div class="recent-avatar">{{ item.employe.charAt(0) }}</div>
+            <div class="recent-avatar">{{ getInitiales(item.employe) }}</div>
             <div class="recent-info">
               <strong>{{ item.employe }}</strong>
               <span>{{ item.type }} · {{ item.date }}</span>

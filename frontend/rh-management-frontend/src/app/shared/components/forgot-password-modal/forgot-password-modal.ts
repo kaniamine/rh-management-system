@@ -17,6 +17,7 @@ export class ForgotPasswordModal {
   private readonly API  = '/api/auth';
 
   matricule      = '';
+  telephone      = '';
   loading        = false;
   errorMessage   = '';
   successMessage = '';
@@ -29,16 +30,28 @@ export class ForgotPasswordModal {
       this.errorMessage = 'Veuillez saisir votre matricule.';
       return;
     }
+    if (!this.telephone.trim()) {
+      this.errorMessage = 'Veuillez saisir votre numéro de téléphone.';
+      return;
+    }
 
     this.loading = true;
-    this.http.post(`${this.API}/forgot-password`, { matricule: this.matricule.trim() }).subscribe({
-      next: () => {
+    this.http.post(`${this.API}/forgot-password`, {
+      matricule: this.matricule.trim(),
+      telephone: this.telephone.trim()
+    }).subscribe({
+      next: (res: any) => {
         this.loading        = false;
-        this.successMessage = 'Demande transmise à la RH.';
+        this.successMessage = res?.message ?? 'Votre demande a été transmise à la Direction RH.';
+        this.errorMessage   = '';
       },
       error: (err: any) => {
         this.loading      = false;
-        this.errorMessage = err?.error?.message ?? 'Une erreur est survenue. Veuillez réessayer.';
+        this.errorMessage = err?.error?.error
+          ?? err?.error?.message
+          ?? err?.message
+          ?? 'Une erreur est survenue. Veuillez réessayer.';
+        this.successMessage = '';
       }
     });
   }

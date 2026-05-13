@@ -78,8 +78,9 @@ export class AuthService {
     return this.http.post(
       '/api/auth/change-password',
       {
-        currentPassword: ancienMotDePasse,
-        newPassword:     nouveauMotDePasse
+        ancienMotDePasse:            ancienMotDePasse,
+        nouveau_mot_de_passe:        nouveauMotDePasse,
+        confirmation_mot_de_passe:   confirmationMotDePasse
       }
     );
   }

@@ -2,9 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { NotificationService } from '../../../core/notification.service';
 
-const API = '';
+const API = '/api/auth';
 
 interface ResetRequest {
   notifId:   number;
@@ -25,11 +24,14 @@ interface ResetRequest {
   styleUrl: './reset-password-requests.css'
 })
 export class ResetPasswordRequests implements OnInit {
-  private readonly http   = inject(HttpClient);
-  private readonly notifs = inject(NotificationService);
+  private readonly http = inject(HttpClient);
 
-  requests: ResetRequest[] = [];
-  loading = true;
+  demandes: any[] = [];
+  loading         = true;
+
+  smsLoading = false;
+  smsSuccess = '';
+  smsError   = '';
 
   manualMatricule              = '';
   manualChecking               = false;
@@ -38,10 +40,7 @@ export class ResetPasswordRequests implements OnInit {
   manualDone                   = false;
   manualError                  = '';
 
-  // ── Shims for the unchanged manual-section HTML ──────────────
-  get loadingRequests(): boolean {
-    return this.loading;
-  }
+  get loadingRequests(): boolean { return this.loading; }
 
   get manualLedState(): 'idle' | 'checking' | 'found' | 'not-found' {
     if (this.manualChecking)         return 'checking';
@@ -50,116 +49,66 @@ export class ResetPasswordRequests implements OnInit {
     return 'idle';
   }
 
-  ngOnInit(): void {
-    this.loadRequests();
-  }
+  ngOnInit(): void { this.loadDemandes(); }
 
-  loadRequests(): void {
+  loadDemandes(): void {
     this.loading  = true;
-    this.requests = [];
-
-    this.http
-      .get<any[]>(`${API}/api/notifications/reset-password-requests`)
-      .subscribe({
-        next: (notifs) => {
-          this.requests = notifs.map(n => ({
-            notifId:   n.id        ?? n.Id        ?? 0,
-            matricule: (n.matricule ?? n.Matricule ?? '???').toString().toUpperCase(),
-            timestamp: n.timestamp  ?? n.Timestamp  ?? '',
-            isRead:    n.isRead     ?? n.IsRead     ?? false,
-            checking:  false,
-            exists:    null,
-            resetting: false,
-            done:      n.isRead ?? n.IsRead ?? false
-          }));
-
-          // Check each matricule against the database immediately
-          this.requests.forEach(r => this.checkMatricule(r));
-          this.loading = false;
-        },
-        error: () => { this.loading = false; }
-      });
+    this.demandes = [];
+    this.smsSuccess = '';
+    this.smsError   = '';
+    this.http.get<any[]>(`${API}/demandes-reinitialisation`).subscribe({
+      next:  (data) => { this.demandes = data; this.loading = false; },
+      error: ()     => { this.loading = false; }
+    });
   }
 
-  refresh(): void {
-    this.requests = [];
-    this.loadRequests();
-  }
+  refresh(): void { this.loadDemandes(); }
 
-  checkMatricule(req: ResetRequest): void {
-    if (!req.matricule || req.matricule === '???') {
-      req.exists   = false;
-      req.checking = false;
-      return;
-    }
+  reinitialiserMotDePasse(demandeId: number): void {
+    this.smsError   = '';
+    this.smsSuccess = '';
+    this.smsLoading = true;
 
-    req.checking = true;
-    req.exists   = null;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const mdp   = Array.from({ length: 8 }, () =>
+      chars[Math.floor(Math.random() * chars.length)]
+    ).join('');
 
     this.http
-      .get<any>(`${API}/api/auth/check-matricule?matricule=${encodeURIComponent(req.matricule)}`)
-      .subscribe({
-        next: (res) => {
-          // Handle both camelCase and PascalCase response
-          req.exists   = res.exists ?? res.Exists ?? false;
-          req.checking = false;
-        },
-        error: () => {
-          req.exists   = false;
-          req.checking = false;
-        }
-      });
-  }
-
-  resetPassword(req: ResetRequest): void {
-    if (req.resetting || req.done) return;
-    req.resetting = true;
-
-    this.http
-      .post<any>(`${API}/api/auth/reset-password`, { matricule: req.matricule })
+      .post<any>(`${API}/reinitialiser-mot-de-passe`, { demandeId, nouveauMotDePasse: mdp })
       .subscribe({
         next: () => {
-          req.resetting = false;
-          req.done      = true;
-          this.notifs.load();
+          this.smsSuccess = 'SMS envoyé — mot de passe réinitialisé avec succès.';
+          this.demandes   = this.demandes.filter((d: any) => d.id !== demandeId);
+          this.smsLoading = false;
         },
-        error: () => {
-          req.resetting = false;
+        error: (err: any) => {
+          this.smsError   =
+            err?.error?.message ??
+            err?.error?.Message ??
+            err?.message ??
+            'Erreur lors de la réinitialisation.';
+          this.smsLoading = false;
         }
       });
   }
 
-  // Alias kept for the unchanged manual-section HTML
-  checkManual(): void {
-    this.onManualCheck();
-  }
+  checkManual(): void { this.onManualCheck(); }
+  resetManual(): void { this.onManualReset(); }
 
   onManualCheck(): void {
     const mat = this.manualMatricule.trim().toUpperCase();
     if (!mat) return;
-
     this.manualChecking = true;
     this.manualExists   = null;
     this.manualDone     = false;
     this.manualError    = '';
-
     this.http
-      .get<any>(`${API}/api/auth/check-matricule?matricule=${encodeURIComponent(mat)}`)
+      .get<any>(`${API}/check-matricule?matricule=${encodeURIComponent(mat)}`)
       .subscribe({
-        next: (res) => {
-          this.manualExists   = res.exists ?? res.Exists ?? false;
-          this.manualChecking = false;
-        },
-        error: () => {
-          this.manualExists   = false;
-          this.manualChecking = false;
-        }
+        next:  (res) => { this.manualExists = res.exists ?? res.Exists ?? false; this.manualChecking = false; },
+        error: ()    => { this.manualExists = false; this.manualChecking = false; }
       });
-  }
-
-  // Alias kept for the unchanged manual-section HTML
-  resetManual(): void {
-    this.onManualReset();
   }
 
   onManualReset(): void {
@@ -167,18 +116,20 @@ export class ResetPasswordRequests implements OnInit {
     const mat = this.manualMatricule.trim().toUpperCase();
     this.manualResetting = true;
     this.manualError     = '';
-
     this.http
-      .post<any>(`${API}/api/auth/reset-password`, { matricule: mat })
+      .post<any>(`${API}/reset-password`, { matricule: mat })
       .subscribe({
         next: () => {
           this.manualResetting = false;
           this.manualDone      = true;
-          this.notifs.load();
         },
-        error: () => {
+        error: (err: any) => {
           this.manualResetting = false;
-          this.manualError = 'Erreur lors de la réinitialisation.';
+          this.manualError =
+            err?.error?.message ??
+            err?.error?.Message ??
+            err?.message ??
+            'Erreur lors de la réinitialisation.';
         }
       });
   }

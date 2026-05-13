@@ -102,6 +102,15 @@ export class Profil implements OnInit {
     });
   }
 
+  get initiales(): string {
+    const stored = this.user?.initiales ?? '';
+    if (stored) return stored;
+    const parts = (this.user?.nomComplet ?? '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
   get roleLabel(): string {
     const map: Record<string, string> = {
       employe: 'Employé',

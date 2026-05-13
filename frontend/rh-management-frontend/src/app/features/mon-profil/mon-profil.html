@@ -1,0 +1,115 @@
+<div class="mp-page">
+
+  <!-- Header card -->
+  <div class="mp-header-card">
+    <div class="mp-avatar">
+      @if (initiales) {
+        {{ initiales }}
+      } @else {
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+          <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+        </svg>
+      }
+    </div>
+    <div class="mp-header-info">
+      <h1 class="mp-name">{{ session?.nomComplet }}</h1>
+      <div class="mp-badges">
+        <span class="mp-badge mp-badge-role">{{ roleLabel }}</span>
+        <span class="mp-badge mp-badge-mat">{{ session?.matricule }}</span>
+      </div>
+      <div class="mp-meta-row">
+        @if (session?.direction) {
+          <span class="mp-meta-chip">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M3 2.25a.75.75 0 0 1 .75.75v.54l1.838-.46a9.75 9.75 0 0 1 6.725.738l.108.054A8.25 8.25 0 0 0 18 4.524l3.11-.732a.75.75 0 0 1 .917.81 47.784 47.784 0 0 0 .005 10.337.75.75 0 0 1-.574.812l-3.114.733a9.75 9.75 0 0 1-6.594-.77l-.108-.054a8.25 8.25 0 0 0-5.69-.625l-2.202.55V21a.75.75 0 0 1-1.5 0V3A.75.75 0 0 1 3 2.25Z" clip-rule="evenodd"/></svg>
+            {{ session?.direction }}
+          </span>
+        }
+        @if (session?.service) {
+          <span class="mp-meta-chip">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 2.25a.75.75 0 0 0 0 1.5v16.5h-.75a.75.75 0 0 0 0 1.5h16.5a.75.75 0 0 0 0-1.5h-.75V3.75a.75.75 0 0 0 0-1.5h-15ZM9 6a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5H9Zm-.75 3.75A.75.75 0 0 1 9 9h1.5a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM9 12a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5H9Zm3.75-5.25A.75.75 0 0 1 13.5 6H15a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM13.5 9a.75.75 0 0 0 0 1.5H15A.75.75 0 0 0 15 9h-1.5Zm-.75 3.75a.75.75 0 0 1 .75-.75H15a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM9 19.5v-2.25a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-.75.75h-4.5A.75.75 0 0 1 9 19.5Z" clip-rule="evenodd"/></svg>
+            {{ session?.service }}
+          </span>
+        }
+        @if (session?.fonction) {
+          <span class="mp-meta-chip">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M7.5 5.25a3 3 0 0 1 3-3h3a3 3 0 0 1 3 3v.205c.933.085 1.857.197 2.774.334 1.454.218 2.476 1.483 2.476 2.917v3.033c0 1.211-.734 2.352-1.936 2.752A24.726 24.726 0 0 1 12 15.75c-2.73 0-5.357-.442-7.814-1.259-1.202-.4-1.936-1.541-1.936-2.752V8.706c0-1.434 1.022-2.7 2.476-2.917A48.814 48.814 0 0 1 7.5 5.455V5.25Zm7.5 0v.09a49.488 49.488 0 0 0-6 0v-.09a1.5 1.5 0 0 1 1.5-1.5h3a1.5 1.5 0 0 1 1.5 1.5Zm-3 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/><path d="M3 18.4v-2.796a4.3 4.3 0 0 0 .713.31A26.226 26.226 0 0 0 12 17.25c2.892 0 5.68-.468 8.287-1.335.252-.084.49-.189.713-.311V18.4c0 1.452-1.047 2.728-2.523 2.923-2.12.282-4.282.427-6.477.427a49.19 49.19 0 0 1-6.477-.427C4.047 21.128 3 19.852 3 18.4Z"/></svg>
+            {{ session?.fonction }}
+          </span>
+        }
+      </div>
+    </div>
+    <a routerLink="/profil" class="mp-change-pwd-btn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z" clip-rule="evenodd"/></svg>
+      Changer mon mot de passe
+    </a>
+  </div>
+
+  <!-- Stats title -->
+  <h2 class="mp-section-title">Statistiques</h2>
+
+  <!-- 4 stat cards -->
+  <div class="mp-stats-grid">
+
+    <!-- Solde de congés -->
+    <div class="mp-stat-card">
+      <div class="mp-stat-icon mp-icon-orange">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 3v1.5h9V3a.75.75 0 0 1 1.5 0v1.5h.75a3 3 0 0 1 3 3v11.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3H6V3a.75.75 0 0 1 .75-.75Zm13.5 9a1.5 1.5 0 0 0-1.5-1.5H5.25a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-7.5Z" clip-rule="evenodd"/></svg>
+      </div>
+      <div class="mp-stat-body">
+        <span class="mp-stat-label">Solde de congés</span>
+        <span class="mp-stat-value" [style.color]="soldeBarColor">{{ session?.soldeConges ?? 0 }} <small>jours</small></span>
+        <div class="mp-bar-track">
+          <div class="mp-bar-fill" [style.width]="soldeBarWidth" [style.background]="soldeBarColor"></div>
+        </div>
+        <span class="mp-bar-hint">sur 30 jours annuels</span>
+      </div>
+    </div>
+
+    <!-- Total demandes -->
+    <div class="mp-stat-card">
+      <div class="mp-stat-icon mp-icon-blue">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M10.5 3A1.501 1.501 0 0 0 9 4.5h6A1.5 1.5 0 0 0 13.5 3h-3Zm-2.693.178A3 3 0 0 1 10.5 1.5h3a3 3 0 0 1 2.694 1.678c.497.042.992.092 1.486.15 1.497.173 2.57 1.46 2.57 2.929V19.5a3 3 0 0 1-3 3H6.75a3 3 0 0 1-3-3V6.257c0-1.47 1.073-2.756 2.57-2.929.494-.057.99-.108 1.487-.15ZM9 12.75a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5H9Zm0 3a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5H9Zm0-6a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5H9Z" clip-rule="evenodd"/></svg>
+      </div>
+      <div class="mp-stat-body">
+        <span class="mp-stat-label">Demandes soumises</span>
+        <span class="mp-stat-value">{{ totalDemandes }}</span>
+        <span class="mp-bar-hint">toutes catégories confondues</span>
+      </div>
+    </div>
+
+    <!-- Validées vs Rejetées -->
+    <div class="mp-stat-card">
+      <div class="mp-stat-icon mp-icon-teal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clip-rule="evenodd"/></svg>
+      </div>
+      <div class="mp-stat-body">
+        <span class="mp-stat-label">Résultats des demandes</span>
+        <div class="mp-two-stats">
+          <div class="mp-two-item mp-two-ok">
+            <span class="mp-two-num">{{ demandesValidees }}</span>
+            <span class="mp-two-lbl">validées</span>
+          </div>
+          <div class="mp-two-sep"></div>
+          <div class="mp-two-item mp-two-ko">
+            <span class="mp-two-num">{{ demandesRejetees }}</span>
+            <span class="mp-two-lbl">rejetées</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- En attente -->
+    <div class="mp-stat-card">
+      <div class="mp-stat-icon mp-icon-amber">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 0 0 0-1.5h-3.75V6Z" clip-rule="evenodd"/></svg>
+      </div>
+      <div class="mp-stat-body">
+        <span class="mp-stat-label">Demandes en attente</span>
+        <span class="mp-stat-value mp-amber">{{ totalDemandes - demandesValidees - demandesRejetees }}</span>
+        <span class="mp-bar-hint">en cours de traitement</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>

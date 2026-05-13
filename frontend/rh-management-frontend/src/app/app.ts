@@ -3,22 +3,31 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Navbar } from './shared/navbar/navbar';
+import { AuthService } from './core/auth.service';
+import { ChangePasswordModal } from './shared/components/change-password-modal/change-password-modal';
+import { BarakaChatbot } from './shared/components/baraka-chatbot/baraka-chatbot';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, Navbar],
+  imports: [CommonModule, RouterOutlet, Navbar, ChangePasswordModal, BarakaChatbot],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App implements OnInit {
   protected readonly title = signal('rh-management-frontend');
-  private readonly router = inject(Router);
+  private readonly router  = inject(Router);
+  protected readonly auth  = inject(AuthService);
 
   showNavbar = true;
 
-  // Routes où la navbar ne s'affiche pas
   private readonly noNavbarRoutes = ['/login', '/'];
+
+  get showFirstLoginModal(): boolean {
+    return this.auth.isLoggedIn && this.auth.session?.premiereConnexion === true;
+  }
+
+  onFirstLoginPasswordChanged(): void {}
 
   ngOnInit(): void {
     this.router.events

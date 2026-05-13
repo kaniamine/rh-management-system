@@ -6,6 +6,11 @@ const routes: Routes = [
   {
     path: '',
     component: HomeRh
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./pages/password-reset-rh/password-reset-rh').then(m => m.PasswordResetRh)
   }
 ];
 

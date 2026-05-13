@@ -17,6 +17,13 @@ export class DemandeConge {
   private readonly congeService = inject(Conge);
   private readonly auth = inject(AuthService);
 
+  getInitiales(nom: string): string {
+    const parts = (nom ?? '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
   showConfirmModal = false;
   currentAction: 'submit' | 'draft' | null = null;
   submitting = false;
