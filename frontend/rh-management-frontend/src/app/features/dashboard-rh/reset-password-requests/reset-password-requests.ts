@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '../../../core/notification.service';
 
-const API = 'http://localhost:5130';
+const API = '';
 
 interface ResetRequest {
   notifId:   number;

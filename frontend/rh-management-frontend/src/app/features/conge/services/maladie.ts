@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-const API_BASE_URL = 'http://localhost:5130';
+const API_BASE_URL = '';
 
 export interface DemandeMaladieResponse {
   id: number;

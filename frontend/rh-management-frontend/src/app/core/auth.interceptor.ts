@@ -7,7 +7,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = auth.token;
 
   // Only attach token for API requests
-  if (token && req.url.includes('localhost:5130')) {
+  if (token && req.url.includes('/api/')) {
     const authReq = req.clone({
       setHeaders: { Authorization: `Bearer ${token}` }
     });

@@ -34,7 +34,7 @@ interface DemandeConge {
 export class DgValidations implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  private readonly API  = 'http://localhost:5130';
+  private readonly API  = '';
 
   loading       = false;
   filterStatut  = '';

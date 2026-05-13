@@ -239,7 +239,7 @@ export class DemandeConge {
           this.errorMessage =
             typeof msg === 'string'
               ? msg
-              : "Échec d'enregistrement (API sur http://localhost:5130 indisponible ?).";
+              : "Échec d'enregistrement. Veuillez réessayer.";
           this.closeConfirmModal();
           this.submitting = false;
         }

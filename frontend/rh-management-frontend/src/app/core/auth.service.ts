@@ -76,7 +76,7 @@ export class AuthService {
     confirmationMotDePasse: string
   ) {
     return this.http.post(
-      'http://localhost:5130/api/auth/change-password',
+      '/api/auth/change-password',
       {
         currentPassword: ancienMotDePasse,
         newPassword:     nouveauMotDePasse

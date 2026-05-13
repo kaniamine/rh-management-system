@@ -292,7 +292,7 @@ export class DemandeAutorisation implements OnInit {
         this.errorMessage =
           typeof msg === 'string'
             ? msg
-            : "Échec de l'envoi (API sur http://localhost:5130 indisponible ?).";
+            : "Échec de l'envoi. Veuillez réessayer.";
         this.showConfirm = false;
         this.submitting  = false;
       }

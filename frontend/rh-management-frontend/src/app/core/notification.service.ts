@@ -20,7 +20,7 @@ export interface Notification {
 export class NotificationService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  private readonly API  = 'http://localhost:5130/api/notifications';
+  private readonly API  = '/api/notifications';
   private _notifs = new BehaviorSubject<Notification[]>([]);
   notifs$ = this._notifs.asObservable();
 

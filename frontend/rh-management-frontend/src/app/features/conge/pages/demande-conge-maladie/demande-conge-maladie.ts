@@ -144,7 +144,7 @@ export class DemandeCongeArrMaladie {
 
     const formData = this.buildFormData(false);
     this.http
-      .post<{ id: number; statut: string }>('http://localhost:5130/api/demandes-maladie', formData)
+      .post<{ id: number; statut: string }>('/api/demandes-maladie', formData)
       .subscribe({
         next: (res) => {
           this.successMessage = `Demande soumise avec succès (réf. #${res.id}) — statut : ${res.statut}. La Direction RH a été notifiée.`;
@@ -163,7 +163,7 @@ export class DemandeCongeArrMaladie {
           this.errorMessage =
             typeof msg === 'string'
               ? msg
-              : "Échec de l'envoi (API sur http://localhost:5130 indisponible ?).";
+              : "Échec de l'envoi. Veuillez réessayer.";
           this.showConfirm = false;
           this.submitting = false;
         }
@@ -176,7 +176,7 @@ export class DemandeCongeArrMaladie {
 
     const formData = this.buildFormData(true);
     this.http
-      .post<{ id: number; statut: string }>('http://localhost:5130/api/demandes-maladie', formData)
+      .post<{ id: number; statut: string }>('/api/demandes-maladie', formData)
       .subscribe({
         next: (res) => {
           this.successMessage = `Brouillon enregistré (réf. #${res.id}).`;

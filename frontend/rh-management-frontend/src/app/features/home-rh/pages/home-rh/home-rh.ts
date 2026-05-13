@@ -14,7 +14,7 @@ import { AuthService } from '../../../../core/auth.service';
 export class HomeRh implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  private readonly API  = 'http://localhost:5130';
+  private readonly API  = '';
 
   kpis = [
     { label: 'Demandes totales', value: '152', tone: 'orange' },
