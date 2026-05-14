@@ -136,6 +136,71 @@ public class EmployeController : ControllerBase
         });
     }
 
+    public record UpdateEmployeDto(
+        string Nom,
+        string Prenom,
+        string? Direction,
+        string? Service,
+        string? Fonction,
+        string? SuperieurHierarchiqueMatricule,
+        int SoldeConges = 30
+    );
+
+    // PUT /api/employes/{matricule} — modifier un employé (RH/admin)
+    [HttpPut("{matricule}")]
+    [Authorize(Roles = "rh,admin")]
+    public async Task<IActionResult> Update(string matricule, [FromBody] UpdateEmployeDto dto)
+    {
+        var employe = await _db.Employes
+            .FirstOrDefaultAsync(e => e.Matricule == matricule && e.IsActive);
+        if (employe == null)
+            return NotFound(new { message = "Employé introuvable." });
+
+        employe.Nom = dto.Nom.Trim();
+        employe.Prenom = dto.Prenom.Trim();
+        employe.NomComplet = $"{dto.Nom.Trim()} {dto.Prenom.Trim()}";
+        employe.Direction = dto.Direction?.Trim();
+        employe.Service = dto.Service?.Trim();
+        employe.Fonction = dto.Fonction?.Trim();
+        employe.SuperieurHierarchiqueMatricule = dto.SuperieurHierarchiqueMatricule?.Trim().ToUpper();
+        employe.SoldeConges = dto.SoldeConges;
+
+        await _db.SaveChangesAsync();
+        Console.WriteLine($"[EMPLOYE UPDATE] ✅ {matricule} updated");
+
+        return Ok(new
+        {
+            employe.Matricule,
+            employe.NomComplet,
+            employe.Direction,
+            employe.Service,
+            employe.Fonction,
+            employe.SoldeConges,
+            employe.SuperieurHierarchiqueMatricule
+        });
+    }
+
+    // PATCH /api/employes/{matricule}/desactiver — désactiver un employé (RH/admin)
+    [HttpPatch("{matricule}/desactiver")]
+    [Authorize(Roles = "rh,admin")]
+    public async Task<IActionResult> Desactiver(string matricule)
+    {
+        var employe = await _db.Employes
+            .FirstOrDefaultAsync(e => e.Matricule == matricule);
+        if (employe == null)
+            return NotFound();
+
+        employe.IsActive = false;
+
+        var user = await _db.Users
+            .FirstOrDefaultAsync(u => u.Matricule == matricule);
+        if (user != null) user.IsActive = false;
+
+        await _db.SaveChangesAsync();
+        Console.WriteLine($"[EMPLOYE DEACTIVATE] ✅ {matricule} deactivated");
+        return Ok(new { message = "Employé désactivé." });
+    }
+
     // PATCH /api/employes/{matricule}/solde — mise à jour solde (RH seulement)
     [HttpPatch("{matricule}/solde")]
     [Authorize(Roles = "rh,admin")]

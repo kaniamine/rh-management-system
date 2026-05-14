@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace rh_management_backend.DTOs.Auth;
 
@@ -26,7 +27,29 @@ public record LoginResponseDto(
     int NombreConnexions
 );
 
-public record ChangePasswordDto(
-    [Required] string CurrentPassword,
-    [Required, MinLength(6)] string NewPassword
-);
+public class ChangePasswordDto
+{
+    [JsonPropertyName("ancienMotDePasse")]
+    public string? AncienMotDePasse { get; set; }
+
+    [JsonPropertyName("mot_de_passe_actuel")]
+    public string? MotDePasseActuel { get; set; }
+
+    [JsonPropertyName("nouveau_mot_de_passe")]
+    public string? NouveauMotDePasseSnake { get; set; }
+
+    [JsonPropertyName("nouveauMotDePasse")]
+    public string? NouveauMotDePasse { get; set; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string CurrentPassword =>
+        AncienMotDePasse ??
+        MotDePasseActuel ??
+        string.Empty;
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string NewPassword =>
+        NouveauMotDePasseSnake ??
+        NouveauMotDePasse ??
+        string.Empty;
+}

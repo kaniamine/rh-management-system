@@ -14,10 +14,12 @@ namespace rh_management_backend.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly RhDbContext _db;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, RhDbContext db)
     {
         _authService = authService;
+        _db = db;
     }
 
     [HttpPost("login")]
@@ -41,15 +43,23 @@ public class AuthController : ControllerBase
     [Authorize]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
     {
-        var matricule = User.FindFirstValue("matricule");
-        if (string.IsNullOrEmpty(matricule))
-            return Unauthorized();
+        try
+        {
+            var matricule = User.FindFirstValue("matricule");
+            if (string.IsNullOrEmpty(matricule))
+                return Unauthorized();
 
-        var (ok, error) = await _authService.ChangePasswordAsync(matricule, dto);
-        if (!ok)
-            return BadRequest(new { message = error });
+            var (ok, error) = await _authService.ChangePasswordAsync(matricule, dto);
+            if (!ok)
+                return BadRequest(new { message = error });
 
-        return Ok(new { message = "Mot de passe modifié avec succès." });
+            return Ok(new { message = "Mot de passe modifié avec succès." });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[CHANGE-PWD ERROR] {ex.Message}");
+            return StatusCode(500, new { message = ex.Message });
+        }
     }
 
     /// POST /api/auth/forgot-password

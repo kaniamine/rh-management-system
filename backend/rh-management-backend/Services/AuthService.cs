@@ -71,7 +71,14 @@ public class AuthService : IAuthService
         if (user == null)
             return (false, "Utilisateur introuvable.");
 
-        if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+        Console.WriteLine($"[CHANGE-PWD] matricule={matricule}");
+        Console.WriteLine($"[CHANGE-PWD] CurrentPassword='{dto.CurrentPassword}'");
+        Console.WriteLine($"[CHANGE-PWD] NewPassword length={dto.NewPassword?.Length}");
+
+        var verified = BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash);
+        Console.WriteLine($"[CHANGE-PWD] BCrypt.Verify={verified}");
+
+        if (!verified)
             return (false, "Mot de passe actuel incorrect.");
 
         if (dto.CurrentPassword == dto.NewPassword)
