@@ -76,8 +76,10 @@ export class ChangePasswordModal {
           this.passwordChanged.emit();
         },
         error: (err: any) => {
+          console.error('[CHANGE-PWD] Error:', err);
           this.loading      = false;
           this.errorMessage = err?.error?.message
+            ?? err?.error?.Message
             ?? 'Erreur lors du changement de mot de passe.';
         }
       });
