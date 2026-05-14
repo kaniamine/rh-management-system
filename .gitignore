@@ -148,3 +148,4 @@ vite.config.ts.timestamp-*
 # Benchmark project (optional local tooling)
 **/BenchmarkSuite1/bin/
 **/BenchmarkSuite1/obj/
+backend/rh-management-backend/appsettings.json
