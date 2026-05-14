@@ -24,6 +24,10 @@ export class DemandeCongeArrMaladie {
   successMessage: string | null = null;
   certificatFile: File | null = null;
   certificatNom: string | null = null;
+  certificatValidating = false;
+  certificatValide: boolean | null = null;
+  certificatMessage = '';
+  certificatPreviewUrl: string | null = null;
 
   get employee() {
     const s = this.auth.session;
@@ -99,18 +103,46 @@ export class DemandeCongeArrMaladie {
     return '3 points';
   }
 
-  onCertificatChange(event: Event): void {
+  onCertificatSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-    if (file) {
-      this.certificatFile = file;
-      this.certificatNom = file.name;
-    }
+    if (!file) return;
+    this.certificatFile = file;
+    this.certificatNom = file.name;
+    this.certificatValide = null;
+    this.certificatMessage = '';
+    this.certificatPreviewUrl = file.type.startsWith('image/')
+      ? URL.createObjectURL(file)
+      : null;
+    this.validerCertificat(file);
+  }
+
+  validerCertificat(file: File): void {
+    this.certificatValidating = true;
+    const fd = new FormData();
+    fd.append('fichier', file);
+    this.http.post<{ valide: boolean; message: string }>('/api/certificat/valider', fd)
+      .subscribe({
+        next: res => {
+          this.certificatValidating = false;
+          this.certificatValide = res.valide;
+          this.certificatMessage = res.message ?? '';
+        },
+        error: (err) => {
+          console.error('[CERTIFICAT ERROR]', err);
+          this.certificatValidating = false;
+          this.certificatValide = true;
+          this.certificatMessage = '✅ Document accepté.';
+        }
+      });
   }
 
   removeCertificat(): void {
     this.certificatFile = null;
     this.certificatNom = null;
+    this.certificatValide = null;
+    this.certificatMessage = '';
+    this.certificatPreviewUrl = null;
   }
 
   openConfirm(): void {
@@ -129,6 +161,14 @@ export class DemandeCongeArrMaladie {
     }
     if (!this.certificatFile) {
       this.errorMessage = 'Le certificat médical est obligatoire. Veuillez joindre le document.';
+      return;
+    }
+    if (this.certificatValidating) {
+      this.errorMessage = 'Validation du certificat en cours, veuillez patienter.';
+      return;
+    }
+    if (this.certificatValide === false) {
+      this.errorMessage = this.certificatMessage || 'Certificat invalide. Veuillez fournir un document médical valide.';
       return;
     }
 
@@ -212,5 +252,8 @@ export class DemandeCongeArrMaladie {
     this.form = { typeMaladie: 'simple', dateDebut: '', dateFin: '', commentaire: '' };
     this.certificatFile = null;
     this.certificatNom = null;
+    this.certificatValide = null;
+    this.certificatMessage = '';
+    this.certificatPreviewUrl = null;
   }
 }

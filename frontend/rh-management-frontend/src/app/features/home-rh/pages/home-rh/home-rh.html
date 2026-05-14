@@ -1,161 +1,162 @@
 <div class="hrh-page">
 
-  <!-- BRANDED HEADER -->
-  <div class="hrh-header">
-    <div class="hrh-header-left">
-      <img src="assets/logo.png" alt="Al Baraka Assurances" class="hrh-logo" />
-      <div class="hrh-header-divider"></div>
-      <div>
-        <h1>Accueil Direction RH</h1>
-        <p>Supervisez les demandes, le personnel et les indicateurs depuis un point d'entrée unique.</p>
+  <!-- DARK HERO -->
+  <section class="hrh-hero">
+    <div class="hrh-hero-grid"></div>
+    <div class="hrh-glow-a"></div>
+    <div class="hrh-glow-b"></div>
+    <div class="hrh-hero-inner">
+      <div class="hrh-hero-left">
+        <div class="hrh-eyebrow">
+          <div class="hrh-pulse-dot"></div>
+          Suivi global actif
+        </div>
+        <h1 class="hrh-hero-title">Espace <span class="hrh-title-accent">Direction RH</span></h1>
+        <p class="hrh-hero-sub">Supervisez les demandes, le personnel et les indicateurs depuis un point d'entrée unique.</p>
+        <img src="assets/logo.png" alt="Al Baraka Assurances" class="hrh-hero-logo" />
+      </div>
+      <div class="hrh-hero-kpis">
+        @for (kpi of kpis; track kpi.label) {
+          <div class="hrh-kpi-card" [ngClass]="'kpi-' + kpi.tone">
+            <span class="hrh-kpi-lbl">{{ kpi.label }}</span>
+            <strong class="hrh-kpi-val">{{ kpi.value }}</strong>
+          </div>
+        }
       </div>
     </div>
-    <div class="hrh-badge">
-      <div class="hrh-badge-dot"></div>
-      Suivi global actif
-    </div>
-  </div>
+  </section>
 
-  <!-- KPI STRIP -->
-  <div class="kpi-strip">
-    @for (kpi of kpis; track kpi.label) {
-      <div class="kpi-card" [ngClass]="'kpi-' + kpi.tone">
-        <span class="kpi-lbl">{{ kpi.label }}</span>
-        <strong class="kpi-val">{{ kpi.value }}</strong>
-      </div>
-    }
-  </div>
+  <!-- BENTO GRID -->
+  <div class="hrh-bento">
 
-  <!-- QUICK ACTIONS GRID -->
-  <div class="qa-grid">
-    <a routerLink="/dashboard-rh" class="qa-card qa-orange">
-      <div class="qa-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    <a routerLink="/dashboard-rh" class="hrh-tile hrh-tile-orange hrh-span-2">
+      <div class="hrh-tile-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       </div>
-      <div class="qa-text">
+      <div class="hrh-tile-body">
         <strong>Tableau de bord RH</strong>
         <span>Vue globale des demandes et indicateurs</span>
       </div>
-      <div class="qa-arrow">
+      <div class="hrh-tile-arr">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </a>
 
-    <a routerLink="/consulter-demandes" class="qa-card qa-teal">
-      <div class="qa-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <a routerLink="/consulter-demandes" class="hrh-tile hrh-tile-teal hrh-span-2">
+      <div class="hrh-tile-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       </div>
-      <div class="qa-text">
+      <div class="hrh-tile-body">
         <strong>Consulter les demandes</strong>
         <span>Validation, clôture et historique des demandes RH</span>
       </div>
-      <div class="qa-arrow">
+      <div class="hrh-tile-arr">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </a>
 
-    <a routerLink="/responsable" class="qa-card qa-teal">
-      <div class="qa-icon">
+    <a routerLink="/responsable" class="hrh-tile hrh-tile-neutral">
+      <div class="hrh-tile-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       </div>
-      <div class="qa-text">
+      <div class="hrh-tile-body">
         <strong>Espace Responsable</strong>
         <span>Validation des demandes N+1</span>
       </div>
-      <div class="qa-arrow">
+      <div class="hrh-tile-arr">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </a>
 
-    <a routerLink="/personnel" class="qa-card qa-neutral">
-      <div class="qa-icon">
+    <a routerLink="/personnel" class="hrh-tile hrh-tile-neutral">
+      <div class="hrh-tile-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </div>
-      <div class="qa-text">
+      <div class="hrh-tile-body">
         <strong>Gérer le personnel</strong>
         <span>Fiches employés et données RH</span>
       </div>
-      <div class="qa-arrow">
+      <div class="hrh-tile-arr">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </a>
 
-    <a routerLink="/personnel" class="qa-card qa-neutral">
-      <div class="qa-icon">
+    <a routerLink="/personnel" class="hrh-tile hrh-tile-neutral">
+      <div class="hrh-tile-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       </div>
-      <div class="qa-text">
+      <div class="hrh-tile-body">
         <strong>Reporting RH</strong>
         <span>Suivi mensuel et aide à la décision</span>
       </div>
-      <div class="qa-arrow">
+      <div class="hrh-tile-arr">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </a>
 
-    <a routerLink="/pointage" class="qa-card qa-teal">
-      <div class="qa-icon">
+    <a routerLink="/pointage" class="hrh-tile hrh-tile-teal">
+      <div class="hrh-tile-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
       </div>
-      <div class="qa-text">
+      <div class="hrh-tile-body">
         <strong>Pointage</strong>
         <span>Suivi des présences et absences</span>
       </div>
-      <div class="qa-arrow">
+      <div class="hrh-tile-arr">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </a>
 
-    <a routerLink="/parametrage" class="qa-card qa-orange">
-      <div class="qa-icon">
+    <a routerLink="/parametrage" class="hrh-tile hrh-tile-orange hrh-span-2">
+      <div class="hrh-tile-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </div>
-      <div class="qa-text">
+      <div class="hrh-tile-body">
         <strong>Paramétrage</strong>
         <span>Règles RH, rôles, circuits de validation</span>
       </div>
-      <div class="qa-arrow">
+      <div class="hrh-tile-arr">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </a>
 
-    <a routerLink="/home-rh/reset-password" class="qa-card qa-neutral">
-      <div class="qa-icon">
+    <a routerLink="/home-rh/reset-password" class="hrh-tile hrh-tile-neutral hrh-span-2">
+      <div class="hrh-tile-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a5 5 0 0 0-5 5v3H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V11a2 2 0 0 0-2-2h-2V6a5 5 0 0 0-5-5zm0 2a3 3 0 0 1 3 3v3H9V6a3 3 0 0 1 3-3zm0 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>
       </div>
-      <div class="qa-text">
+      <div class="hrh-tile-body">
         <strong>Réinitialisation MDP</strong>
         <span>Traiter les demandes de mot de passe oublié</span>
       </div>
-      <div class="qa-arrow">
+      <div class="hrh-tile-arr">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </a>
+
   </div>
 
-  <!-- BOTTOM GRID: Recent + Alerts -->
+  <!-- BOTTOM GRID -->
   @if (loading) {
-    <div class="loading-spinner">Chargement...</div>
+    <div class="hrh-loading-msg">Chargement...</div>
   } @else {
-  <div class="bottom-grid">
+  <div class="hrh-bottom">
 
-    <!-- RECENT REQUESTS -->
-    <div class="panel">
-      <div class="panel-head">
+    <div class="hrh-panel">
+      <div class="hrh-panel-top">
         <div>
           <h3>Demandes récentes</h3>
           <p>Derniers mouvements enregistrés</p>
         </div>
-        <a routerLink="/dashboard-rh" class="panel-link">
+        <a routerLink="/dashboard-rh" class="hrh-see-all">
           Voir tout
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </a>
       </div>
-      <div class="recent-list">
+      <div class="hrh-recent-list">
         @for (item of recentItems; track item.employe) {
-          <div class="recent-row">
-            <div class="recent-avatar">{{ getInitiales(item.employe) }}</div>
-            <div class="recent-info">
+          <div class="hrh-recent-row">
+            <div class="hrh-avatar">{{ getInitiales(item.employe) }}</div>
+            <div class="hrh-recent-info">
               <strong>{{ item.employe }}</strong>
               <span>{{ item.type }} · {{ item.date }}</span>
             </div>
@@ -169,19 +170,18 @@
       </div>
     </div>
 
-    <!-- ALERTS -->
-    <div class="panel">
-      <div class="panel-head">
+    <div class="hrh-panel">
+      <div class="hrh-panel-top">
         <div>
           <h3>Alertes RH</h3>
           <p>Éléments nécessitant votre attention</p>
         </div>
       </div>
-      <div class="alert-list">
+      <div class="hrh-alert-list">
         @for (alert of alerts; track alert) {
-          <div class="alert-item">
-            <div class="alert-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div class="hrh-alert-row">
+            <div class="hrh-alert-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             </div>
             <p>{{ alert }}</p>
           </div>

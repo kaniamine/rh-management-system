@@ -109,28 +109,56 @@
             <p>Indispensable pour la validation de votre demande.</p>
           </div>
         </div>
-        <div class="fg">
-          <div class="ff ff-full">
-            <input type="file" class="fi fi-file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
-              (change)="onCertificatChange($event)" [disabled]="submitting" />
-            <span class="fl-opt">Formats : PDF, DOC, PNG, JPG — max 5 Mo</span>
-          </div>
-          @if (certificatNom) {
-            <div class="ff ff-full">
-              <div class="cert-preview">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                <span>{{ certificatNom }}</span>
-                <span class="cert-ok">Prêt à envoyer</span>
-                <button type="button" class="cert-remove" (click)="removeCertificat()" [disabled]="submitting">Retirer</button>
+        <div class="certificat-upload-section">
+          <label class="upload-zone" [class.upload-zone-filled]="certificatNom" [class.upload-zone-valid]="certificatValide === true" [class.upload-zone-invalid]="certificatValide === false">
+            <input type="file" class="upload-input" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
+              (change)="onCertificatSelected($event)" [disabled]="submitting || certificatValidating" />
+            @if (!certificatNom) {
+              <div class="upload-placeholder">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span class="upload-label">Cliquez ou déposez votre certificat ici</span>
+                <span class="upload-hint">PDF, DOC, PNG, JPG — max 5 Mo</span>
               </div>
+            }
+            @if (certificatNom) {
+              <div class="upload-file-info">
+                @if (certificatPreviewUrl) {
+                  <img [src]="certificatPreviewUrl" alt="Aperçu" class="upload-img-preview" />
+                }
+                @if (!certificatPreviewUrl) {
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                }
+                <span class="upload-file-name">{{ certificatNom }}</span>
+              </div>
+            }
+          </label>
+          @if (certificatValidating) {
+            <div class="certificat-status certificat-status-pending">
+              <span class="spinner-small"></span>
+              Validation IA du certificat en cours…
             </div>
           }
+          @if (!certificatValidating && certificatValide === true) {
+            <div class="certificat-status certificat-status-valid">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Certificat valide — {{ certificatMessage }}
+            </div>
+          }
+          @if (!certificatValidating && certificatValide === false) {
+            <div class="certificat-status certificat-status-invalid">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              {{ certificatMessage || 'Certificat invalide. Veuillez fournir un document médical valide.' }}
+            </div>
+          }
+          @if (certificatNom && !certificatValidating) {
+            <button type="button" class="cert-remove" (click)="removeCertificat()" [disabled]="submitting">
+              Retirer le fichier
+            </button>
+          }
           @if (!certificatNom) {
-            <div class="ff ff-full">
-              <div class="alert alert-warning" style="margin:0;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                Aucun certificat joint. La soumission sera bloquée sans ce document.
-              </div>
+            <div class="alert alert-warning" style="margin:0;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Aucun certificat joint. La soumission sera bloquée sans ce document.
             </div>
           }
         </div>
@@ -204,7 +232,7 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
       Brouillon
     </button>
-    <button class="fbtn fbtn-primary" type="button" (click)="openConfirm()" [disabled]="submitting || !certificatNom">
+    <button class="fbtn fbtn-primary" type="button" (click)="openConfirm()" [disabled]="submitting || !certificatNom || certificatValidating || certificatValide === false">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       {{ submitting ? 'Envoi…' : 'Soumettre la demande' }}
     </button>
