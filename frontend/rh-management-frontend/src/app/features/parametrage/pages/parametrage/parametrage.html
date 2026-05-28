@@ -227,52 +227,81 @@
 
       <!-- ══ 4. Workflow ════════════════════════════════════════ -->
       @if (activeSection === 'workflow') {
-        <div class="sec-panel">
-          <div class="sec-panel-head">
-            <div class="sec-icon-wrap sec-icon-teal">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <div style="position:relative;">
+
+          <!-- OVERLAY — visible uniquement si pas admin -->
+          @if (!isAdmin) {
+            <div style="position:absolute; inset:0; background:rgba(248,249,250,0.88); z-index:10; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; backdrop-filter:blur(2px);">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="#a7a9ac">
+                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+              </svg>
+              <p style="margin:0; color:#5e6167; font-size:14px; font-weight:700; text-align:center;">Accès restreint</p>
+              <p style="margin:0; color:#a7a9ac; font-size:12px; text-align:center; padding:0 16px; max-width:280px; line-height:1.5;">
+                La modification du workflow de validation nécessite les droits administrateur.
+              </p>
+              <a routerLink="/rh/acces-admin"
+                 style="background:#c60c30; color:white; border:none; border-radius:8px; padding:8px 20px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; text-decoration:none; font-family:'Mada','Open Sans',Arial,sans-serif;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                </svg>
+                Accès Admin requis
+              </a>
             </div>
-            <div>
-              <h2>Circuits de validation</h2>
-              <p>Configurez les étapes du workflow d'approbation des demandes RH.</p>
-            </div>
-          </div>
-          <div class="sec-panel-body">
-            <div class="wf-strip">
-              @for (step of workflowSteps; track step.label; let last = $last) {
-                <div class="wf-step" [class.wf-locked]="step.locked" [class.wf-inactive]="!step.active">
-                  <div class="wf-dot" [class.wf-dot-active]="step.active"></div>
-                  <div class="wf-step-body">
-                    <strong>{{ step.label }}</strong>
-                    <span>{{ step.sublabel }}</span>
-                    @if (!step.locked) {
-                      <label class="toggle wf-toggle">
-                        <input type="checkbox" [(ngModel)]="step.active" [name]="'wf_' + step.label" />
-                        <span class="toggle-track"></span>
-                        <span class="toggle-lbl">{{ step.active ? 'Actif' : 'Inactif' }}</span>
-                      </label>
-                    } @else {
-                      <span class="wf-badge-locked">Obligatoire</span>
-                    }
-                  </div>
+          }
+
+          <!-- CONTENU — visible normal si admin, flou+désactivé sinon -->
+          <div [style.opacity]="isAdmin ? '1' : '0.3'"
+               [style.pointer-events]="isAdmin ? 'auto' : 'none'"
+               [style.filter]="isAdmin ? 'none' : 'blur(1px)'">
+            <div class="sec-panel">
+              <div class="sec-panel-head">
+                <div class="sec-icon-wrap sec-icon-teal">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                 </div>
-                @if (!last) {
-                  <div class="wf-arrow">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                  </div>
+                <div>
+                  <h2>Circuits de validation</h2>
+                  <p>Configurez les étapes du workflow d'approbation des demandes RH.</p>
+                </div>
+              </div>
+              <div class="sec-panel-body">
+                <div class="wf-strip">
+                  @for (step of workflowSteps; track step.label; let last = $last) {
+                    <div class="wf-step" [class.wf-locked]="step.locked" [class.wf-inactive]="!step.active">
+                      <div class="wf-dot" [class.wf-dot-active]="step.active"></div>
+                      <div class="wf-step-body">
+                        <strong>{{ step.label }}</strong>
+                        <span>{{ step.sublabel }}</span>
+                        @if (!step.locked) {
+                          <label class="toggle wf-toggle">
+                            <input type="checkbox" [(ngModel)]="step.active" [name]="'wf_' + step.label" />
+                            <span class="toggle-track"></span>
+                            <span class="toggle-lbl">{{ step.active ? 'Actif' : 'Inactif' }}</span>
+                          </label>
+                        } @else {
+                          <span class="wf-badge-locked">Obligatoire</span>
+                        }
+                      </div>
+                    </div>
+                    @if (!last) {
+                      <div class="wf-arrow">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+              <div class="sec-footer">
+                <button class="btn-save" type="button" (click)="saveSection()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  Enregistrer
+                </button>
+                @if (savedSection === 'workflow') {
+                  <span class="save-toast">Modifications enregistrées.</span>
                 }
-              }
+              </div>
             </div>
           </div>
-          <div class="sec-footer">
-            <button class="btn-save" type="button" (click)="saveSection()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Enregistrer
-            </button>
-            @if (savedSection === 'workflow') {
-              <span class="save-toast">Modifications enregistrées.</span>
-            }
-          </div>
+
         </div>
       }
 

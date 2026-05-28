@@ -23,8 +23,14 @@
       "Bash(git fetch *)",
       "Bash(git stash *)",
       "PowerShell(Stop-Process *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
       "Bash(npx ng *)",
-      "Bash(dotnet test *)"
+      "Bash(dotnet test *)",
+      "Bash(curl -s -X POST http://localhost:5131/api/auth/login -H 'Content-Type: application/json' -d '{\"matricule\":\"RH001\",\"password\":\"0000\"}')",
+      "Bash(node *)",
+      "Bash(curl -s -H 'Authorization: Bearer __TRACKED_VAR__' http://localhost:5131/api/rh-statistics/overview)"
     ]
   }
 }

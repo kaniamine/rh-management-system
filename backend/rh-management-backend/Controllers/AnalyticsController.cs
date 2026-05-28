@@ -7,7 +7,7 @@ namespace rh_management_backend.Controllers;
 
 [ApiController]
 [Route("api/analytics")]
-[Authorize(Roles = "rh,admin")]
+[Authorize(Roles = "rh,admin,dg")]
 public class AnalyticsController : ControllerBase
 {
     private readonly RhDbContext _db;
@@ -15,16 +15,28 @@ public class AnalyticsController : ControllerBase
     public AnalyticsController(RhDbContext db) => _db = db;
 
     [HttpGet("rh-dashboard")]
-    public async Task<IActionResult> GetRhDashboard()
+    public async Task<IActionResult> GetRhDashboard([FromQuery] int? year = null)
     {
-        var conges        = await _db.DemandesConges.ToListAsync();
-        var autorisations = await _db.DemandesAutorisations.ToListAsync();
-        var maladies      = await _db.DemandesMaladie.ToListAsync();
+        var conges        = await _db.DemandesConges
+            .Where(d => year == null || d.CreatedAt.Year == year.Value)
+            .ToListAsync();
+        var autorisations = await _db.DemandesAutorisations
+            .Where(d => year == null || d.CreatedAt.Year == year.Value)
+            .ToListAsync();
+        var maladies      = await _db.DemandesMaladie
+            .Where(d => year == null || d.CreatedAt.Year == year.Value)
+            .ToListAsync();
         var employes      = await _db.Employes.ToListAsync();
 
         // ── Helpers ──────────────────────────────────────────────────────────
-        static bool IsValide(string s)    => s == "Validée" || s == "Validée – En traitement RH" || s == "Clôturée";
-        static bool IsRejete(string s)    => s.StartsWith("Rejetée") || s == "Annulée";
+        // Handles both accented ("Validée") and unaccented ("Validee") DB variants
+        static bool IsValide(string s) =>
+            s is "Validée" or "Validee"
+            or "Validée – En traitement RH" or "Validee – En traitement RH" or "Validee - En traitement RH"
+            or "Clôturée" or "Cloturee";
+        static bool IsRejete(string s) =>
+            s.StartsWith("Rejetée") || s.StartsWith("Rejetee")
+            || s is "Annulée" or "Annulee";
         static bool IsEnAttente(string s) => s.StartsWith("En attente");
 
         // ── Counts ────────────────────────────────────────────────────────────
@@ -42,7 +54,7 @@ public class AnalyticsController : ControllerBase
         int enAttente = conges.Count(d => IsEnAttente(d.Statut))
                       + autorisations.Count(d => IsEnAttente(d.Statut))
                       + maladies.Count(d => IsEnAttente(d.Statut));
-        int cloturees = conges.Count(d => d.Statut == "Clôturée");
+        int cloturees = conges.Count(d => d.Statut is "Clôturée" or "Cloturee");
 
         double tauxValidation = totalDemandes > 0 ? Math.Round((double)validees  / totalDemandes * 100, 1) : 0;
         double tauxRejet      = totalDemandes > 0 ? Math.Round((double)rejetees  / totalDemandes * 100, 1) : 0;
@@ -111,10 +123,32 @@ public class AnalyticsController : ControllerBase
             .ToList();
 
         // ── Type congé breakdown ──────────────────────────────────────────────
+        // Normalise unaccented variants (e.g. "Conge annuel" → "Congé annuel")
+        static string NormTypeConge(string s) => s switch
+        {
+            "Conge annuel"       => "Congé annuel",
+            "Conge exceptionnel" => "Congé exceptionnel",
+            "Conge maladie"      => "Congé maladie",
+            _                    => s
+        };
         var typeCongeBreakdown = conges
-            .GroupBy(d => d.TypeConge)
+            .GroupBy(d => NormTypeConge(d.TypeConge))
             .OrderByDescending(g => g.Count())
             .Select(g => new { type = g.Key, count = g.Count() })
+            .ToList();
+
+        // ── Top 5 employés par nombre de demandes ────────────────────────────
+        var topEmployes = conges.Select(d => new { matricule = d.Matricule, nomComplet = d.NomComplet })
+            .Concat(autorisations.Select(d => new { matricule = d.Matricule, nomComplet = d.NomComplet }))
+            .Concat(maladies.Select(d => new { matricule = d.Matricule, nomComplet = d.NomComplet }))
+            .GroupBy(d => d.matricule)
+            .OrderByDescending(g => g.Count())
+            .Take(5)
+            .Select(g => new {
+                matricule  = g.Key,
+                nomComplet = g.First().nomComplet,
+                count      = g.Count()
+            })
             .ToList();
 
         return Ok(new
@@ -141,7 +175,24 @@ public class AnalyticsController : ControllerBase
             repartitionParType,
             repartitionParStatut,
             demandesParDirection,
-            typeCongeBreakdown
+            typeCongeBreakdown,
+            topEmployes
         });
+    }
+
+    // GET /api/analytics/available-years
+    [HttpGet("available-years")]
+    public async Task<IActionResult> GetAvailableYears()
+    {
+        var y1 = await _db.DemandesConges.Select(d => d.CreatedAt.Year).Distinct().ToListAsync();
+        var y2 = await _db.DemandesAutorisations.Select(d => d.CreatedAt.Year).Distinct().ToListAsync();
+        var y3 = await _db.DemandesMaladie.Select(d => d.CreatedAt.Year).Distinct().ToListAsync();
+
+        var years = y1.Union(y2).Union(y3).Distinct().OrderByDescending(y => y).ToList();
+
+        var currentYear = DateTime.UtcNow.Year;
+        if (!years.Contains(currentYear)) years.Insert(0, currentYear);
+
+        return Ok(years);
     }
 }

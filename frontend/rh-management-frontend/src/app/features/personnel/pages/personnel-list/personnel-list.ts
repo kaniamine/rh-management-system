@@ -1,18 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../../../core/auth.service';
 
-interface Employee {
-  matricule: string;
-  nom:       string;
-  prenom:    string;
-  direction: string;
-  service:   string;
-  fonction:  string;
-  role:      string;
-  solde:     number;
-}
+const API = 'http://localhost:5131';
 
 @Component({
   selector:    'app-personnel-list',
@@ -22,82 +14,102 @@ interface Employee {
   styleUrls:   ['./personnel-list.css']
 })
 export class PersonnelList implements OnInit {
-  private readonly http = inject(HttpClient);
+  private http = inject(HttpClient);
+  private auth = inject(AuthService);
+  private cdr  = inject(ChangeDetectorRef);
 
-  // ── Add modal ────────────────────────────────────────────────────────────────
-  isModalOpen  = false;
-  loading      = false;
-  saving       = false;
-  errorMessage = '';
+  isLoading     = false;
+  actionLoading = false;
+  erreur        = '';
+  successMsg    = '';
 
-  employees: Employee[] = [];
+  employees: any[] = [];
+
+  isModalOpen     = false;
+  isEditModalOpen = false;
 
   newEmployee = {
-    matricule: '',
-    nom:       '',
-    prenom:    '',
-    direction: 'IT',
-    service:   '',
-    fonction:  '',
-    role:      'Employé',
-    solde:     0,
-    telephone: ''
+    matricule:  '',
+    nom:        '',
+    prenom:     '',
+    direction:  'IT',
+    service:    '',
+    fonction:   '',
+    role:       'Employé',
+    soldeConges: 0,
+    telephone:  ''
   };
 
-  // ── Edit modal ───────────────────────────────────────────────────────────────
-  isEditModalOpen = false;
-  editSaving      = false;
-  editError       = '';
-  editTarget: {
-    matricule: string; nom: string; prenom: string;
-    direction: string; service: string; fonction: string;
-    role: string; solde: number;
-  } | null = null;
+  editTarget: any  = null;
+  editError        = '';
+  editSaving       = false;
 
-  // ─────────────────────────────────────────────────────────────────────────────
+  searchQuery    = '';
+  filterFonction = '';
+  filterRole     = '';
 
-  ngOnInit(): void { this.loadEmployes(); }
+  get uniqueFonctions(): string[] {
+    const set = new Set<string>();
+    for (const emp of this.employees) {
+      const f = (emp.fonction ?? '').trim();
+      if (f) set.add(f);
+    }
+    return Array.from(set).sort();
+  }
 
-  loadEmployes(): void {
-    this.loading = true;
-    this.http.get<any[]>('/api/employes').subscribe({
-      next: data => {
+  get filteredEmployees(): any[] {
+    const q = this.searchQuery.toLowerCase().trim();
+    return this.employees.filter(emp => {
+      const nom      = (emp.nom     ?? '').toLowerCase();
+      const prenom   = (emp.prenom  ?? '').toLowerCase();
+      const mat      = (emp.matricule ?? '').toLowerCase();
+      const service  = (emp.service ?? '').toLowerCase();
+      const fonction = (emp.fonction ?? '').toLowerCase();
+      const matchQ        = !q || nom.includes(q) || prenom.includes(q) || mat.includes(q) || service.includes(q) || fonction.includes(q);
+      const matchFonction = !this.filterFonction || fonction === this.filterFonction.toLowerCase();
+      const matchRole     = !this.filterRole || (emp.role ?? '') === this.filterRole;
+      return matchQ && matchFonction && matchRole;
+    });
+  }
+
+  applyFilters(): void {
+    this.cdr.detectChanges();
+  }
+
+  ngOnInit(): void { this.chargerPersonnel(); }
+
+  chargerPersonnel(): void {
+    this.isLoading = true;
+    this.erreur    = '';
+    this.http.get<any[]>(`${API}/api/employes`).subscribe({
+      next: (data) => {
         this.employees = (data ?? []).map(e => this.normalize(e));
-        this.loading   = false;
+        this.isLoading = false;
+        this.cdr.detectChanges();
       },
-      error: err => {
-        console.error('[EMPLOYES] Erreur chargement:', err);
-        this.loading = false;
+      error: (err) => {
+        this.erreur    = err?.error?.message ?? 'Impossible de charger la liste du personnel. Vérifiez votre connexion.';
+        this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
 
-  // ── Add ──────────────────────────────────────────────────────────────────────
+  openModal(): void  { this.isModalOpen = true;  this.erreur = ''; this.successMsg = ''; }
+  closeModal(): void { this.isModalOpen = false; this.resetNewEmployee(); }
 
-  openModal(): void {
-    this.errorMessage = '';
-    this.isModalOpen  = true;
-  }
-
-  closeModal(): void {
-    this.isModalOpen  = false;
-    this.errorMessage = '';
-    this.newEmployee  = {
-      matricule: '', nom: '', prenom: '',
-      direction: 'IT', service: '', fonction: '',
-      role: 'Employé', solde: 0, telephone: ''
-    };
+  resetNewEmployee(): void {
+    this.newEmployee = { matricule: '', nom: '', prenom: '', direction: 'IT', service: '', fonction: '', role: 'Employé', soldeConges: 0, telephone: '' };
   }
 
   addEmployee(): void {
-    if (!this.newEmployee.matricule.trim() ||
-        !this.newEmployee.nom.trim()       ||
-        !this.newEmployee.prenom.trim()) {
-      this.errorMessage = 'Matricule, nom et prénom sont obligatoires.';
+    if (!this.newEmployee.matricule || !this.newEmployee.nom || !this.newEmployee.prenom) {
+      this.erreur = 'Matricule, nom et prénom sont obligatoires.';
       return;
     }
-
-    const payload = {
+    this.actionLoading = true;
+    this.erreur        = '';
+    this.http.post(`${API}/api/employes`, {
       matricule:   this.newEmployee.matricule.trim().toUpperCase(),
       nom:         this.newEmployee.nom.trim(),
       prenom:      this.newEmployee.prenom.trim(),
@@ -105,36 +117,27 @@ export class PersonnelList implements OnInit {
       service:     this.newEmployee.service.trim(),
       fonction:    this.newEmployee.fonction.trim(),
       role:        this.mapRole(this.newEmployee.role),
-      soldeConges: Number(this.newEmployee.solde),
+      soldeConges: Number(this.newEmployee.soldeConges),
       telephone:   this.newEmployee.telephone.trim()
-    };
-
-    console.log('[ADD EMPLOYE] Payload being sent:', payload);
-    this.saving = true; this.errorMessage = '';
-
-    this.http.post<any>('/api/employes', payload).subscribe({
-      next: res => {
-        console.log('[ADD EMPLOYE] ✅ Saved:', res);
-        this.saving = false;
+    }).subscribe({
+      next: () => {
+        this.actionLoading = false;
+        this.successMsg    = `Employé ${this.newEmployee.prenom} ${this.newEmployee.nom} ajouté avec succès.`;
         this.closeModal();
-        this.loadEmployes();
+        this.cdr.detectChanges();
+        this.chargerPersonnel();
       },
-      error: err => {
-        console.error('[ADD EMPLOYE] Full error:', err);
-        console.error('[ADD EMPLOYE] Status:', err.status);
-        console.error('[ADD EMPLOYE] Message:', err.error);
-        this.saving       = false;
-        this.errorMessage = err?.error?.message ?? err?.error?.Message
-          ?? err?.error ?? 'Erreur lors de la création.';
+      error: (err) => {
+        this.actionLoading = false;
+        this.erreur        = err?.error?.message ?? err?.error?.Message ?? err?.error ?? 'Erreur lors de l\'ajout.';
+        this.cdr.detectChanges();
       }
     });
   }
 
-  // ── Edit (Issue 1) ───────────────────────────────────────────────────────────
-
-  openEditModal(emp: Employee): void {
-    this.editTarget = { ...emp };
-    this.editError  = '';
+  openEditModal(emp: any): void {
+    this.editTarget      = { ...emp };
+    this.editError       = '';
     this.isEditModalOpen = true;
   }
 
@@ -146,80 +149,91 @@ export class PersonnelList implements OnInit {
 
   saveEdit(): void {
     if (!this.editTarget) return;
-
-    const payload = {
-      nom:         this.editTarget.nom.trim(),
-      prenom:      this.editTarget.prenom.trim(),
-      direction:   this.editTarget.direction,
-      service:     this.editTarget.service.trim(),
-      fonction:    this.editTarget.fonction.trim(),
-      role:        this.mapRole(this.editTarget.role),
-      soldeConges: Number(this.editTarget.solde)
-    };
-
-    console.log('[MODIFIER] Payload being sent:', payload);
     this.editSaving = true;
     this.editError  = '';
-
-    this.http.put<any>(
-      `/api/employes/${this.editTarget.matricule}`, payload
-    ).subscribe({
+    this.http.put(`${API}/api/employes/${this.editTarget.matricule}`, {
+      nom:         (this.editTarget.nom ?? '').trim(),
+      prenom:      (this.editTarget.prenom ?? '').trim(),
+      direction:   this.editTarget.direction,
+      service:     (this.editTarget.service ?? '').trim(),
+      fonction:    (this.editTarget.fonction ?? '').trim(),
+      role:        this.mapRole(this.editTarget.role),
+      soldeConges: Number(this.editTarget.solde ?? 0)
+    }).subscribe({
       next: () => {
-        console.log('[MODIFIER] ✅ Saved');
         this.editSaving = false;
+        this.successMsg = 'Employé modifié avec succès.';
         this.closeEditModal();
-        this.loadEmployes();
+        this.cdr.detectChanges();
+        this.chargerPersonnel();
       },
-      error: err => {
-        console.error('[MODIFIER] ❌', err);
+      error: (err) => {
         this.editSaving = false;
-        this.editError  = err?.error?.message ?? err?.error?.Message
-          ?? 'Erreur lors de la modification.';
+        this.editError  = err?.error?.message ?? err?.error?.Message ?? err?.error ?? 'Erreur lors de la modification.';
+        this.cdr.detectChanges();
       }
     });
   }
 
-  // ── Désactiver (Issue 2) ─────────────────────────────────────────────────────
-
-  desactiver(matricule: string): void {
-    if (!confirm(`Désactiver l'employé ${matricule} ?`)) return;
-
-    this.http.patch<any>(`/api/employes/${matricule}/desactiver`, {}).subscribe({
+  deactivateEmployee(emp: any): void {
+    const matricule = emp.matricule ?? '';
+    const id        = emp.id        ?? '';
+    if (!confirm(`Désactiver l'employé ${emp.prenom ?? ''} ${emp.nom ?? ''} ?`)) return;
+    this.actionLoading = true;
+    this.erreur        = '';
+    this.http.patch(`${API}/api/employes/${id}/desactiver`, {}).subscribe({
       next: () => {
-        console.log('[DESACTIVER] ✅ Done');
-        this.loadEmployes();
+        this.actionLoading = false;
+        this.successMsg    = `Employé ${matricule} désactivé.`;
+        this.cdr.detectChanges();
+        this.chargerPersonnel();
       },
-      error: err => console.error('[DESACTIVER] ❌', err)
+      error: (err) => {
+        this.actionLoading = false;
+        this.erreur        = err?.error?.message ?? err?.error ?? 'Erreur lors de la désactivation.';
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────────────
+  getField(emp: any, ...keys: string[]): string {
+    for (const k of keys) { if (emp[k] != null) return emp[k]; }
+    return '';
+  }
 
-  private normalize(e: any): Employee {
+  getInitiales(emp: any): string {
+    const prenom = (emp.prenom ?? '');
+    const nom    = (emp.nom    ?? '');
+    return ((prenom.charAt(0) || '') + (nom.charAt(0) || '')).toUpperCase() || '?';
+  }
+
+  private normalize(e: any): any {
     return {
-      matricule: e.matricule ?? e.Matricule ?? '',
-      nom:       e.nom       ?? e.Nom       ?? '',
-      prenom:    e.prenom    ?? e.Prenom    ?? '',
-      direction: e.direction ?? e.Direction ?? '',
-      service:   e.service   ?? e.Service   ?? '',
-      fonction:  e.fonction  ?? e.Fonction  ?? e.poste ?? e.Poste ?? '',
-      role:      this.displayRole(e.role ?? e.Role ?? ''),
-      solde:     e.soldeConges ?? e.SoldeConges ?? e.solde ?? e.Solde ?? 0
+      id:          e.id          ?? e.Id          ?? '',
+      matricule:   e.matricule   ?? e.Matricule   ?? '',
+      nom:         e.nom         ?? e.Nom         ?? '',
+      prenom:      e.prenom      ?? e.Prenom      ?? '',
+      direction:   e.direction   ?? e.Direction   ?? '',
+      service:     e.service     ?? e.Service     ?? '',
+      fonction:    e.fonction    ?? e.Fonction    ?? e.poste ?? e.Poste ?? '',
+      role:        this.displayRole(e.role ?? e.Role ?? ''),
+      solde:       e.soldeConges ?? e.SoldeConges ?? e.solde ?? e.Solde ?? 0,
+      soldeConges: e.soldeConges ?? e.SoldeConges ?? e.solde ?? e.Solde ?? 0,
+      telephone:   e.telephone   ?? e.Telephone   ?? '',
+      isActive:    e.isActive    ?? e.IsActive    ?? true
     };
   }
 
   private mapRole(display: string): string {
     const map: Record<string, string> = {
-      'Employé': 'employe', 'SH': 'n1',
-      'DG':      'dg',      'RH': 'rh', 'Admin': 'admin'
+      'Employé': 'employe', 'SH': 'n1', 'DG': 'dg', 'RH': 'rh', 'Admin': 'admin'
     };
     return map[display] ?? display.toLowerCase();
   }
 
   private displayRole(raw: string): string {
     const map: Record<string, string> = {
-      employe: 'Employé', n1: 'SH', dg: 'DG', rh: 'RH', admin: 'Admin',
-      Employe: 'Employé', N1: 'SH', Dg: 'DG', Rh: 'RH', Admin: 'Admin'
+      employe: 'Employé', n1: 'SH', dg: 'DG', rh: 'RH', admin: 'Admin'
     };
     return map[raw] ?? map[raw?.toLowerCase()] ?? raw;
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -21,7 +21,8 @@ export class HomeRh implements OnInit {
 
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  private readonly API  = '';
+  private readonly cdr  = inject(ChangeDetectorRef);
+  private readonly API  = 'http://localhost:5131';
 
   kpis = [
     { label: 'Demandes totales', value: '152', tone: 'orange' },
@@ -54,8 +55,8 @@ export class HomeRh implements OnInit {
     this.http.get<any[]>(
       `${this.API}/api/demandes-conge?statut=Valid%C3%A9e%20%E2%80%93%20En%20traitement%20RH`
     ).subscribe({
-      next:  (data) => { this.demandesEnAttente = data; this.loading = false; },
-      error: () => { this.loading = false; }
+      next:  (data) => { this.demandesEnAttente = data; this.loading = false; this.cdr.detectChanges(); },
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
   }
 

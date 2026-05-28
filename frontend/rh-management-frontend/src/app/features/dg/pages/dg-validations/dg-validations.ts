@@ -1,7 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { AuthService } from '../../../../core/auth.service';
 
 interface DemandeConge {
@@ -34,9 +36,13 @@ interface DemandeConge {
 export class DgValidations implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  private readonly API  = '';
+  private readonly cdr  = inject(ChangeDetectorRef);
+  private readonly API  = 'http://localhost:5131';
+
+  activeTab: 'validation' | 'historique' = 'validation';
 
   loading       = false;
+  erreur        = '';
   filterStatut  = '';
   filterEmploye = '';
   selectedDemande: DemandeConge | null = null;
@@ -45,6 +51,11 @@ export class DgValidations implements OnInit {
   rejectMotif      = '';
   approveComment   = '';
   actionLoading    = false;
+
+  historyLoading = false;
+  historyDemandes: any[] = [];
+  historyFilterType: 'all' | 'conge' | 'autorisation' | 'maladie' = 'all';
+  historyFilterStatut = '';
 
   get dg() {
     return {
@@ -59,13 +70,72 @@ export class DgValidations implements OnInit {
     this.loadDemandes();
   }
 
+  switchTab(tab: 'validation' | 'historique'): void {
+    this.activeTab = tab;
+    if (tab === 'historique' && this.historyDemandes.length === 0 && !this.historyLoading) {
+      this.loadHistory();
+    }
+  }
+
+  loadHistory(): void {
+    this.historyLoading = true;
+    forkJoin({
+      conges:        this.http.get<any[]>(`${this.API}/api/demandes-conge`).pipe(catchError(() => of([]))),
+      autorisations: this.http.get<any[]>(`${this.API}/api/demandes-autorisation`).pipe(catchError(() => of([]))),
+      maladies:      this.http.get<any[]>(`${this.API}/api/demandes-maladie`).pipe(catchError(() => of([])))
+    }).subscribe({
+      next: ({ conges, autorisations, maladies }) => {
+        const mc = (conges as any[]).map(d => ({ ...d, typeKey: 'conge',        typeLabel: 'Congé',        nomComplet: d.nomComplet ?? d.employe ?? '', dateRef: d.createdAt ?? '' }));
+        const ma = (autorisations as any[]).map(d => ({ ...d, typeKey: 'autorisation', typeLabel: 'Autorisation', nomComplet: d.nomComplet ?? d.employe ?? '', dateDebut: d.dateDemande ?? d.dateDebut, dateRef: d.createdAt ?? '' }));
+        const mm = (maladies as any[]).map(d => ({ ...d, typeKey: 'maladie',     typeLabel: 'Maladie',      nomComplet: d.nomComplet ?? d.employe ?? '', dateRef: d.createdAt ?? '' }));
+        this.historyDemandes = [...mc, ...ma, ...mm].sort((a, b) => (b.dateRef ?? '').localeCompare(a.dateRef ?? ''));
+        this.historyLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Erreur historique DG:', err);
+        this.erreur         = 'Impossible de charger l\'historique.';
+        this.historyLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  get filteredHistory(): any[] {
+    return this.historyDemandes.filter(d => {
+      const matchType   = this.historyFilterType === 'all' || d.typeKey === this.historyFilterType;
+      const matchStatut = !this.historyFilterStatut || d.statut === this.historyFilterStatut;
+      return matchType && matchStatut;
+    });
+  }
+
+  getHistoryStatutClass(statut: string): string {
+    if (statut?.startsWith('En attente')) return 'waiting';
+    if (statut === 'Validée – En traitement RH' || statut === 'Clôturée' || statut === 'Validée') return 'valid';
+    if (statut?.startsWith('Rejetée') || statut === 'Annulée') return 'rejected';
+    return 'neutral';
+  }
+
   loadDemandes(): void {
     this.loading = true;
+    this.erreur  = '';
     this.http.get<any[]>(
       `${this.API}/api/demandes-conge?statut=En%20attente%20de%20validation%20DG`
     ).subscribe({
-      next:  (data) => { this.demandes = data; this.loading = false; },
-      error: () => { this.loading = false; }
+      next: (data) => {
+        this.demandes = data.sort((a, b) =>
+          new Date(a.dateCreation ?? a.dateSoumission ?? 0).getTime() -
+          new Date(b.dateCreation ?? b.dateSoumission ?? 0).getTime()
+        );
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Erreur validation DG:', err);
+        this.erreur  = 'Impossible de charger les demandes.';
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -149,9 +219,10 @@ export class DgValidations implements OnInit {
         this.showApproveModal = false;
         this.selectedDemande  = null;
         this.approveComment   = '';
+        this.cdr.detectChanges();
         this.loadDemandes();
       },
-      error: () => { this.actionLoading = false; }
+      error: () => { this.actionLoading = false; this.cdr.detectChanges(); }
     });
   }
 
@@ -168,9 +239,10 @@ export class DgValidations implements OnInit {
         this.showRejectModal = false;
         this.selectedDemande = null;
         this.rejectMotif     = '';
+        this.cdr.detectChanges();
         this.loadDemandes();
       },
-      error: () => { this.actionLoading = false; }
+      error: () => { this.actionLoading = false; this.cdr.detectChanges(); }
     });
   }
 }

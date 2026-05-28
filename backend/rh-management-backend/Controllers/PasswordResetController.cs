@@ -74,7 +74,7 @@ public class PasswordResetController : ControllerBase
     [Authorize(Roles = "rh,admin")]
     public async Task<IActionResult> ReinitialiserMotDePasse([FromBody] ReinitialiserDto dto)
     {
-        Console.WriteLine($"[RESET] Body received: demandeId={dto.DemandeId} pwd={dto.NouveauMotDePasse?.Length} chars");
+        Console.WriteLine($"[REINIT] DemandeId={dto.DemandeId} PwdLen={dto.NouveauMotDePasse?.Length}");
         try
         {
             // Find the reset notification by ID
@@ -199,4 +199,9 @@ public class PasswordResetController : ControllerBase
 }
 
 public record MotDePasseOublieDto([Required] string Matricule, [Required] string Telephone);
-public record ReinitialiserDto(int DemandeId, [Required] string NouveauMotDePasse);
+
+public class ReinitialiserDto
+{
+    public int    DemandeId          { get; set; }
+    public string NouveauMotDePasse  { get; set; } = string.Empty;
+}

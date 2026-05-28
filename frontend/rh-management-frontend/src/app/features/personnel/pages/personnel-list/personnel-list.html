@@ -10,36 +10,46 @@
         <p>Liste des employés, soldes de congés et gestion des accès.</p>
       </div>
     </div>
-    <button class="btn-add" type="button" (click)="openModal()">
+    <button class="btn-add" type="button" (click)="openModal()" [disabled]="actionLoading">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Ajouter un employé
     </button>
   </div>
 
+  <!-- MESSAGES -->
+  @if (successMsg) {
+    <div class="msg-success">{{ successMsg }}</div>
+  }
+  @if (erreur && !isModalOpen && !isEditModalOpen) {
+    <div class="msg-error">{{ erreur }}</div>
+  }
+
   <!-- FILTERS -->
   <div class="filters-bar">
     <div class="filter-search">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input class="filter-input" type="text" placeholder="Rechercher matricule, nom, prénom…" />
+      <input class="filter-input" type="text" placeholder="Rechercher matricule, nom, prénom, service…"
+        [(ngModel)]="searchQuery" name="search" />
     </div>
-    <select class="filter-select">
-      <option value="">Toutes les directions</option>
-      <option>IT</option>
-      <option>RH</option>
-      <option>Production</option>
-      <option>Qualité</option>
+    <select class="filter-select" [(ngModel)]="filterFonction" name="filterFonction" (ngModelChange)="applyFilters()">
+      <option value="">Toutes les fonctions</option>
+      @for (f of uniqueFonctions; track f) {
+        <option [value]="f">{{ f }}</option>
+      }
     </select>
-    <select class="filter-select">
+    <select class="filter-select" [(ngModel)]="filterRole" name="filterRole" (ngModelChange)="applyFilters()">
       <option value="">Tous les rôles</option>
-      <option>Employé</option>
-      <option>SH</option>
-      <option>DG</option>
-      <option>RH</option>
-      <option>Admin</option>
+      <option value="Employé">Employé</option>
+      <option value="SH">Responsable N+1</option>
+      <option value="DG">Direction Générale</option>
+      <option value="RH">Direction RH</option>
     </select>
   </div>
 
   <!-- TABLE -->
+  @if (isLoading) {
+    <div class="loading-spinner">Chargement…</div>
+  } @else {
   <div class="table-card">
     <div class="table-wrap">
       <table>
@@ -56,33 +66,35 @@
           </tr>
         </thead>
         <tbody>
-          @for (emp of employees; track emp.matricule) {
-            <tr class="table-row">
-              <td><span class="mat-chip">{{ emp.matricule }}</span></td>
+          @for (emp of filteredEmployees; track (emp.matricule ?? emp.Matricule ?? emp.id)) {
+            <tr class="table-row" [class.inactive]="emp.isActive === false || emp.IsActive === false">
+              <td><span class="mat-chip">{{ getField(emp, 'matricule', 'Matricule') }}</span></td>
               <td>
                 <div class="emp-cell">
-                  <div class="emp-avatar">{{ emp.prenom.charAt(0) }}{{ emp.nom.charAt(0) }}</div>
+                  <div class="emp-avatar">{{ getInitiales(emp) }}</div>
                   <div>
-                    <strong>{{ emp.prenom }} {{ emp.nom }}</strong>
+                    <strong>{{ getField(emp, 'prenom', 'Prenom') }} {{ getField(emp, 'nom', 'Nom') }}</strong>
                   </div>
                 </div>
               </td>
-              <td>{{ emp.direction }}</td>
-              <td>{{ emp.service }}</td>
-              <td>{{ emp.fonction }}</td>
+              <td>{{ getField(emp, 'direction', 'Direction') }}</td>
+              <td>{{ getField(emp, 'service', 'Service') }}</td>
+              <td>{{ getField(emp, 'fonction', 'Fonction', 'gradeFonction', 'GradeFonction') }}</td>
               <td>
-                <span class="role-chip" [ngClass]="'role-' + emp.role.toLowerCase()">{{ emp.role }}</span>
+                <span class="role-chip" [ngClass]="'role-' + getField(emp, 'role', 'Role').toLowerCase()">
+                  {{ getField(emp, 'role', 'Role') }}
+                </span>
               </td>
               <td>
-                <span class="solde-chip">{{ emp.solde }} j</span>
+                <span class="solde-chip">{{ getField(emp, 'soldeConges', 'SoldeConges', 'solde', 'Solde') || '0' }} j</span>
               </td>
               <td>
                 <div class="row-actions">
-                  <button class="abtn abtn-teal" type="button" (click)="openEditModal(emp)">
+                  <button class="abtn abtn-teal" type="button" (click)="openEditModal(emp)" [disabled]="actionLoading">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     Modifier
                   </button>
-                  <button class="abtn abtn-danger" type="button" (click)="desactiver(emp.matricule)">
+                  <button class="abtn abtn-danger" type="button" (click)="deactivateEmployee(emp)" [disabled]="actionLoading || emp.isActive === false || emp.IsActive === false">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
                     Désactiver
                   </button>
@@ -90,13 +102,16 @@
               </td>
             </tr>
           }
+          @if (filteredEmployees.length === 0) {
+            <tr><td colspan="8" class="empty-cell">Aucun employé trouvé.</td></tr>
+          }
         </tbody>
       </table>
     </div>
 
     <!-- PAGINATION -->
     <div class="pagination">
-      <span class="pagination-info">Affichage 1–{{ employees.length }} sur {{ employees.length }}</span>
+      <span class="pagination-info">Affichage {{ filteredEmployees.length }} sur {{ employees.length }}</span>
       <div class="pagination-btns">
         <button class="pag-btn" type="button" disabled>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -109,6 +124,7 @@
       </div>
     </div>
   </div>
+  }
 
   <!-- ADD EMPLOYEE MODAL -->
   @if (isModalOpen) {
@@ -125,6 +141,10 @@
           </button>
         </div>
 
+        @if (erreur) {
+          <div class="msg-error-inline">{{ erreur }}</div>
+        }
+
         <form class="modal-form" (ngSubmit)="addEmployee()">
           <div class="form-grid">
 
@@ -137,11 +157,11 @@
             <div class="field">
               <label for="role">Rôle <span class="req">*</span></label>
               <select id="role" class="finput" [(ngModel)]="newEmployee.role" name="role">
-                <option>Employé</option>
-                <option>SH</option>
-                <option>DG</option>
-                <option>RH</option>
-                <option>Admin</option>
+                <option value="employe">Employé</option>
+                <option value="n1">Responsable N+1</option>
+                <option value="dg">Direction Générale</option>
+                <option value="rh">Direction RH</option>
+                <option value="admin">Admin</option>
               </select>
             </div>
 
@@ -182,7 +202,7 @@
             <div class="field">
               <label for="solde">Solde congés (jours)</label>
               <input id="solde" class="finput" type="number" min="0" placeholder="0"
-                [(ngModel)]="newEmployee.solde" name="solde" />
+                [(ngModel)]="newEmployee.soldeConges" name="soldeConges" />
             </div>
 
             <div class="field">
@@ -194,10 +214,10 @@
           </div>
 
           <div class="modal-footer">
-            <button class="mbtn mbtn-ghost" type="button" (click)="closeModal()">Annuler</button>
-            <button class="mbtn mbtn-teal" type="submit">
+            <button class="mbtn mbtn-ghost" type="button" (click)="closeModal()" [disabled]="actionLoading">Annuler</button>
+            <button class="mbtn mbtn-teal" type="submit" [disabled]="actionLoading">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Enregistrer
+              {{ actionLoading ? 'Enregistrement…' : 'Enregistrer' }}
             </button>
           </div>
         </form>

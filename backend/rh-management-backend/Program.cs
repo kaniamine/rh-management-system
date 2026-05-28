@@ -76,6 +76,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IDemandeCongeService, DemandeCongeService>();
 builder.Services.AddScoped<IRhStatisticsService, RhStatisticsService>();
+builder.Services.AddHostedService<CongeAccrualService>();
+builder.Services.AddScoped<IPointageService, PointageService>();
 
 // ── BUILD ─────────────────────────────────────────────────────────────────────
 var app = builder.Build();

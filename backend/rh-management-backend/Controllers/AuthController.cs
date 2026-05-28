@@ -15,11 +15,13 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly RhDbContext _db;
+    private readonly IConfiguration _config;
 
-    public AuthController(IAuthService authService, RhDbContext db)
+    public AuthController(IAuthService authService, RhDbContext db, IConfiguration config)
     {
         _authService = authService;
         _db = db;
+        _config = config;
     }
 
     [HttpPost("login")]
@@ -40,7 +42,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("change-password")]
-    [Authorize]
+    [Authorize(Roles = "employe,n1,dg,rh,admin")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
     {
         try
@@ -48,6 +50,9 @@ public class AuthController : ControllerBase
             var matricule = User.FindFirstValue("matricule");
             if (string.IsNullOrEmpty(matricule))
                 return Unauthorized();
+
+            if (string.IsNullOrWhiteSpace(dto.CurrentPassword) || string.IsNullOrWhiteSpace(dto.NewPassword))
+                return BadRequest(new { message = "Mot de passe actuel et nouveau mot de passe obligatoires." });
 
             var (ok, error) = await _authService.ChangePasswordAsync(matricule, dto);
             if (!ok)
@@ -138,6 +143,21 @@ public class AuthController : ControllerBase
 
         await db.SaveChangesAsync();
         return Ok(new { message = $"Mot de passe de {matricule} réinitialisé avec succès." });
+    }
+
+    /// POST /api/auth/valider-cle-admin
+    [HttpPost("valider-cle-admin")]
+    [Authorize(Roles = "rh")]
+    public IActionResult ValiderCleAdmin([FromBody] ValiderCleAdminDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto?.Cle))
+            return BadRequest(new { error = "Clé d'accès requise." });
+
+        var cleAttendue = _config["Admin:CleAcces"];
+        if (string.IsNullOrEmpty(cleAttendue) || dto.Cle != cleAttendue)
+            return BadRequest(new { error = "Clé d'accès incorrecte. Accès refusé." });
+
+        return Ok(new { adminValide = true });
     }
 
     // GET /api/auth/check-matricule?matricule=EMP001

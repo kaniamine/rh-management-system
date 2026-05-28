@@ -72,7 +72,7 @@
       </div>
       <div class="mp-stat-body">
         <span class="mp-stat-label">Demandes soumises</span>
-        <span class="mp-stat-value">{{ totalDemandes }}</span>
+        <span class="mp-stat-value">{{ statsLoading ? '--' : totalDemandes }}</span>
         <span class="mp-bar-hint">toutes catégories confondues</span>
       </div>
     </div>
@@ -86,12 +86,12 @@
         <span class="mp-stat-label">Résultats des demandes</span>
         <div class="mp-two-stats">
           <div class="mp-two-item mp-two-ok">
-            <span class="mp-two-num">{{ demandesValidees }}</span>
+            <span class="mp-two-num">{{ statsLoading ? '--' : demandesValidees }}</span>
             <span class="mp-two-lbl">validées</span>
           </div>
           <div class="mp-two-sep"></div>
           <div class="mp-two-item mp-two-ko">
-            <span class="mp-two-num">{{ demandesRejetees }}</span>
+            <span class="mp-two-num">{{ statsLoading ? '--' : demandesRejetees }}</span>
             <span class="mp-two-lbl">rejetées</span>
           </div>
         </div>
@@ -105,11 +105,32 @@
       </div>
       <div class="mp-stat-body">
         <span class="mp-stat-label">Demandes en attente</span>
-        <span class="mp-stat-value mp-amber">{{ totalDemandes - demandesValidees - demandesRejetees }}</span>
+        <span class="mp-stat-value mp-amber">{{ statsLoading ? '--' : demandesAttente }}</span>
         <span class="mp-bar-hint">en cours de traitement</span>
       </div>
     </div>
 
   </div>
+
+  @if (isRh) {
+    <div style="margin-top:32px; padding-top:24px; border-top:2px solid #f0f0f0; display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+      <a routerLink="/rh/acces-admin"
+         style="background:linear-gradient(135deg,#c60c30,#ff0040); color:white; border:none; border-radius:12px; padding:14px 32px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 4px 15px rgba(198,12,48,0.3); display:inline-flex; align-items:center; gap:10px; text-decoration:none; font-family:'Mada','Open Sans',Arial,sans-serif;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+        </svg>
+        Accès Admin — Espace Sécurisé
+      </a>
+      @if (isAdmin) {
+        <a routerLink="/rh/creer-compte-rh"
+           style="background:linear-gradient(135deg,#ff5800,#ff7a2e); color:white; border:none; border-radius:12px; padding:14px 32px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 4px 15px rgba(255,88,0,0.3); display:inline-flex; align-items:center; gap:10px; text-decoration:none; font-family:'Mada','Open Sans',Arial,sans-serif;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+            <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+          Créer un compte RH
+        </a>
+      }
+    </div>
+  }
 
 </div>

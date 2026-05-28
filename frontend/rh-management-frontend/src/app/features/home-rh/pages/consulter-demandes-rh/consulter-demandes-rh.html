@@ -1,0 +1,245 @@
+<div class="vpage">
+
+  <!-- HEADER -->
+  <div class="vpage-header">
+    <div class="vpage-header-left">
+      <img src="assets/logo.png" alt="Al Baraka Assurances" class="page-logo" />
+      <div class="page-logo-divider"></div>
+      <div>
+        <h1>Consulter les demandes</h1>
+        <p>Vue consolidée — congés, autorisations et maladies de tous les employés</p>
+      </div>
+    </div>
+    <button class="abtn abtn-teal" (click)="loadDemandes()" [disabled]="loading">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3"/></svg>
+      Actualiser
+    </button>
+  </div>
+
+  @if (successMsg) {
+    <div class="msg-success">{{ successMsg }}</div>
+  }
+  @if (error) {
+    <div class="msg-error">{{ error }}</div>
+  }
+
+  <!-- KPI STRIP -->
+  <div class="kpi-strip">
+    <div class="kpi-card kpi-orange">
+      <span class="kpi-lbl">En attente RH</span>
+      <strong class="kpi-val">{{ demandesEnAttenteRH.length }}</strong>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-lbl">Total</span>
+      <strong class="kpi-val">{{ demandes.length }}</strong>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-lbl">Congés</span>
+      <strong class="kpi-val">{{ countByType('conge') }}</strong>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-lbl">Autorisations</span>
+      <strong class="kpi-val">{{ countByType('autorisation') }}</strong>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading-spinner">Chargement...</div>
+  } @else {
+
+  <!-- SECTION 1: EN ATTENTE DE TRAITEMENT RH -->
+  <div class="section-block">
+    <div class="section-heading section-heading-pending">
+      <div class="section-heading-left">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <h2>Demandes en attente de traitement RH</h2>
+        @if (demandesEnAttenteRH.length > 0) {
+          <span class="count-badge">{{ demandesEnAttenteRH.length }}</span>
+        }
+      </div>
+      <p>Ces demandes nécessitent votre action (clôture ou validation)</p>
+    </div>
+
+    @if (demandesEnAttenteRH.length === 0) {
+      <div class="empty-state-small">Aucune demande en attente de traitement RH.</div>
+    }
+    <div class="demande-list">
+      @for (d of demandesEnAttenteRH; track d.id + '-' + d.type) {
+        <div class="demande-row demande-row-pending"
+             [class.selected]="selectedDemande?.id === d.id && selectedDemande?.type === d.type"
+             (click)="selectDemande(d)">
+          <div class="drow-type" [ngClass]="getTypeClass(d.type)">
+            @if (d.type === 'conge') {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+            } @else if (d.type === 'autorisation') {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            } @else {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            }
+          </div>
+          <div class="drow-info">
+            <strong>{{ d.nomComplet }}</strong>
+            <span>{{ d.typeLabel }} · {{ d.sousType }}{{ d.dateDebut ? ' · ' + d.dateDebut : '' }}{{ d.dateFin ? ' → ' + d.dateFin : '' }}{{ d.duree ? ' · ' + d.duree : '' }}</span>
+          </div>
+          <div class="drow-meta">
+            <span class="drow-statut" [ngClass]="getStatutClass(d.statut)">{{ d.statut }}</span>
+          </div>
+          <div class="drow-actions" (click)="$event.stopPropagation()">
+            @if (d.type === 'conge') {
+              <button class="abtn abtn-teal" (click)="cloturerDemande(d)" [disabled]="actionLoading">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Clôturer
+              </button>
+            }
+            @if (d.type === 'maladie') {
+              <button class="abtn abtn-danger" (click)="rejeterDemande(d)" [disabled]="actionLoading">Rejeter</button>
+              <button class="abtn abtn-teal" (click)="validerMaladie(d)" [disabled]="actionLoading">Valider</button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- SECTION 2: HISTORIQUE -->
+  <div class="section-block">
+    <div class="section-heading">
+      <div class="section-heading-left">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <h2>Historique des demandes</h2>
+        @if (demandesHistorique.length > 0) {
+          <span class="count-badge">{{ demandesHistorique.length }}</span>
+        }
+      </div>
+      <p>Toutes les autres demandes, triées par date</p>
+    </div>
+
+    <div class="toolbar">
+      <select class="filter-select" [(ngModel)]="filterStatut">
+        <option value="">Tous les statuts</option>
+        <option value="Validée">Validée</option>
+        <option value="Clôturée">Clôturée</option>
+        <option value="Rejetée">Rejetée</option>
+        <option value="En attente">En attente</option>
+      </select>
+    </div>
+
+    <div class="demande-list">
+      @for (d of demandesHistorique; track d.id + '-' + d.type) {
+        <div class="demande-row"
+             [class.selected]="selectedDemande?.id === d.id && selectedDemande?.type === d.type"
+             (click)="selectDemande(d)">
+          <div class="drow-type" [ngClass]="getTypeClass(d.type)">
+            @if (d.type === 'conge') {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+            } @else if (d.type === 'autorisation') {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            } @else {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            }
+          </div>
+          <div class="drow-info">
+            <strong>{{ d.nomComplet }}</strong>
+            <span>{{ d.typeLabel }} · {{ d.sousType }}{{ d.dateDebut ? ' · ' + d.dateDebut : '' }}{{ d.dateFin ? ' → ' + d.dateFin : '' }}{{ d.duree ? ' · ' + d.duree : '' }}</span>
+          </div>
+          <div class="drow-meta">
+            <span class="drow-statut" [ngClass]="getStatutClass(d.statut)">{{ d.statut }}</span>
+          </div>
+        </div>
+      }
+      @if (demandesHistorique.length === 0) {
+        <div class="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#a7a9ac" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <p>Aucune demande dans l'historique.</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  }
+
+  <!-- DETAIL PANEL -->
+  @if (selectedDemande) {
+    <div class="detail-panel">
+      <div class="detail-inner">
+        <div class="detail-head">
+          <div>
+            <h3>{{ selectedDemande.typeLabel }} — {{ selectedDemande.sousType }}</h3>
+            <p>{{ selectedDemande.nomComplet }} · {{ selectedDemande.matricule }}</p>
+          </div>
+          <button class="close-btn" (click)="closeDetail()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-row"><span>Employé</span><strong>{{ selectedDemande.nomComplet }}</strong></div>
+          <div class="detail-row"><span>Matricule</span><strong>{{ selectedDemande.matricule }}</strong></div>
+          <div class="detail-row"><span>Service</span><strong>{{ selectedDemande.service }}</strong></div>
+          <div class="detail-row"><span>Type</span><strong>{{ selectedDemande.sousType }}</strong></div>
+          <div class="detail-row"><span>Date début</span><strong>{{ selectedDemande.dateDebut }}</strong></div>
+          @if (selectedDemande.dateFin) {
+            <div class="detail-row"><span>Date fin</span><strong>{{ selectedDemande.dateFin }}</strong></div>
+          }
+          @if (selectedDemande.duree) {
+            <div class="detail-row"><span>Durée</span><strong>{{ selectedDemande.duree }}</strong></div>
+          }
+          @if (selectedDemande.motif) {
+            <div class="detail-row detail-row-full"><span>Motif</span><strong>{{ selectedDemande.motif }}</strong></div>
+          }
+          <div class="detail-row detail-row-full">
+            <span>Statut</span>
+            <span class="drow-statut" [ngClass]="getStatutClass(selectedDemande.statut)">{{ selectedDemande.statut }}</span>
+          </div>
+        </div>
+
+        @if (actionError) {
+          <div class="msg-error">{{ actionError }}</div>
+        }
+
+        @if (selectedDemande.type === 'conge') {
+          <div class="detail-actions detail-actions-single">
+            <button class="abtn abtn-teal w100" (click)="cloturerDemande(selectedDemande)" [disabled]="actionLoading">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              {{ actionLoading ? 'Clôture en cours…' : 'Clôturer la demande' }}
+            </button>
+          </div>
+        }
+
+        @if (selectedDemande.type === 'maladie') {
+          <div class="detail-actions">
+            <button class="abtn abtn-danger w100" (click)="openRejectModal()" [disabled]="actionLoading">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Rejeter
+            </button>
+            <button class="abtn abtn-teal w100" (click)="validerMaladie(selectedDemande)" [disabled]="actionLoading">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              {{ actionLoading ? 'Validation…' : 'Valider' }}
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- REJECT MODAL -->
+  @if (showRejectModal) {
+    <div class="modal-back">
+      <div class="modal-box">
+        <div class="modal-icon danger">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+        <h3>Rejeter la demande</h3>
+        <p>Indiquez le motif du rejet (obligatoire).</p>
+        <textarea class="reject-input" rows="3" placeholder="Motif du rejet..." [(ngModel)]="rejectMotif" [disabled]="actionLoading"></textarea>
+        <div class="modal-actions">
+          <button class="mbtn mbtn-ghost" (click)="showRejectModal = false" [disabled]="actionLoading">Annuler</button>
+          <button class="mbtn mbtn-danger" (click)="rejeterMaladie()" [disabled]="actionLoading || !rejectMotif.trim()">
+            {{ actionLoading ? 'Rejet…' : 'Confirmer le rejet' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

@@ -449,3 +449,52 @@
   background: #f0f0f0;
   margin: 4px 0;
 }
+
+.user-menu-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #aaa;
+  padding: 6px 12px 2px;
+}
+
+/* ── Admin access buttons ────────────────────────────────── */
+.nav-admin-btn,
+.nav-create-rh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 0.15s, transform 0.15s;
+  font-family: inherit;
+}
+
+.nav-admin-btn {
+  background: #c60c30;
+  box-shadow: 0 2px 8px rgba(198,12,48,0.25);
+}
+
+.nav-admin-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.nav-create-rh-btn {
+  background: #ff5800;
+  box-shadow: 0 2px 8px rgba(255,88,0,0.25);
+}
+
+.nav-create-rh-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}

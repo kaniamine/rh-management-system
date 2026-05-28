@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
@@ -53,6 +53,7 @@ export class ResponsableValidations implements OnInit {
   private readonly congeService = inject(Conge);
   private readonly autoService  = inject(Autorisation);
   private readonly auth         = inject(AuthService);
+  private readonly cdr          = inject(ChangeDetectorRef);
 
   get responsable() {
     return {
@@ -135,8 +136,9 @@ export class ResponsableValidations implements OnInit {
 
         this.demandes = [...mappedConges, ...mappedAutorisations];
         this.loading = false;
+        this.cdr.detectChanges();
       },
-      error: () => { this.loading = false; }
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
   }
 
@@ -242,9 +244,10 @@ export class ResponsableValidations implements OnInit {
         this.actionLoading    = false;
         this.showApproveModal = false;
         this.selectedDemande  = null;
+        this.cdr.detectChanges();
         this.loadDemandes();
       },
-      error: () => { this.actionLoading = false; }
+      error: () => { this.actionLoading = false; this.cdr.detectChanges(); }
     });
   }
 
@@ -264,9 +267,10 @@ export class ResponsableValidations implements OnInit {
         this.showRejectModal = false;
         this.selectedDemande = null;
         this.rejectMotif     = '';
+        this.cdr.detectChanges();
         this.loadDemandes();
       },
-      error: () => { this.actionLoading = false; }
+      error: () => { this.actionLoading = false; this.cdr.detectChanges(); }
     });
   }
 

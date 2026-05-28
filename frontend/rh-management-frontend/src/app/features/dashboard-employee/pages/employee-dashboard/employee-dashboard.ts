@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -37,6 +37,7 @@ export class EmployeeDashboard implements OnInit {
   private readonly congeService   = inject(Conge);
   private readonly autoService    = inject(Autorisation);
   private readonly maladieService = inject(Maladie);
+  private readonly cdr            = inject(ChangeDetectorRef);
 
   loading      = true;
   activeTab: TypeDemande = 'all';
@@ -115,10 +116,12 @@ export class EmployeeDashboard implements OnInit {
         this.demandes = [...mappedConges, ...mappedAutorisations, ...mappedMaladies]
           .sort((a, b) => b.dateCreation.localeCompare(a.dateCreation));
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err: HttpErrorResponse) => {
         this.loadError = err.error?.message ?? `Erreur ${err.status} lors du chargement.`;
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -178,10 +181,11 @@ export class EmployeeDashboard implements OnInit {
     obs$.subscribe({
       next: () => {
         this.actionLoading = false;
+        this.cdr.detectChanges();
         this.closeDetail();
         this.chargerDemandes();
       },
-      error: () => { this.actionLoading = false; }
+      error: () => { this.actionLoading = false; this.cdr.detectChanges(); }
     });
   }
 }

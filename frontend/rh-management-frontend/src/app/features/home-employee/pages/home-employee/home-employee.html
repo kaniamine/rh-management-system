@@ -27,10 +27,14 @@
         <img src="assets/logo.png" alt="Al Baraka Assurances" class="he-logo" />
         <div class="he-solde-card">
           <span class="he-solde-label">SOLDE CONGÉS</span>
-          <span class="he-solde-value">12</span>
+          @if (isLoadingSolde) {
+            <span class="he-solde-value">—</span>
+          } @else {
+            <span class="he-solde-value">{{ soldeConges ?? '—' }}</span>
+          }
           <span class="he-solde-unit">jours disponibles</span>
           <div class="he-solde-track">
-            <div class="he-solde-fill"></div>
+            <div class="he-solde-fill" [style.width.%]="soldeConges != null ? (soldeConges / 30) * 100 : 0"></div>
           </div>
         </div>
       </div>
@@ -127,58 +131,5 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════ BOTTOM PANELS ═══════════════════════ -->
-  @if (loading) {
-    <div class="he-loading-msg">Chargement...</div>
-  } @else {
-  <div class="he-bottom">
-
-    <section class="he-panel">
-      <div class="he-panel-top">
-        <div>
-          <h3>Demandes récentes</h3>
-          <p>Vos dernières soumissions</p>
-        </div>
-        <a routerLink="/dashboard-employee" class="he-see-all">Voir tout →</a>
-      </div>
-      <div class="he-req-list">
-        @for (req of recentRequests; track req.type) {
-          <div class="he-req-row">
-            <span class="he-req-dot" [ngClass]="'icon-' + (req.statut === 'Validée' ? 'approved' : req.statut === 'Rejetée' ? 'rejected' : 'pending')"></span>
-            <div class="he-req-info">
-              <span class="he-req-type">{{ req.type }}</span>
-              <span class="he-req-date">{{ req.date }}</span>
-            </div>
-            <span class="he-badge"
-              [ngClass]="{
-                'badge-approved': req.statut === 'Validée',
-                'badge-rejected': req.statut === 'Rejetée',
-                'badge-pending':  req.statut === 'En attente'
-              }">{{ req.statut }}</span>
-          </div>
-        }
-      </div>
-    </section>
-
-    <section class="he-panel">
-      <div class="he-panel-top">
-        <div>
-          <h3>Notifications</h3>
-          <p>Messages et alertes</p>
-        </div>
-        <span class="he-notif-count">{{ notifications.length }}</span>
-      </div>
-      <div class="he-notif-list">
-        @for (notif of notifications; track notif) {
-          <div class="he-notif-row">
-            <span class="he-notif-dot"></span>
-            <p>{{ notif }}</p>
-          </div>
-        }
-      </div>
-    </section>
-
-  </div>
-  }
 
 </div>
