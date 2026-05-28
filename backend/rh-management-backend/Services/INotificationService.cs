@@ -14,4 +14,11 @@ public interface INotificationService
 
     Task<List<Notification>> GetNotificationsNonLuesAsync(string matricule);
     Task<List<Notification>> GetNotificationsParDemandeAsync(string typeDemande, int demandeId);
+
+    Task NotifierRoleAsync(
+        string role,
+        string typeDemande,
+        int demandeId,
+        string action,
+        string message);
 }

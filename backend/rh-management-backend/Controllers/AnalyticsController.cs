@@ -7,7 +7,7 @@ namespace rh_management_backend.Controllers;
 
 [ApiController]
 [Route("api/analytics")]
-[Authorize(Roles = "rh,admin,dg")]
+[Authorize(Roles = "rh,dg")]
 public class AnalyticsController : ControllerBase
 {
     private readonly RhDbContext _db;

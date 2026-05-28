@@ -7,7 +7,7 @@ namespace rh_management_backend.Controllers;
 
 [ApiController]
 [Route("api/admin")]
-[Authorize(Roles = "rh,admin")]
+[Authorize(Roles = "rh")]
 public class AdminController : ControllerBase
 {
     private readonly RhDbContext _db;

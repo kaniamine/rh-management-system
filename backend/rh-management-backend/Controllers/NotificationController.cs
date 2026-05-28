@@ -13,12 +13,12 @@ namespace rh_management_backend.Controllers;
 public class NotificationController : ControllerBase
 {
     private readonly RhDbContext _db;
-    private readonly NotificationService _notif;
+    private readonly INotificationService _notif;
 
     public NotificationController(RhDbContext db, INotificationService notif)
     {
         _db    = db;
-        _notif = (NotificationService)notif;
+        _notif = notif;
     }
 
     // GET /api/notifications?matricule=EMP001
@@ -44,7 +44,7 @@ public class NotificationController : ControllerBase
 
     // GET /api/notifications/demande?typeDemande=conge&demandeId=42  (RH uniquement)
     [HttpGet("demande")]
-    [Authorize(Roles = "rh,admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> GetParDemande(
         [FromQuery] string typeDemande,
         [FromQuery] int demandeId)
@@ -78,7 +78,7 @@ public class NotificationController : ControllerBase
 
     // GET /api/notifications/reset-password-requests
     [HttpGet("reset-password-requests")]
-    [Authorize(Roles = "rh,admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> GetResetPasswordRequests()
     {
         var list = await _db.Notifications

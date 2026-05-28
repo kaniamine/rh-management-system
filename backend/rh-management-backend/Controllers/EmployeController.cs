@@ -14,9 +14,9 @@ public class EmployeController : ControllerBase
     private readonly RhDbContext _db;
     public EmployeController(RhDbContext db) => _db = db;
 
-    // POST /api/employes — création employé + compte utilisateur (RH/admin)
+    // POST /api/employes — création employé + compte utilisateur (RH)
     [HttpPost]
-    [Authorize(Roles = "rh,admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> Create([FromBody] CreateEmployeDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Matricule) || string.IsNullOrWhiteSpace(dto.Nom) || string.IsNullOrWhiteSpace(dto.Prenom))
@@ -47,11 +47,16 @@ public class EmployeController : ControllerBase
         await _db.SaveChangesAsync();
         Console.WriteLine($"[EMPLOYE CREATE] ✅ Saved to DB with Id={employe.Id}");
 
+        var rolesValides = new[] { "employe", "n1", "dg", "rh" };
+        var roleChoisi = string.IsNullOrWhiteSpace(dto.Role) ? "employe" : dto.Role;
+        if (!rolesValides.Contains(roleChoisi))
+            return BadRequest(new { message = $"Rôle invalide : {roleChoisi}. Valeurs acceptées : employe, n1, dg, rh." });
+
         var user = new User
         {
             Matricule          = matricule,
             PasswordHash       = BCrypt.Net.BCrypt.HashPassword("0000"),
-            Role               = string.IsNullOrWhiteSpace(dto.Role) ? "employe" : dto.Role,
+            Role               = roleChoisi,
             IsActive           = true,
             MustChangePassword = true,
             NombreConnexions   = 0,
@@ -76,9 +81,9 @@ public class EmployeController : ControllerBase
         });
     }
 
-    // GET /api/employes — réservé RH/admin
+    // GET /api/employes — réservé RH
     [HttpGet]
-    [Authorize(Roles = "rh,admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> GetAll()
     {
         var list = await _db.Employes
@@ -87,12 +92,16 @@ public class EmployeController : ControllerBase
             .Select(e => new {
                 e.Id,
                 e.Matricule,
+                e.Nom,
+                e.Prenom,
                 e.NomComplet,
                 e.Direction,
                 e.Service,
                 e.Fonction,
                 e.SuperieurHierarchiqueMatricule,
-                e.SoldeConges
+                e.SoldeConges,
+                e.IsActive,
+                Role = _db.Users.Where(u => u.Matricule == e.Matricule).Select(u => u.Role).FirstOrDefault()
             })
             .ToListAsync();
         return Ok(list);
@@ -128,9 +137,9 @@ public class EmployeController : ControllerBase
         });
     }
 
-    // PATCH /api/employes/{matricule} — mise à jour partielle (RH/admin)
+    // PATCH /api/employes/{matricule} — mise à jour partielle (RH)
     [HttpPatch("{matricule}")]
-    [Authorize(Roles = "rh,admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> Update(string matricule, [FromBody] UpdateEmployeDto dto)
     {
         var emp = await _db.Employes.FirstOrDefaultAsync(e => e.Matricule == matricule.ToUpper() && e.IsActive);
@@ -151,6 +160,10 @@ public class EmployeController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(dto.Role))
         {
+            var rolesValides = new[] { "employe", "n1", "dg", "rh" };
+            if (!rolesValides.Contains(dto.Role))
+                return BadRequest(new { message = $"Rôle invalide : {dto.Role}. Valeurs acceptées : employe, n1, dg, rh." });
+
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Matricule == emp.Matricule);
             if (user != null) user.Role = dto.Role;
         }
@@ -161,7 +174,7 @@ public class EmployeController : ControllerBase
 
     // PATCH /api/employes/{matricule}/desactiver
     [HttpPatch("{matricule}/desactiver")]
-    [Authorize(Roles = "rh,admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> Desactiver(string matricule)
     {
         var employe = await _db.Employes.FirstOrDefaultAsync(e => e.Matricule == matricule);
@@ -180,7 +193,7 @@ public class EmployeController : ControllerBase
 
     // PATCH /api/employes/{matricule}/solde
     [HttpPatch("{matricule}/solde")]
-    [Authorize(Roles = "rh,admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> UpdateSolde(string matricule, [FromBody] int nouveauSolde)
     {
         var e = await _db.Employes.FirstOrDefaultAsync(x => x.Matricule == matricule);
@@ -192,7 +205,7 @@ public class EmployeController : ControllerBase
 
     // PATCH /api/employes/{id:int}/desactiver — désactiver par id
     [HttpPatch("{id:int}/desactiver")]
-    [Authorize(Roles = "rh,admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> Deactivate(int id)
     {
         var emp = await _db.Employes.FindAsync(id);

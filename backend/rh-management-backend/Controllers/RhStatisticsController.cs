@@ -6,7 +6,7 @@ namespace rh_management_backend.Controllers;
 
 [ApiController]
 [Route("api/rh-statistics")]
-[Authorize(Roles = "rh,admin,dg")]
+[Authorize(Roles = "rh,dg")]
 public class RhStatisticsController : ControllerBase
 {
     private readonly IRhStatisticsService _svc;

@@ -14,12 +14,12 @@ namespace rh_management_backend.Controllers;
 public class DemandeAutorisationController : ControllerBase
 {
     private readonly RhDbContext _db;
-    private readonly NotificationService _notif;
+    private readonly INotificationService _notif;
 
     public DemandeAutorisationController(RhDbContext db, INotificationService notif)
     {
         _db    = db;
-        _notif = (NotificationService)notif;
+        _notif = notif;
     }
 
     // GET /api/demandes-autorisation?matricule=...&statut=...
@@ -144,7 +144,7 @@ public class DemandeAutorisationController : ControllerBase
 
     // POST /api/demandes-autorisation/{id}/valider-n1
     [HttpPost("{id}/valider-n1")]
-    [Authorize(Roles = "n1,admin")]
+    [Authorize(Roles = "n1")]
     public async Task<IActionResult> ValiderN1(int id, [FromBody] AutorisationActionDto dto)
     {
         var d = await _db.DemandesAutorisations.FindAsync(id);
@@ -168,7 +168,7 @@ public class DemandeAutorisationController : ControllerBase
 
     // POST /api/demandes-autorisation/{id}/rejeter-n1
     [HttpPost("{id}/rejeter-n1")]
-    [Authorize(Roles = "n1,admin")]
+    [Authorize(Roles = "n1")]
     public async Task<IActionResult> RejeterN1(int id, [FromBody] AutorisationActionDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Commentaire))
