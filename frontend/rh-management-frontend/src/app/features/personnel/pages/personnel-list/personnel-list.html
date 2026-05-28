@@ -145,7 +145,7 @@
           <div class="msg-error-inline">{{ erreur }}</div>
         }
 
-        <form class="modal-form" (ngSubmit)="addEmployee()">
+        <form class="modal-form" (ngSubmit)="validerEtSoumettre()">
           <div class="form-grid">
 
             <div class="field">
@@ -157,12 +157,20 @@
             <div class="field">
               <label for="role">Rôle <span class="req">*</span></label>
               <select id="role" class="finput" [(ngModel)]="newEmployee.role" name="role">
+                <option value="">-- Sélectionner un rôle --</option>
                 <option value="employe">Employé</option>
                 <option value="n1">Responsable N+1</option>
                 <option value="dg">Direction Générale</option>
-                <option value="rh">Direction RH</option>
-                <option value="admin">Admin</option>
+                @if (isAdmin) {
+                  <option value="rh">Ressources Humaines (RH)</option>
+                }
               </select>
+              @if (!isAdmin) {
+                <p style="font-size:11px; color:#a7a9ac; margin:4px 0 0; font-style:italic; line-height:1.4;">
+                  💡 Pour créer un compte RH, un accès administrateur est requis.
+                  <a routerLink="/rh/acces-admin" style="color:#c60c30; font-weight:700; text-decoration:none;">Accéder →</a>
+                </p>
+              }
             </div>
 
             <div class="field">
@@ -284,9 +292,16 @@
                 <option>Employé</option>
                 <option>SH</option>
                 <option>DG</option>
-                <option>RH</option>
-                <option>Admin</option>
+                @if (isAdmin) {
+                  <option>RH</option>
+                }
               </select>
+              @if (!isAdmin) {
+                <p style="font-size:11px; color:#a7a9ac; margin:4px 0 0; font-style:italic; line-height:1.4;">
+                  💡 Pour attribuer le rôle RH, un accès administrateur est requis.
+                  <a routerLink="/rh/acces-admin" style="color:#c60c30; font-weight:700; text-decoration:none;">Accéder →</a>
+                </p>
+              }
             </div>
 
             <div class="field">

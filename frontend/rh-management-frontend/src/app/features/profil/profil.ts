@@ -43,7 +43,7 @@ export class Profil {
       n1:      'Responsable N+1',
       dg:      'Direction Générale',
       rh:      'Direction RH',
-      admin:   'Administrateur'
+      admin:   'Direction RH'
     };
     return map[this.auth.role] ?? this.auth.role;
   }

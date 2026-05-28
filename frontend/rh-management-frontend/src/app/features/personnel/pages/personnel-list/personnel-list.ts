@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../../core/auth.service';
 
@@ -9,14 +10,19 @@ const API = 'http://localhost:5131';
 @Component({
   selector:    'app-personnel-list',
   standalone:  true,
-  imports:     [CommonModule, FormsModule],
+  imports:     [CommonModule, FormsModule, RouterLink],
   templateUrl: './personnel-list.html',
   styleUrls:   ['./personnel-list.css']
 })
 export class PersonnelList implements OnInit {
-  private http = inject(HttpClient);
-  private auth = inject(AuthService);
-  private cdr  = inject(ChangeDetectorRef);
+  private http       = inject(HttpClient);
+  private auth       = inject(AuthService);
+  private cdr        = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
+
+  get isAdmin(): boolean {
+    return isPlatformBrowser(this.platformId) && localStorage.getItem('isAdmin') === 'true';
+  }
 
   isLoading     = false;
   actionLoading = false;
@@ -35,7 +41,7 @@ export class PersonnelList implements OnInit {
     direction:  'IT',
     service:    '',
     fonction:   '',
-    role:       'Employé',
+    role:       'employe',
     soldeConges: 0,
     telephone:  ''
   };
@@ -99,7 +105,19 @@ export class PersonnelList implements OnInit {
   closeModal(): void { this.isModalOpen = false; this.resetNewEmployee(); }
 
   resetNewEmployee(): void {
-    this.newEmployee = { matricule: '', nom: '', prenom: '', direction: 'IT', service: '', fonction: '', role: 'Employé', soldeConges: 0, telephone: '' };
+    this.newEmployee = { matricule: '', nom: '', prenom: '', direction: 'IT', service: '', fonction: '', role: 'employe', soldeConges: 0, telephone: '' };
+  }
+
+  validerEtSoumettre(): void {
+    if (this.newEmployee.role === 'rh' && !this.isAdmin) {
+      this.erreur = 'Vous n\'avez pas les droits pour créer un compte RH. Accès Admin requis.';
+      return;
+    }
+    if (this.newEmployee.role === 'admin' || this.newEmployee.role === 'Admin') {
+      this.erreur = 'Ce rôle n\'existe plus.';
+      return;
+    }
+    this.addEmployee();
   }
 
   addEmployee(): void {
@@ -151,7 +169,7 @@ export class PersonnelList implements OnInit {
     if (!this.editTarget) return;
     this.editSaving = true;
     this.editError  = '';
-    this.http.put(`${API}/api/employes/${this.editTarget.matricule}`, {
+    this.http.patch(`${API}/api/employes/${this.editTarget.matricule}`, {
       nom:         (this.editTarget.nom ?? '').trim(),
       prenom:      (this.editTarget.prenom ?? '').trim(),
       direction:   this.editTarget.direction,
@@ -226,14 +244,14 @@ export class PersonnelList implements OnInit {
 
   private mapRole(display: string): string {
     const map: Record<string, string> = {
-      'Employé': 'employe', 'SH': 'n1', 'DG': 'dg', 'RH': 'rh', 'Admin': 'admin'
+      'Employé': 'employe', 'SH': 'n1', 'DG': 'dg', 'RH': 'rh'
     };
     return map[display] ?? display.toLowerCase();
   }
 
   private displayRole(raw: string): string {
     const map: Record<string, string> = {
-      employe: 'Employé', n1: 'SH', dg: 'DG', rh: 'RH', admin: 'Admin'
+      employe: 'Employé', n1: 'SH', dg: 'DG', rh: 'RH', admin: 'RH'
     };
     return map[raw] ?? map[raw?.toLowerCase()] ?? raw;
   }

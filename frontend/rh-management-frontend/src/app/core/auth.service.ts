@@ -6,7 +6,7 @@ import { tap } from 'rxjs/operators';
 
 export interface UserSession {
   matricule: string;
-  role: 'employe' | 'n1' | 'dg' | 'rh' | 'admin';
+  role: 'employe' | 'n1' | 'dg' | 'rh' | 'admin'; // 'admin' kept for backward compat — treated as 'rh'
   nomComplet: string;
   initiales: string;
   direction: string;
