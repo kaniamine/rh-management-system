@@ -42,7 +42,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("change-password")]
-    [Authorize(Roles = "employe,n1,dg,rh,admin")]
+    [Authorize(Roles = "employe,n1,dg,rh")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
     {
         try
@@ -72,23 +72,31 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> ForgotPassword(
         [FromBody] ForgotPasswordDto dto,
-        [FromServices] RhDbContext db)
+        [FromServices] RhDbContext db,
+        [FromServices] ISmsService smsService)
     {
-        var matricule = dto.Matricule.ToUpper();
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Matricule == matricule && u.IsActive);
+        var matricule = dto.Matricule.Trim().ToUpper();
+        var telephone = dto.Telephone.Trim();
 
-        if (user != null)
-        {
-            db.Notifications.Add(new Notification
-            {
-                DestinataireMatricule = "RH001",
-                Message = $"Demande de réinitialisation de mot de passe ||| {matricule}",
-                Timestamp = DateTime.UtcNow
-            });
-            await db.SaveChangesAsync();
-        }
+        var user = await db.Users
+            .Include(u => u.Employe)
+            .FirstOrDefaultAsync(u => u.Matricule == matricule && u.IsActive);
 
-        return Ok(new { message = "Si ce matricule est valide, une demande a été transmise au service RH." });
+        const string genericResponse = "Si ce matricule et ce numéro de téléphone sont valides, votre mot de passe a été réinitialisé.";
+
+        if (user == null || user.Employe.Telephone != telephone)
+            return Ok(new { message = genericResponse });
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword("0000");
+        user.MustChangePassword = true;
+        await db.SaveChangesAsync();
+
+        await smsService.SendAsync(
+            telephone,
+            "Al Baraka Assurances : votre mot de passe a été réinitialisé. Connectez-vous avec le mot de passe temporaire : 0000"
+        );
+
+        return Ok(new { message = genericResponse });
     }
 
     /// POST /api/auth/reset-password  (RH resets an employee's password)
@@ -118,9 +126,9 @@ public class AuthController : ControllerBase
         return Ok(new { message = $"Mot de passe de {matricule} réinitialisé avec succès." });
     }
 
-    /// POST /api/auth/admin-reset-password  (admin override — can reset any active user)
+    /// POST /api/auth/admin-reset-password  (rh override — can reset any active user)
     [HttpPost("admin-reset-password")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> AdminResetPassword(
         [FromBody] ResetPasswordDto dto,
         [FromServices] RhDbContext db)
@@ -162,7 +170,7 @@ public class AuthController : ControllerBase
 
     // GET /api/auth/check-matricule?matricule=EMP001
     [HttpGet("check-matricule")]
-    [Authorize(Roles = "rh,admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> CheckMatricule(
         [FromQuery] string matricule,
         [FromServices] RhDbContext db)

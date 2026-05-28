@@ -12,6 +12,7 @@ public class Employe
     public string? Fonction { get; set; }
     public string? SuperieurHierarchique { get; set; }
     public string? SuperieurHierarchiqueMatricule { get; set; }
+    public string? Telephone { get; set; }
     public int SoldeCongesJours { get; set; } = 30;
     public int SoldeConges { get; set; } = 30;
     public bool IsActive { get; set; } = true;
