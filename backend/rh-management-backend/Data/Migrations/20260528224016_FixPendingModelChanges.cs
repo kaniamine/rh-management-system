@@ -10,7 +10,17 @@ namespace rh_management_backend.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Telephone column already exists in DB — skip AddColumn to avoid duplicate column error.
+            // Add Telephone column if it doesn't already exist (handles both fresh and existing DBs).
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (
+                    SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_NAME = 'Employes' AND COLUMN_NAME = 'Telephone'
+                )
+                BEGIN
+                    ALTER TABLE [Employes] ADD [Telephone] nvarchar(max) NULL
+                END
+            ");
+
             migrationBuilder.UpdateData(
                 table: "Employes",
                 keyColumn: "Id",
@@ -50,7 +60,9 @@ namespace rh_management_backend.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // Nothing to revert — AddColumn was skipped because the column pre-existed.
+            migrationBuilder.DropColumn(
+                name: "Telephone",
+                table: "Employes");
         }
     }
 }
