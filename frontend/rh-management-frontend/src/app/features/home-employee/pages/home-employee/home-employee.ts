@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -14,6 +14,7 @@ import { AuthService } from '../../../../core/auth.service';
 export class HomeEmployee implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
+  private readonly cdr  = inject(ChangeDetectorRef);
 
   private readonly matricule = this.auth.session?.matricule ?? 'EMP-2026-014';
 
@@ -30,14 +31,11 @@ export class HomeEmployee implements OnInit {
     { label: 'Demandes en attente', value: '--', tone: 'green' }
   ];
 
-  recentRequests: { type: string; date: string; statut: string }[] = [];
-
-  notifications: string[] = [];
-  loading = true;
+  soldeConges: number | null = null;
+  isLoadingSolde = true;
 
   ngOnInit(): void {
     this.loadEmploye();
-    this.loadDemandes();
   }
 
   private loadEmploye(): void {
@@ -45,72 +43,18 @@ export class HomeEmployee implements OnInit {
       .get<any>(`/api/employes/${this.matricule}`)
       .subscribe({
         next: (emp) => {
-          this.employee.nom = emp.nomComplet ?? `${emp.prenom ?? ''} ${emp.nom ?? ''}`.trim();
-          this.employee.poste = emp.fonction ?? '';
+          this.employee.nom     = emp.nomComplet ?? `${emp.prenom ?? ''} ${emp.nom ?? ''}`.trim();
+          this.employee.poste   = emp.fonction ?? '';
           this.employee.service = emp.service ?? '';
-        },
-        error: () => {}
-      });
-  }
-
-  private loadDemandes(): void {
-    this.http
-      .get<any[]>(`/api/demandes-conge?matricule=${this.matricule}`)
-      .subscribe({
-        next: (demandes) => {
-          // Compter les demandes en attente
-          const enAttente = demandes.filter(d =>
-            d.statut?.startsWith('En attente')
-          ).length;
-          this.stats[0].value = `${enAttente}`;
-
-          // 5 demandes récentes
-          this.recentRequests = demandes.slice(0, 5).map(d => ({
-            type: d.typeConge ?? d.sousType ?? 'Demande',
-            date: this.formatDate(d.createdAt ?? d.dateCreation),
-            statut: this.mapStatut(d.statut)
-          }));
-
-          // Notifications dynamiques basées sur les demandes
-          this.notifications = demandes
-            .filter(d => d.statut && d.statut !== 'Brouillon')
-            .slice(0, 3)
-            .map(d => this.buildNotification(d));
-          this.loading = false;
+          this.soldeConges      = emp.soldeConges ?? emp.SoldeConges ?? emp.solde ?? this.auth.session?.soldeConges ?? null;
+          this.isLoadingSolde   = false;
+          this.cdr.detectChanges();
         },
         error: () => {
-          this.recentRequests = [];
-          this.notifications = ['Impossible de charger vos notifications.'];
-          this.loading = false;
+          this.soldeConges    = this.auth.session?.soldeConges ?? null;
+          this.isLoadingSolde = false;
+          this.cdr.detectChanges();
         }
       });
-  }
-
-  private formatDate(dateStr: string): string {
-    if (!dateStr) return '--';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('fr-FR');
-  }
-
-  private mapStatut(statut: string): string {
-    if (!statut) return 'Inconnu';
-    if (statut.startsWith('En attente')) return 'En attente';
-    if (statut === 'Clôturée' || statut.startsWith('Validée')) return 'Validée';
-    if (statut.startsWith('Rejetée') || statut === 'Annulée') return 'Rejetée';
-    return statut;
-  }
-
-  private buildNotification(d: any): string {
-    const ref = d.refNo ?? `#${d.id}`;
-    const type = d.typeConge ?? 'Demande';
-    if (d.statut === 'Clôturée')
-      return `Votre demande ${ref} (${type}) a été clôturée. Votre solde a été mis à jour.`;
-    if (d.statut?.startsWith('Validée'))
-      return `Votre demande ${ref} (${type}) a été validée et est en traitement RH.`;
-    if (d.statut?.startsWith('Rejetée'))
-      return `Votre demande ${ref} (${type}) a été rejetée.`;
-    if (d.statut?.startsWith('En attente'))
-      return `Votre demande ${ref} (${type}) est en attente de validation.`;
-    return `Statut de votre demande ${ref} : ${d.statut}`;
   }
 }

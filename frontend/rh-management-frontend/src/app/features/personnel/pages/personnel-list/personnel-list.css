@@ -385,6 +385,48 @@ label {
 .mbtn-teal  { background: #0D776E; color: #fff; border-color: #0D776E; box-shadow: 0 2px 8px rgba(13,119,110,0.20); }
 .mbtn-teal:hover { background: #0b665f; transform: translateY(-1px); }
 
+.abtn:disabled { opacity: 0.55; cursor: not-allowed; }
+.mbtn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.loading-spinner { padding: 40px; text-align: center; color: #a7a9ac; font-size: 14px; }
+
+.inactive td { opacity: 0.55; }
+
+.empty-cell { text-align: center; color: #a7a9ac; padding: 32px; }
+
+.msg-success {
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(13,119,110,0.08);
+  border: 1px solid rgba(13,119,110,0.20);
+  color: #0D776E;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.msg-error {
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(198,12,48,0.07);
+  border: 1px solid rgba(198,12,48,0.20);
+  color: #c60c30;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.msg-error-inline {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(198,12,48,0.07);
+  border: 1px solid rgba(198,12,48,0.20);
+  color: #c60c30;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 24px 12px;
+}
+
 /* ANIMATIONS */
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }

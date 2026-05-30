@@ -296,6 +296,9 @@ namespace rh_management_backend.Data.Migrations
                     b.Property<string>("SuperieurHierarchiqueMatricule")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Telephone")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Matricule")
@@ -470,6 +473,47 @@ namespace rh_management_backend.Data.Migrations
                     b.ToTable("Notifications");
                 });
 
+            modelBuilder.Entity("rh_management_backend.Models.Pointage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DernierHeartbeat")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DureeMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("HeureEntree")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("HeureSortie")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("RetardMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Statut")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Pointages");
+                });
+
             modelBuilder.Entity("rh_management_backend.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -577,6 +621,17 @@ namespace rh_management_backend.Data.Migrations
                             PasswordHash = "$2a$11$wSAQN1/IpviIviSFmY3dFOqWEusALRb9M2nDmaMb7TNYIbQrBz4UC",
                             Role = "employe"
                         });
+                });
+
+            modelBuilder.Entity("rh_management_backend.Models.Pointage", b =>
+                {
+                    b.HasOne("rh_management_backend.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("rh_management_backend.Models.User", b =>

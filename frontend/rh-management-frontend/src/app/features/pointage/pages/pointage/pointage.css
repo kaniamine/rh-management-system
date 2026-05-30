@@ -319,6 +319,49 @@
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes spin     { to { transform: rotate(360deg); } }
 
+/* ── CLOCK BAR (new layout) ──────────────────────────────── */
+.pt-clock-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 14px 20px;
+  background: #fff;
+  border: 1px solid #ebebeb;
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  flex-wrap: wrap;
+}
+
+.pt-clock-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pt-clock-inline .clock-time {
+  font-size: 28px;
+  font-weight: 800;
+  color: #2a2d32;
+  letter-spacing: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-sep  { color: #ddd; font-size: 20px; }
+.clock-date { font-size: 13px; color: #a7a9ac; text-transform: capitalize; }
+
+.pt-error {
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(198,12,48,0.07);
+  border: 1px solid rgba(198,12,48,0.20);
+  color: #c60c30;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
 /* ── RESPONSIVE ──────────────────────────────────────────── */
 @media (max-width: 900px) {
   .pt-grid { grid-template-columns: 1fr; }

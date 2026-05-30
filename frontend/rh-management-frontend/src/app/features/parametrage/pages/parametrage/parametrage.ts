@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
@@ -15,6 +15,12 @@ export type SectionId =
   styleUrls: ['./parametrage.css']
 })
 export class Parametrage {
+
+  private readonly platformId = inject(PLATFORM_ID);
+
+  get isAdmin(): boolean {
+    return isPlatformBrowser(this.platformId) && localStorage.getItem('isAdmin') === 'true';
+  }
 
   activeSection: SectionId = 'personnel';
   savedSection: SectionId | null = null;
@@ -138,7 +144,24 @@ export class Parametrage {
   }
 
   saveSection(): void {
+    const sectionData = this.getSectionData();
+    console.log(`[PARAMETRAGE] Saving section "${this.activeSection}":`, sectionData);
+    // TODO: call PUT /api/parametrage/${this.activeSection} with sectionData once endpoint exists
     this.savedSection = this.activeSection;
     setTimeout(() => { this.savedSection = null; }, 3000);
+  }
+
+  private getSectionData(): any {
+    const map: Record<SectionId, any> = {
+      personnel:     this.personnelFields,
+      roles:         this.rolePerms,
+      conges:        this.congesConfig,
+      workflow:      this.workflowSteps,
+      autorisations: this.autoriConfig,
+      maladie:       { types: this.maladieTypes, config: this.maladieConfig },
+      assiduite:     this.bareme,
+      notifications: this.notifications
+    };
+    return map[this.activeSection] ?? {};
   }
 }

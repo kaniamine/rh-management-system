@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/auth.service';
@@ -12,6 +12,7 @@ import { AuthService } from '../../core/auth.service';
 })
 export class Profil {
   private readonly auth = inject(AuthService);
+  private readonly cdr  = inject(ChangeDetectorRef);
 
   ancienMotDePasse  = '';
   nouveauMotDePasse = '';
@@ -42,7 +43,7 @@ export class Profil {
       n1:      'Responsable N+1',
       dg:      'Direction Générale',
       rh:      'Direction RH',
-      admin:   'Administrateur'
+      admin:   'Direction RH'
     };
     return map[this.auth.role] ?? this.auth.role;
   }
@@ -92,10 +93,12 @@ export class Profil {
         this.ancienMotDePasse  = '';
         this.nouveauMotDePasse = '';
         this.confirmMotDePasse = '';
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
         this.loading      = false;
         this.errorMessage = err?.error?.message ?? 'Mot de passe actuel incorrect.';
+        this.cdr.detectChanges();
       }
     });
   }

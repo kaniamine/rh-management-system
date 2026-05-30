@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/admin.guard';
 
 export const routes: Routes = [
   {
@@ -86,10 +87,28 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'consulter-demandes',
+    loadComponent: () =>
+      import('./features/home-rh/pages/consulter-demandes-rh/consulter-demandes-rh').then(m => m.ConsulterDemandesRh),
+    canActivate: [authGuard]
+  },
+  {
     path: 'reinitialisation-mdp',
     loadComponent: () =>
       import('./features/dashboard-rh/reset-password-requests/reset-password-requests').then(m => m.ResetPasswordRequests),
     canActivate: [authGuard]
+  },
+  {
+    path: 'rh/acces-admin',
+    loadComponent: () =>
+      import('./features/rh/acces-admin/acces-admin').then(m => m.AccesAdmin),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'rh/creer-compte-rh',
+    loadComponent: () =>
+      import('./features/rh/creer-compte-rh/creer-compte-rh').then(m => m.CreerCompteRh),
+    canActivate: [authGuard, adminGuard]
   },
   {
     path: 'login',

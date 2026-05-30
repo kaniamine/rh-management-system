@@ -81,6 +81,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IDemandeCongeService, DemandeCongeService>();
 builder.Services.AddScoped<IRhStatisticsService, RhStatisticsService>();
+builder.Services.AddHostedService<CongeAccrualService>();
+builder.Services.AddScoped<IPointageService, PointageService>();
 
 // ── BUILD ─────────────────────────────────────────────────────────────────────
 var app = builder.Build();
@@ -103,6 +105,15 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<RhDbContext>();
     db.Database.Migrate();
+
+    // Convertit les anciens comptes "admin" en "rh" — le rôle admin est supprimé.
+    var admins = db.Users.Where(u => u.Role == "admin").ToList();
+    if (admins.Count > 0)
+    {
+        admins.ForEach(u => u.Role = "rh");
+        db.SaveChanges();
+        app.Logger.LogInformation("Migration admin→rh : {Count} compte(s) convertis.", admins.Count);
+    }
 }
 
 

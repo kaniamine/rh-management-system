@@ -2,8 +2,10 @@ import {
   Component, OnInit, OnDestroy, inject,
   ElementRef, ViewChild, ChangeDetectorRef
 } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule, DecimalPipe, TitleCasePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
 import { AnalyticsService, RhAnalytics } from '../../services/analytics.service';
 import { AuthService } from '../../../../core/auth.service';
@@ -13,7 +15,7 @@ Chart.register(...registerables);
 @Component({
   selector:    'app-rh-dashboard',
   standalone:  true,
-  imports:     [CommonModule, RouterLink, DecimalPipe],
+  imports:     [CommonModule, RouterLink, DecimalPipe, TitleCasePipe, FormsModule],
   templateUrl: './rh-dashboard.html',
   styleUrls:   ['./rh-dashboard.css']
 })
@@ -21,6 +23,7 @@ export class RhDashboard implements OnInit, OnDestroy {
   private analytics = inject(AnalyticsService);
   private auth      = inject(AuthService);
   private cdr       = inject(ChangeDetectorRef);
+  private http      = inject(HttpClient);
 
   data:        RhAnalytics | null = null;
   loading      = true;
@@ -28,15 +31,86 @@ export class RhDashboard implements OnInit, OnDestroy {
   exporting    = false;
   chartsBuilt  = false;
 
+  availableYears: number[] = [];
+  selectedYear: number     = new Date().getFullYear();
+
   private charts: Chart[] = [];
 
   @ViewChild('c2') c2!: ElementRef<HTMLCanvasElement>;
   @ViewChild('c3') c3!: ElementRef<HTMLCanvasElement>;
   @ViewChild('c4') c4!: ElementRef<HTMLCanvasElement>;
   @ViewChild('c5') c5!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('c7') c7!: ElementRef<HTMLCanvasElement>;
 
-  ngOnInit()    { this.load(); }
+  // ── Pointage section (RH only) ───────────────────────────────────────────────
+  statsPointageJour: any         = null;
+  historiquePointage: any[]      = [];
+  pointagesFiltres:  any[]       = [];
+  filtreDate     = '';
+  filtreEmploye  = '';
+  filtreStatut   = '';
+
+  get currentRole(): string { return this.auth.role; }
+
+  chargerPointagePersonnel(): void {
+    this.http.get<any>('/api/pointage/stats-jour').subscribe({
+      next: data => { this.statsPointageJour = data; this.cdr.detectChanges(); },
+      error: err => console.error('stats-pointage:', err)
+    });
+    this.http.get<any[]>('/api/pointage/historique-rh').subscribe({
+      next: data => {
+        this.historiquePointage = data;
+        this.pointagesFiltres   = data;
+        this.cdr.detectChanges();
+      },
+      error: err => console.error('historique-pointage:', err)
+    });
+  }
+
+  filtrerPointage(): void {
+    this.pointagesFiltres = this.historiquePointage.filter(p => {
+      const matchDate    = !this.filtreDate     || (p.date ?? '').startsWith(this.filtreDate);
+      const matchEmploye = !this.filtreEmploye  ||
+        (p.matricule ?? '').toLowerCase().includes(this.filtreEmploye.toLowerCase()) ||
+        (p.nom       ?? '').toLowerCase().includes(this.filtreEmploye.toLowerCase());
+      const matchStatut  = !this.filtreStatut   || p.statut === this.filtreStatut;
+      return matchDate && matchEmploye && matchStatut;
+    });
+    this.cdr.detectChanges();
+  }
+
+  ngOnInit(): void {
+    this.analytics.getAvailableYears().subscribe({
+      next: (years) => {
+        this.availableYears = years;
+        if (!this.availableYears.includes(this.selectedYear))
+          this.availableYears.unshift(this.selectedYear);
+      }
+    });
+    this.load();
+    if (this.auth.role === 'rh') {
+      this.chargerPointagePersonnel();
+    }
+  }
+
   ngOnDestroy() { this.destroyCharts(); }
+
+  get pageTitle(): string {
+    return this.auth.role === 'dg'
+      ? 'Tableau de bord — Direction Générale'
+      : 'Tableau de bord analytique';
+  }
+
+  get pageSubtitle(): string {
+    return this.auth.role === 'dg'
+      ? 'Vue analytique des demandes RH — Al Baraka Assurances'
+      : 'Statistiques et indicateurs de performance — Al Baraka Assurances';
+  }
+
+  onYearChange(year: number): void {
+    this.selectedYear = Number(year);
+    this.load();
+  }
 
   load(): void {
     this.loading     = true;
@@ -44,7 +118,7 @@ export class RhDashboard implements OnInit, OnDestroy {
     this.chartsBuilt = false;
     this.destroyCharts();
 
-    this.analytics.getRhDashboard().subscribe({
+    this.analytics.getRhDashboard(this.selectedYear).subscribe({
       next: d => {
         console.log('[ANALYTICS] Full response:', JSON.stringify(d));
         console.log('[FULL DATA KEYS]', Object.keys(d));
@@ -197,12 +271,13 @@ export class RhDashboard implements OnInit, OnDestroy {
       this.charts.push(new Chart(this.c3.nativeElement, {
         type: 'bar',
         data: {
-          labels:   (d.repartitionParStatut ?? []).map(s =>
-              statutLabels[s.statut] ?? (s.statut.length > 20 ? s.statut.slice(0, 20) + '…' : s.statut)
-            ),
+          labels:   (d.repartitionParStatut ?? []).map((s: any) => {
+              const raw = s.statut ?? s.Statut ?? '';
+              return statutLabels[raw] ?? (raw.length > 20 ? raw.slice(0, 20) + '…' : raw);
+            }),
           datasets: [{
             label:           'Demandes',
-            data:            (d.repartitionParStatut ?? []).map(s => s.count),
+            data:            (d.repartitionParStatut ?? []).map((s: any) => s.count ?? s.Count ?? 0),
             backgroundColor: [O, T, G, R, B, P, '#f59e0b', '#64748b', '#06b6d4', '#a855f7', '#14b8a6'],
             borderRadius:    6,
             borderWidth:     0
@@ -290,6 +365,37 @@ export class RhDashboard implements OnInit, OnDestroy {
         }
       }));
     } catch (e) { console.error('c5', e); }
+
+    // c7 — Horizontal bar: Top 5 employees
+    if (d.topEmployes?.length && this.c7?.nativeElement) {
+      try {
+        this.charts.push(new Chart(this.c7.nativeElement, {
+          type: 'bar',
+          data: {
+            labels: (d.topEmployes ?? []).map((e: any) =>
+              (e.nomComplet ?? e.NomComplet ?? e.matricule ?? 'N/A')
+                .split(' ').slice(0, 2).join(' ')
+            ),
+            datasets: [{
+              label: 'Demandes',
+              data:  (d.topEmployes ?? []).map(e => e.count ?? 0),
+              backgroundColor: ['#ff5800', '#0D776E', '#3b82f6', '#8b5cf6', '#22c55e'],
+              borderRadius: 8,
+              borderWidth:  0
+            }]
+          },
+          options: {
+            indexAxis: 'y' as const,
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+              y: { grid: { display: false } }
+            }
+          }
+        }));
+      } catch (e) { console.error('c7', e); }
+    }
 
     console.log('[CHARTS] ✅ Built successfully');
   }

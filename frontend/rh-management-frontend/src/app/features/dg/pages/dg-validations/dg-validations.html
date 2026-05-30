@@ -39,42 +39,78 @@
     </div>
   </div>
 
-  <!-- WORKFLOW BANNER -->
-  <div class="workflow-strip">
-    <div class="wf-step wf-done">
-      <span class="wf-num">1</span>
-      <span class="wf-lbl">Employé soumet</span>
-    </div>
-    <div class="wf-arrow">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </div>
-    <div class="wf-step wf-done">
-      <span class="wf-num">2</span>
-      <span class="wf-lbl">Validation N+1</span>
-    </div>
-    <div class="wf-arrow">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </div>
-    <div class="wf-step wf-active">
-      <span class="wf-num">3</span>
-      <span class="wf-lbl">Validation DG</span>
-      <span class="wf-tag">Étape actuelle</span>
-    </div>
-    <div class="wf-arrow">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </div>
-    <div class="wf-step">
-      <span class="wf-num">4</span>
-      <span class="wf-lbl">Traitement RH</span>
-    </div>
-    <div class="wf-arrow">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </div>
-    <div class="wf-step">
-      <span class="wf-num">5</span>
-      <span class="wf-lbl">Clôture</span>
-    </div>
+  @if (erreur) {
+    <div class="msg-error">{{ erreur }}</div>
+  }
+
+  <!-- TABS -->
+  <div class="dg-tabs">
+    <button class="dg-tab" [class.active]="activeTab === 'validation'" (click)="switchTab('validation')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Validation DG
+    </button>
+    <button class="dg-tab" [class.active]="activeTab === 'historique'" (click)="switchTab('historique')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Historique complet
+    </button>
   </div>
+
+  <!-- HISTORIQUE TAB -->
+  @if (activeTab === 'historique') {
+    <div class="hist-toolbar">
+      <div class="hist-tabs">
+        <button class="tab" [class.active]="historyFilterType === 'all'" (click)="historyFilterType = 'all'">Tout</button>
+        <button class="tab" [class.active]="historyFilterType === 'conge'" (click)="historyFilterType = 'conge'">Congés</button>
+        <button class="tab" [class.active]="historyFilterType === 'autorisation'" (click)="historyFilterType = 'autorisation'">Autorisations</button>
+        <button class="tab" [class.active]="historyFilterType === 'maladie'" (click)="historyFilterType = 'maladie'">Maladies</button>
+      </div>
+      <select class="filter-select" [(ngModel)]="historyFilterStatut">
+        <option value="">Tous les statuts</option>
+        <option value="En attente de validation DG">En attente DG</option>
+        <option value="Validée – En traitement RH">En traitement RH</option>
+        <option value="Clôturée">Clôturée</option>
+        <option value="Validée">Validée</option>
+        <option value="Annulée">Annulée</option>
+      </select>
+    </div>
+
+    @if (historyLoading) {
+      <div class="loading-spinner">Chargement de l'historique...</div>
+    } @else {
+      <div class="demande-list">
+        @for (d of filteredHistory; track d.id + '-' + d.typeKey) {
+          <div class="demande-row hist-row">
+            <div class="drow-icon hist-type-icon" [ngClass]="'hist-' + d.typeKey">
+              @if (d.typeKey === 'conge') {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              } @else if (d.typeKey === 'autorisation') {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              } @else {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              }
+            </div>
+            <div class="drow-info">
+              <strong>{{ d.nomComplet }}</strong>
+              <span>{{ d.typeLabel }}{{ d.dateDebut ? ' · ' + d.dateDebut : '' }}{{ d.dateFin ? ' → ' + d.dateFin : '' }}</span>
+            </div>
+            <div class="drow-meta">
+              <span class="drow-date-small">{{ (d.dateRef ?? d.createdAt ?? '').substring(0, 10) }}</span>
+              <span class="drow-statut" [ngClass]="'st-' + getHistoryStatutClass(d.statut)">{{ d.statut }}</span>
+            </div>
+          </div>
+        }
+        @if (filteredHistory.length === 0) {
+          <div class="empty-state">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#a7a9ac" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p>Aucune demande dans l'historique.</p>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <!-- VALIDATION TAB CONTENT -->
+  @if (activeTab === 'validation') {
 
   <!-- FILTERS -->
   <div class="toolbar">
@@ -270,5 +306,7 @@
       </div>
     </div>
   }
+
+  } <!-- end @if activeTab === 'validation' -->
 
 </div>

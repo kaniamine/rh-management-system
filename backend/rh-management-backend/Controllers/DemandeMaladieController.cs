@@ -13,12 +13,12 @@ namespace rh_management_backend.Controllers;
 public class DemandeMaladieController : ControllerBase
 {
     private readonly RhDbContext _db;
-    private readonly NotificationService _notif;
+    private readonly INotificationService _notif;
 
     public DemandeMaladieController(RhDbContext db, INotificationService notif)
     {
         _db    = db;
-        _notif = (NotificationService)notif;
+        _notif = notif;
     }
 
     // GET /api/demandes-maladie?matricule=...&statut=...
@@ -119,7 +119,7 @@ public class DemandeMaladieController : ControllerBase
 
     // POST /api/demandes-maladie/{id}/valider — RH
     [HttpPost("{id}/valider")]
-    [Authorize(Roles = "rh,admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> Valider(int id, [FromBody] ActionMaladieDto dto)
     {
         var d = await _db.DemandesMaladie.FindAsync(id);
@@ -161,7 +161,7 @@ public class DemandeMaladieController : ControllerBase
 
     // POST /api/demandes-maladie/{id}/rejeter — RH
     [HttpPost("{id}/rejeter")]
-    [Authorize(Roles = "rh,admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> Rejeter(int id, [FromBody] ActionMaladieDto dto)
     {
         var d = await _db.DemandesMaladie.FindAsync(id);

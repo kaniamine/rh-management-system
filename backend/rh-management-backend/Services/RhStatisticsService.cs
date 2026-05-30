@@ -23,33 +23,37 @@ public class RhStatisticsService : IRhStatisticsService
         {
             Total     = conges.Count,
             EnAttente = conges.Count(c => c.Statut.StartsWith("En attente")),
-            Validees  = conges.Count(c => c.Statut == "Validée – En traitement RH"),
-            Cloturees = conges.Count(c => c.Statut == "Clôturée"),
-            Rejetees  = conges.Count(c => c.Statut.StartsWith("Rejetée")),
-            Annulees  = conges.Count(c => c.Statut == "Annulée"),
+            Validees  = conges.Count(c => c.Statut is "Validée – En traitement RH"
+                                       or "Validee – En traitement RH"
+                                       or "Validee - En traitement RH"),
+            Cloturees = conges.Count(c => c.Statut is "Clôturée" or "Cloturee"),
+            Rejetees  = conges.Count(c => c.Statut.StartsWith("Rejetée") || c.Statut.StartsWith("Rejetee")),
+            Annulees  = conges.Count(c => c.Statut is "Annulée" or "Annulee"),
         };
 
         var maladieKpis = new KpiCountsDto
         {
             Total     = maladies.Count,
             EnAttente = maladies.Count(m => m.Statut == "En attente de validation RH"),
-            Validees  = maladies.Count(m => m.Statut == "Validée"),
-            Rejetees  = maladies.Count(m => m.Statut == "Rejetée"),
-            Annulees  = maladies.Count(m => m.Statut == "Annulée"),
+            Validees  = maladies.Count(m => m.Statut is "Validée" or "Validee"),
+            Rejetees  = maladies.Count(m => m.Statut is "Rejetée" or "Rejetee"),
+            Annulees  = maladies.Count(m => m.Statut is "Annulée" or "Annulee"),
         };
 
         var autoKpis = new KpiCountsDto
         {
             Total     = autorisations.Count,
             EnAttente = autorisations.Count(a => a.Statut == "En attente de validation du supérieur hiérarchique"),
-            Validees  = autorisations.Count(a => a.Statut == "Validée"),
-            Rejetees  = autorisations.Count(a => a.Statut == "Rejetée"),
-            Annulees  = autorisations.Count(a => a.Statut == "Annulée"),
+            Validees  = autorisations.Count(a => a.Statut is "Validée" or "Validee"),
+            Rejetees  = autorisations.Count(a => a.Statut is "Rejetée" or "Rejetee"),
+            Annulees  = autorisations.Count(a => a.Statut is "Annulée" or "Annulee"),
         };
 
         // Items actively waiting on RH: conges post-DG approval + pending maladie validations
         int totalEnAttenteRH =
-            conges.Count(c => c.Statut == "Validée – En traitement RH") +
+            conges.Count(c => c.Statut is "Validée – En traitement RH"
+                           or "Validee – En traitement RH"
+                           or "Validee - En traitement RH") +
             maladies.Count(m => m.Statut == "En attente de validation RH");
 
         // Trend: always last 12 months regardless of query filters (gives historical context)
@@ -88,7 +92,9 @@ public class RhStatisticsService : IRhStatisticsService
             DureeMoyenneJours  = conges.Count > 0 ? Math.Round(conges.Average(c => (double)c.DureeJours), 1) : 0,
             EnAttenteN1        = conges.Count(c => c.Statut == "En attente de validation N+1"),
             EnAttenteDG        = conges.Count(c => c.Statut == "En attente de validation DG"),
-            EnAttenteRH        = conges.Count(c => c.Statut == "Validée – En traitement RH"),
+            EnAttenteRH        = conges.Count(c => c.Statut is "Validée – En traitement RH"
+                                                or "Validee – En traitement RH"
+                                                or "Validee - En traitement RH"),
         };
     }
 

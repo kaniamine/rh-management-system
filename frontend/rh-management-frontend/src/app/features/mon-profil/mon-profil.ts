@@ -1,7 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { AuthService } from '../../core/auth.service';
 
 @Component({
@@ -12,15 +14,22 @@ import { AuthService } from '../../core/auth.service';
   styleUrl: './mon-profil.css'
 })
 export class MonProfil implements OnInit {
-  private readonly auth = inject(AuthService);
-  private readonly http = inject(HttpClient);
+  private readonly auth       = inject(AuthService);
+  private readonly http       = inject(HttpClient);
+  private readonly cdr        = inject(ChangeDetectorRef);
+  private readonly platformId = inject(PLATFORM_ID);
 
-  totalDemandes   = 0;
+  totalDemandes    = 0;
   demandesValidees = 0;
   demandesRejetees = 0;
-  statsLoaded      = false;
+  demandesAttente  = 0;
+  statsLoading     = true;
 
   get session() { return this.auth.session; }
+  get isRh(): boolean { return this.auth.role === 'rh'; }
+  get isAdmin(): boolean {
+    return isPlatformBrowser(this.platformId) && localStorage.getItem('isAdmin') === 'true';
+  }
 
   get roleLabel(): string {
     const map: Record<string, string> = {
@@ -28,7 +37,7 @@ export class MonProfil implements OnInit {
       n1:      'Responsable N+1',
       dg:      'Direction Générale',
       rh:      'Direction RH',
-      admin:   'Administrateur'
+      admin:   'Direction RH'
     };
     return map[this.auth.role] ?? this.auth.role;
   }
@@ -56,20 +65,29 @@ export class MonProfil implements OnInit {
 
   ngOnInit(): void {
     const matricule = this.session?.matricule;
-    if (!matricule) return;
+    if (!matricule) { this.statsLoading = false; return; }
 
-    this.http.get<any[]>(`/api/demandes-conge?matricule=${matricule}`).subscribe({
-      next: (demandes) => {
-        this.totalDemandes    = demandes.length;
-        this.demandesValidees = demandes.filter(d =>
+    forkJoin({
+      conges:        this.http.get<any[]>(`/api/demandes-conge?matricule=${matricule}`).pipe(catchError(() => of([]))),
+      autorisations: this.http.get<any[]>(`/api/demandes-autorisation?matricule=${matricule}`).pipe(catchError(() => of([]))),
+      maladies:      this.http.get<any[]>(`/api/demandes-maladie?matricule=${matricule}`).pipe(catchError(() => of([])))
+    }).subscribe({
+      next: ({ conges, autorisations, maladies }) => {
+        const all = [...conges, ...autorisations, ...maladies];
+        this.totalDemandes    = all.length;
+        this.demandesValidees = all.filter(d =>
           d.statut === 'Clôturée' || (d.statut ?? '').startsWith('Validée')
         ).length;
-        this.demandesRejetees = demandes.filter(d =>
+        this.demandesRejetees = all.filter(d =>
           (d.statut ?? '').startsWith('Rejetée') || d.statut === 'Annulée'
         ).length;
-        this.statsLoaded = true;
+        this.demandesAttente  = all.filter(d =>
+          (d.statut ?? '').startsWith('En attente')
+        ).length;
+        this.statsLoading = false;
+        this.cdr.detectChanges();
       },
-      error: () => { this.statsLoaded = true; }
+      error: () => { this.statsLoading = false; this.cdr.detectChanges(); }
     });
   }
 }

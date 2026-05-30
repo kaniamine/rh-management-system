@@ -79,23 +79,32 @@
 .kpi-teal .kpi-val   { color: #0D776E; }
 .kpi-red .kpi-val    { color: #c60c30; }
 
-.workflow-strip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 20px;
-  background: #fff;
-  border: 1px solid #ebebeb;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+/* TABS */
+.dg-tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid #ebebeb; padding-bottom: 0; }
+.dg-tab {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 18px; border-radius: 8px 8px 0 0;
+  border: none; background: transparent;
+  font-size: 13px; font-weight: 700; color: #5e6167;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+  margin-bottom: -2px; border-bottom: 2px solid transparent;
 }
+.dg-tab:hover { color: #c60c30; }
+.dg-tab.active { color: #c60c30; border-bottom-color: #c60c30; background: rgba(198,12,48,0.04); }
 
-.wf-step { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 80px; }
-.wf-num  { width: 28px; height: 28px; border-radius: 50%; background: #f0f0f0; color: #a7a9ac; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-.wf-lbl  { font-size: 11px; color: #a7a9ac; font-weight: 600; text-align: center; }
-.wf-tag  { font-size: 10px; color: #c60c30; font-weight: 700; white-space: nowrap; }
+/* HISTORY */
+.hist-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.hist-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tab { padding: 7px 14px; min-height: 34px; border-radius: 999px; border: 1.5px solid #e8e8e8; background: #fff; font-size: 12px; font-weight: 600; color: #5e6167; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+.tab:hover { border-color: rgba(198,12,48,0.35); color: #c60c30; }
+.tab.active { background: #c60c30; color: #fff; border-color: #c60c30; }
+.hist-row { cursor: default; }
+.hist-row:hover { transform: none; }
+.hist-type-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.hist-conge        { background: rgba(255,88,0,0.10);  color: #ff5800; }
+.hist-autorisation { background: rgba(13,119,110,0.10); color: #0D776E; }
+.hist-maladie      { background: rgba(198,12,48,0.10); color: #c60c30; }
+.drow-date-small { font-size: 11px; color: #a7a9ac; }
 .wf-done .wf-num  { background: rgba(13,119,110,0.12); color: #0D776E; }
 .wf-done .wf-lbl  { color: #0D776E; }
 .wf-active .wf-num { background: rgba(198,12,48,0.12); color: #c60c30; }

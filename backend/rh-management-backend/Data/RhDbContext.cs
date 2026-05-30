@@ -15,6 +15,7 @@ public class RhDbContext : DbContext
     public DbSet<HistoriqueAction> HistoriqueActions => Set<HistoriqueAction>();
 
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<Pointage> Pointages => Set<Pointage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

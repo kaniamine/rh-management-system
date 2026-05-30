@@ -6,6 +6,11 @@ export interface MoisStat      { mois: string; count: number; }
 export interface TypeStat      { type: string; count: number; }
 export interface StatutStat    { statut: string; count: number; }
 export interface DirectionStat { direction: string; count: number; }
+export interface TopEmployeStat {
+  matricule:  string;
+  nomComplet: string;
+  count:      number;
+}
 
 export interface RhAnalytics {
   totalDemandes: number;
@@ -31,6 +36,8 @@ export interface RhAnalytics {
   repartitionParStatut:  StatutStat[];
   demandesParDirection:  DirectionStat[];
   typeCongeBreakdown:    TypeStat[];
+  topEmployes?:          TopEmployeStat[];
+  anneeFiltre?:          number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -38,7 +45,12 @@ export class AnalyticsService {
   private http = inject(HttpClient);
   private API  = '/api/analytics';
 
-  getRhDashboard(): Observable<RhAnalytics> {
-    return this.http.get<RhAnalytics>(`${this.API}/rh-dashboard`);
+  getRhDashboard(year?: number): Observable<RhAnalytics> {
+    const params = year ? `?year=${year}` : '';
+    return this.http.get<RhAnalytics>(`${this.API}/rh-dashboard${params}`);
+  }
+
+  getAvailableYears(): Observable<number[]> {
+    return this.http.get<number[]>(`${this.API}/available-years`);
   }
 }

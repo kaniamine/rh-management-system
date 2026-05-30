@@ -4,12 +4,11 @@ import { COMPANY_CONFIG, ValidationResult } from '../../config/company.config';
 @Injectable({ providedIn: 'root' })
 export class GeoValidationService {
 
-  /** Haversine distance in metres between two lat/lng points */
   private haversineDistance(
     lat1: number, lng1: number,
     lat2: number, lng2: number
   ): number {
-    const R = 6_371_000; // Earth radius in metres
+    const R = 6_371_000;
     const toRad = (d: number) => (d * Math.PI) / 180;
     const dLat = toRad(lat2 - lat1);
     const dLng = toRad(lng2 - lng1);
@@ -20,7 +19,6 @@ export class GeoValidationService {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 
-  /** Check GPS position against company geofence */
   async checkGPS(): Promise<{ valid: boolean; distance?: number }> {
     return new Promise(resolve => {
       if (!navigator.geolocation) {
@@ -41,48 +39,22 @@ export class GeoValidationService {
     });
   }
 
-  /** Fetch public IP and compare against whitelist */
-  async checkIP(): Promise<{ valid: boolean; ip?: string }> {
-    try {
-      const res  = await fetch('https://api.ipify.org?format=json');
-      const data = await res.json() as { ip: string };
-      const valid = (COMPANY_CONFIG.allowedIPs as readonly string[]).includes(data.ip);
-      return { valid, ip: data.ip };
-    } catch {
-      return { valid: false };
-    }
-  }
-
-  /**
-   * Run GPS check first, then IP as fallback.
-   * Resolves with the first passing method, or denied if both fail.
-   */
   async validate(): Promise<ValidationResult> {
     const gps = await this.checkGPS();
     if (gps.valid) {
       return {
         allowed: true,
-        method: 'gps',
-        label: '✓ Sur site',
-        detail: `Position GPS validée (${gps.distance ?? '?'} m du bureau).`
-      };
-    }
-
-    const ip = await this.checkIP();
-    if (ip.valid) {
-      return {
-        allowed: true,
-        method: 'ip',
-        label: '✓ Réseau entreprise',
-        detail: `Adresse IP autorisée (${ip.ip}).`
+        method:  'gps',
+        label:   '✓ Sur site',
+        detail:  `Position GPS validée (${gps.distance ?? '?'} m du bureau).`
       };
     }
 
     return {
       allowed: false,
-      method: 'none',
-      label: '✗ Accès refusé',
-      detail: 'Vous n\'êtes pas dans les locaux ni sur le réseau de l\'entreprise.'
+      method:  'none',
+      label:   '✗ Hors site',
+      detail:  'Vous n\'êtes pas dans les locaux de l\'entreprise.'
     };
   }
 }

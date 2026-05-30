@@ -71,10 +71,10 @@ public class PasswordResetController : ControllerBase
 
     /// POST /api/auth/reinitialiser-mot-de-passe — RH validates and sends custom password via SMS
     [HttpPost("reinitialiser-mot-de-passe")]
-    [Authorize(Roles = "rh,admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> ReinitialiserMotDePasse([FromBody] ReinitialiserDto dto)
     {
-        Console.WriteLine($"[RESET] Body received: demandeId={dto.DemandeId} pwd={dto.NouveauMotDePasse?.Length} chars");
+        Console.WriteLine($"[REINIT] DemandeId={dto.DemandeId} PwdLen={dto.NouveauMotDePasse?.Length}");
         try
         {
             // Find the reset notification by ID
@@ -146,7 +146,7 @@ public class PasswordResetController : ControllerBase
 
     /// GET /api/auth/demandes-reinitialisation — RH lists pending reset requests
     [HttpGet("demandes-reinitialisation")]
-    [Authorize(Roles = "rh,admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> GetDemandesReinitialisation()
     {
         var rows = await _db.Notifications
@@ -199,4 +199,9 @@ public class PasswordResetController : ControllerBase
 }
 
 public record MotDePasseOublieDto([Required] string Matricule, [Required] string Telephone);
-public record ReinitialiserDto(int DemandeId, [Required] string NouveauMotDePasse);
+
+public class ReinitialiserDto
+{
+    public int    DemandeId          { get; set; }
+    public string NouveauMotDePasse  { get; set; } = string.Empty;
+}

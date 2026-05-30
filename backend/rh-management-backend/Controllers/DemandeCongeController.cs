@@ -55,7 +55,7 @@ public class DemandeCongeController : ControllerBase
 
     // POST /api/demandes-conge/{id}/valider-n1
     [HttpPost("{id}/valider-n1")]
-    [Authorize(Roles = "n1,admin")]
+    [Authorize(Roles = "n1")]
     public async Task<IActionResult> ValiderN1(int id, [FromBody] WorkflowActionDto action)
     {
         var (ok, err) = await _svc.ValiderN1Async(id, action);
@@ -64,7 +64,7 @@ public class DemandeCongeController : ControllerBase
 
     // POST /api/demandes-conge/{id}/rejeter-n1
     [HttpPost("{id}/rejeter-n1")]
-    [Authorize(Roles = "n1,admin")]
+    [Authorize(Roles = "n1")]
     public async Task<IActionResult> RejeterN1(int id, [FromBody] WorkflowActionDto action)
     {
         var (ok, err) = await _svc.RejeterN1Async(id, action);
@@ -73,7 +73,7 @@ public class DemandeCongeController : ControllerBase
 
     // POST /api/demandes-conge/{id}/valider-dg
     [HttpPost("{id}/valider-dg")]
-    [Authorize(Roles = "dg,admin")]
+    [Authorize(Roles = "dg")]
     public async Task<IActionResult> ValiderDG(int id, [FromBody] WorkflowActionDto action)
     {
         var (ok, err) = await _svc.ValiderDGAsync(id, action);
@@ -82,7 +82,7 @@ public class DemandeCongeController : ControllerBase
 
     // POST /api/demandes-conge/{id}/rejeter-dg
     [HttpPost("{id}/rejeter-dg")]
-    [Authorize(Roles = "dg,admin")]
+    [Authorize(Roles = "dg")]
     public async Task<IActionResult> RejeterDG(int id, [FromBody] WorkflowActionDto action)
     {
         var (ok, err) = await _svc.RejeterDGAsync(id, action);
@@ -91,7 +91,7 @@ public class DemandeCongeController : ControllerBase
 
     // POST /api/demandes-conge/{id}/cloturer
     [HttpPost("{id}/cloturer")]
-    [Authorize(Roles = "rh,admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> CloturerRH(int id, [FromBody] WorkflowActionDto action)
     {
         var (ok, err) = await _svc.CloturerRHAsync(id, action);
@@ -100,7 +100,7 @@ public class DemandeCongeController : ControllerBase
 
     // PATCH /api/demandes-conge/{id}/statut
     [HttpPatch("{id}/statut")]
-    [Authorize(Roles = "rh,admin")]
+    [Authorize(Roles = "rh")]
     public async Task<IActionResult> PatchStatut(int id, [FromBody] rh_management_backend.DTOs.Conge.UpdateStatutDto dto)
     {
         var (ok, err) = await _svc.UpdateStatutAsync(id, dto);

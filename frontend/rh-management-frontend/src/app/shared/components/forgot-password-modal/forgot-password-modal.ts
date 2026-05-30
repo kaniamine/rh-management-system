@@ -42,7 +42,7 @@ export class ForgotPasswordModal {
     }).subscribe({
       next: (res: any) => {
         this.loading        = false;
-        this.successMessage = res?.message ?? 'Votre demande a été transmise à la Direction RH.';
+        this.successMessage = res?.message ?? 'SMS envoyé avec succès sur votre numéro enregistré.';
         this.errorMessage   = '';
       },
       error: (err: any) => {

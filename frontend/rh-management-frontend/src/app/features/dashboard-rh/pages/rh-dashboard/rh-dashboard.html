@@ -6,11 +6,25 @@
       <img src="assets/logo.png" class="an-logo" alt="Al Baraka Assurances" />
       <div class="an-divider"></div>
       <div>
-        <h1 class="an-title">Tableau de bord — Direction RH</h1>
-        <p class="an-subtitle">Statistiques et indicateurs RH</p>
+        <h1 class="an-title">{{ pageTitle }}</h1>
+        <p class="an-subtitle">{{ pageSubtitle }}</p>
       </div>
     </div>
     <div class="an-actions">
+      <div class="year-filter-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <select class="year-select"
+                [ngModel]="selectedYear"
+                (ngModelChange)="onYearChange($event)">
+          @for (y of availableYears; track y) {
+            <option [value]="y">{{ y }}</option>
+          }
+        </select>
+      </div>
       <a routerLink="/home-rh" class="an-btn-ghost">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -276,6 +290,40 @@
       </div>
     </div>
 
+    <!-- Top 5 employés par demandes -->
+    <div class="chart-row">
+      <div class="chart-card chart-wide">
+        <div class="chart-head">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <span>Top 5 employés — demandes soumises en {{ selectedYear }}</span>
+        </div>
+        <div class="chart-body">
+          <canvas #c7></canvas>
+        </div>
+        <div class="top-emp-list">
+          @for (e of (data.topEmployes ?? []); track e.matricule; let i = $index) {
+            <div class="top-emp-row">
+              <span class="top-rank">{{ i + 1 }}</span>
+              <span class="top-name">{{ e.nomComplet }}</span>
+              <code class="top-mat">{{ e.matricule }}</code>
+              <span class="top-badge">{{ e.count }} demandes</span>
+            </div>
+          }
+          @if (!data.topEmployes?.length) {
+            <p style="color:#bbb;font-size:13px;text-align:center;padding:16px">
+              Aucune donnée pour {{ selectedYear }}
+            </p>
+          }
+        </div>
+      </div>
+    </div>
+
     <!-- CHART ROW 3 -->
     <div class="chart-row-single">
       <div class="chart-card chart-medium">
@@ -292,25 +340,25 @@
             <span>Congés</span>
             <div class="rate-bar-wrap">
               <div class="rate-bar" style="--accent:#ff5800"
-                   [style.width]="data.tauxValidationConge + '%'"></div>
+                   [style.width]="($any(data).tauxValidationConge ?? $any(data).TauxValidationConge ?? 0) + '%'"></div>
             </div>
-            <strong>{{ data.tauxValidationConge | number:'1.0-1' }}%</strong>
+            <strong>{{ ($any(data).tauxValidationConge ?? $any(data).TauxValidationConge ?? 0) | number:'1.0-1' }}%</strong>
           </div>
           <div class="rate-item">
             <span>Autorisations</span>
             <div class="rate-bar-wrap">
               <div class="rate-bar" style="--accent:#0D776E"
-                   [style.width]="data.tauxValidationAuto + '%'"></div>
+                   [style.width]="($any(data).tauxValidationAuto ?? $any(data).TauxValidationAuto ?? 0) + '%'"></div>
             </div>
-            <strong>{{ data.tauxValidationAuto | number:'1.0-1' }}%</strong>
+            <strong>{{ ($any(data).tauxValidationAuto ?? $any(data).TauxValidationAuto ?? 0) | number:'1.0-1' }}%</strong>
           </div>
           <div class="rate-item">
             <span>Maladies</span>
             <div class="rate-bar-wrap">
               <div class="rate-bar" style="--accent:#3b82f6"
-                   [style.width]="data.tauxValidationMaladie + '%'"></div>
+                   [style.width]="($any(data).tauxValidationMaladie ?? $any(data).TauxValidationMaladie ?? 0) + '%'"></div>
             </div>
-            <strong>{{ data.tauxValidationMaladie | number:'1.0-1' }}%</strong>
+            <strong>{{ ($any(data).tauxValidationMaladie ?? $any(data).TauxValidationMaladie ?? 0) | number:'1.0-1' }}%</strong>
           </div>
         </div>
       </div>
@@ -325,7 +373,7 @@
           </svg>
         </div>
         <span class="insight-lbl">Solde moyen de congés</span>
-        <strong class="insight-val">{{ data.moyenneSoldeConges | number:'1.1-1' }}</strong>
+        <strong class="insight-val">{{ ($any(data).moyenneSoldeConges ?? $any(data).MoyenneSoldeConges ?? 0) | number:'1.1-1' }}</strong>
 <span class="insight-unit">jours / employé</span>
         <div class="insight-divider"></div>
         <div class="insight-stat">
@@ -342,6 +390,141 @@
         </div>
       </div>
     </div>
+
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- SECTION POINTAGE — visible RH uniquement   -->
+    <!-- ═══════════════════════════════════════════ -->
+    @if (currentRole === 'rh') {
+      <div class="kpi-section-label" style="margin-top:32px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Pointage du personnel
+      </div>
+
+      <!-- Stats rapides -->
+      <div class="kpi-row">
+        <div class="kpi-card" style="--accent:#0D776E">
+          <div class="kpi-icon-wrap" style="background:rgba(13,119,110,0.1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 stroke="#0D776E" stroke-width="2" stroke-linecap="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-lbl">Présents aujourd'hui</span>
+            <strong class="kpi-val">{{ statsPointageJour?.presents ?? 0 }}</strong>
+          </div>
+        </div>
+        <div class="kpi-card" style="--accent:#c60c30">
+          <div class="kpi-icon-wrap" style="background:rgba(198,12,48,0.1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 stroke="#c60c30" stroke-width="2" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-lbl">Absents aujourd'hui</span>
+            <strong class="kpi-val">{{ statsPointageJour?.absents ?? 0 }}</strong>
+          </div>
+        </div>
+        <div class="kpi-card" style="--accent:#ff5800">
+          <div class="kpi-icon-wrap" style="background:rgba(255,88,0,0.1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 stroke="#ff5800" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-lbl">Retards aujourd'hui</span>
+            <strong class="kpi-val">{{ statsPointageJour?.retards ?? 0 }}</strong>
+          </div>
+        </div>
+        <div class="kpi-card" style="--accent:#8b5cf6">
+          <div class="kpi-icon-wrap" style="background:rgba(139,92,246,0.1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 stroke="#8b5cf6" stroke-width="2" stroke-linecap="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-lbl">Durée moy. ce mois</span>
+            <strong class="kpi-val" style="font-size:18px">{{ statsPointageJour?.dureeMoyenne ?? '—' }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtres -->
+      <div class="ptg-filters">
+        <input type="date" class="ptg-input" [(ngModel)]="filtreDate"
+               (change)="filtrerPointage()" />
+        <input type="text" class="ptg-input" [(ngModel)]="filtreEmploye"
+               placeholder="Rechercher par matricule ou nom…"
+               (input)="filtrerPointage()" />
+        <select class="ptg-select" [(ngModel)]="filtreStatut"
+                (change)="filtrerPointage()">
+          <option value="">Tous les statuts</option>
+          <option value="present">Présent</option>
+          <option value="absent">Absent</option>
+          <option value="retard">En retard</option>
+          <option value="incomplet">Incomplet</option>
+        </select>
+      </div>
+
+      <!-- Tableau -->
+      <div class="ptg-table-wrap">
+        <table class="ptg-table">
+          <thead>
+            <tr>
+              <th>Matricule</th>
+              <th>Nom</th>
+              <th>Prénom</th>
+              <th>Date</th>
+              <th>Entrée</th>
+              <th>Sortie</th>
+              <th>Durée</th>
+              <th>Retard</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of pointagesFiltres; track (p.matricule + p.date)) {
+              <tr>
+                <td>{{ p.matricule }}</td>
+                <td>{{ p.nom }}</td>
+                <td>{{ p.prenom }}</td>
+                <td>{{ p.date | date:'dd/MM/yyyy' }}</td>
+                <td>{{ p.heureEntree ?? '—' }}</td>
+                <td>{{ p.heureSortie ?? '—' }}</td>
+                <td>{{ p.duree ?? '—' }}</td>
+                <td [style.color]="p.retardMinutes > 0 ? '#c60c30' : '#0D776E'">
+                  {{ p.retardMinutes > 0 ? (p.retardMinutes + ' min') : 'À l\'heure' }}
+                </td>
+                <td>
+                  <span class="ptg-badge"
+                    [style.background]="
+                      p.statut === 'present'   ? '#0D776E' :
+                      p.statut === 'retard'    ? '#ff5800' :
+                      p.statut === 'absent'    ? '#c60c30' : '#a7a9ac'">
+                    {{ p.statut | titlecase }}
+                  </span>
+                </td>
+              </tr>
+            }
+            @if (pointagesFiltres.length === 0) {
+              <tr>
+                <td colspan="9" class="ptg-empty">Aucun enregistrement trouvé.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
 
   }
 </div>
