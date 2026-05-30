@@ -26,6 +26,11 @@ builder.Services.AddControllers()
         o.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
 
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10 MB
+});
+
 // ── SWAGGER / OpenAPI ─────────────────────────────────────────────────────────
 builder.Services.AddOpenApi();
 
