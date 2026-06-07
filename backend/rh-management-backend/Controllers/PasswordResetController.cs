@@ -23,7 +23,9 @@ public class PasswordResetController : ControllerBase
     }
 
     /// POST /api/auth/mot-de-passe-oublie — self-service, sends SMS immediately
+    /// POST /api/auth/forgot-password — alias used by ForgotPasswordModal
     [HttpPost("mot-de-passe-oublie")]
+    [HttpPost("forgot-password")]
     [AllowAnonymous]
     public async Task<IActionResult> MotDePasseOublie([FromBody] MotDePasseOublieDto dto)
     {

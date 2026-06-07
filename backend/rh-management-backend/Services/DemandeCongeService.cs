@@ -1,6 +1,8 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using rh_management_backend.Data;
 using rh_management_backend.DTOs.Conge;
+using rh_management_backend.DTOs.Parametrage;
 using rh_management_backend.Models;
 
 namespace rh_management_backend.Services;
@@ -29,6 +31,24 @@ public class DemandeCongeService : IDemandeCongeService
         var jours = fin.DayNumber - debut.DayNumber + 1;
         if (jours < 1) return 0;
         return demiJournee ? 1 : jours;
+    }
+
+    // ── Workflow config ───────────────────────────────────────────────────────
+
+    private async Task<(bool shActif, bool dgActif)> GetWorkflowConfig()
+    {
+        var config = await _db.Parametrages.AsNoTracking().FirstOrDefaultAsync();
+        if (config == null) return (true, true);
+
+        var steps = JsonSerializer.Deserialize<List<WorkflowStepDto>>(
+            config.WorkflowStepsJson,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+        ) ?? new();
+
+        bool shActif = steps.Count > 1 && steps[1].Active;
+        bool dgActif = steps.Count > 2 && steps[2].Active;
+
+        return (shActif, dgActif);
     }
 
     // ── Read ──────────────────────────────────────────────────────────────────
@@ -96,6 +116,21 @@ public class DemandeCongeService : IDemandeCongeService
                 return (null, $"Solde insuffisant : vous demandez {dureeJours} jours mais votre solde est de {employe.SoldeCongesJours} jours.");
         }
 
+        string statutInitial;
+        if (dto.EstBrouillon)
+        {
+            statutInitial = "Brouillon";
+        }
+        else
+        {
+            var (shActif, dgActif) = await GetWorkflowConfig();
+            statutInitial = shActif
+                ? "En attente de validation N+1"
+                : dgActif
+                    ? "En attente de validation DG"
+                    : "Validée – En traitement RH";
+        }
+
         var entity = new DemandeConge
         {
             NomComplet             = employe?.NomComplet ?? dto.Matricule ?? "",
@@ -113,7 +148,7 @@ public class DemandeCongeService : IDemandeCongeService
             Telephone              = string.IsNullOrWhiteSpace(dto.Telephone) ? null : dto.Telephone.Trim(),
             PieceJustificativeFichierNom = string.IsNullOrWhiteSpace(dto.PieceJustificativeFichierNom) ? null : dto.PieceJustificativeFichierNom.Trim(),
             EstBrouillon           = dto.EstBrouillon,
-            Statut                 = dto.EstBrouillon ? "Brouillon" : "En attente de validation N+1",
+            Statut                 = statutInitial,
             CreatedAt              = DateTime.UtcNow
         };
 
@@ -141,12 +176,20 @@ public class DemandeCongeService : IDemandeCongeService
         if (d.Statut != "En attente de validation N+1")
             return (false, $"Statut incorrect : {d.Statut}");
 
-        d.Statut = "En attente de validation DG";
+        var (_, dgActif) = await GetWorkflowConfig();
+        d.Statut = dgActif ? "En attente de validation DG" : "Validée – En traitement RH";
         await _db.SaveChangesAsync();
 
-        // Notification → DG
-        await _notif.NotifierRoleAsync("dg", "conge", id, "validation",
-            $"La demande de congé de {d.NomComplet} a été validée par le supérieur hiérarchique et attend votre validation.");
+        if (dgActif)
+        {
+            await _notif.NotifierRoleAsync("dg", "conge", id, "validation",
+                $"La demande de congé de {d.NomComplet} a été validée par le supérieur hiérarchique et attend votre validation.");
+        }
+        else
+        {
+            await _notif.NotifierRoleAsync("rh", "conge", id, "validation",
+                $"La demande de congé de {d.NomComplet} a été validée par le supérieur hiérarchique et est en attente de traitement RH.");
+        }
 
         return (true, null);
     }

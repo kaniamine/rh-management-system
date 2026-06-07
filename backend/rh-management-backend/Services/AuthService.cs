@@ -28,10 +28,25 @@ public class AuthService : IAuthService
 
         if (user == null) return null;
 
-        if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash)) return null;
+        if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
+            return null;
+
+        if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        {
+            user.FailedLoginAttempts++;
+            if (user.FailedLoginAttempts >= 3)
+            {
+                user.LockoutEnd = DateTime.UtcNow.AddMinutes(5);
+                user.FailedLoginAttempts = 0;
+            }
+            await _db.SaveChangesAsync();
+            return null;
+        }
 
         if (user.Employe == null) return null;
 
+        user.FailedLoginAttempts = 0;
+        user.LockoutEnd = null;
         user.NombreConnexions++;
         await _db.SaveChangesAsync();
 

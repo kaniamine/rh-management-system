@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -100,6 +101,7 @@ public class EmployeController : ControllerBase
                 e.Fonction,
                 e.SuperieurHierarchiqueMatricule,
                 e.SoldeConges,
+                e.Telephone,
                 e.IsActive,
                 Role = _db.Users.Where(u => u.Matricule == e.Matricule).Select(u => u.Role).FirstOrDefault()
             })
@@ -132,6 +134,7 @@ public class EmployeController : ControllerBase
             e.Service,
             e.Fonction,
             e.SoldeConges,
+            e.Telephone,
             SuperieurHierarchique          = supNom,
             e.SuperieurHierarchiqueMatricule
         });
@@ -203,6 +206,29 @@ public class EmployeController : ControllerBase
         return Ok(new { soldeConges = e.SoldeConges });
     }
 
+    // PATCH /api/employes/{matricule}/telephone
+    [HttpPatch("{matricule}/telephone")]
+    [Authorize(Roles = "rh")]
+    public async Task<IActionResult> UpdateTelephone(string matricule, [FromBody] string? telephone)
+    {
+        Console.WriteLine($"[TELEPHONE] PATCH {matricule} → '{telephone}'");
+
+        var employe = await _db.Employes
+            .FirstOrDefaultAsync(e => e.Matricule == matricule);
+
+        if (employe == null)
+            return NotFound(new { message = "Employé introuvable." });
+
+        employe.Telephone = telephone ?? string.Empty;
+        await _db.SaveChangesAsync();
+
+        Console.WriteLine($"[TELEPHONE] ✅ Updated for {matricule}");
+        return Ok(new {
+            message   = "Numéro de téléphone mis à jour.",
+            telephone = employe.Telephone
+        });
+    }
+
     // PATCH /api/employes/{id:int}/desactiver — désactiver par id
     [HttpPatch("{id:int}/desactiver")]
     [Authorize(Roles = "rh")]
@@ -219,6 +245,43 @@ public class EmployeController : ControllerBase
 
         await _db.SaveChangesAsync();
         return Ok(new { message = "Employé désactivé avec succès." });
+    }
+
+    // PUT /api/employes/mon-telephone
+    [HttpPut("mon-telephone")]
+    public async Task<IActionResult> ChangerMonTelephone([FromBody] TelephoneDto dto)
+    {
+        if (string.IsNullOrEmpty(dto.Telephone))
+            return BadRequest(new { error = "Le numéro de téléphone est obligatoire." });
+
+        var telNettoye = NettoyerTel(dto.Telephone);
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(telNettoye, @"^\d{8}$"))
+            return BadRequest(new { error = "Format invalide. Entrez un numéro tunisien à 8 chiffres." });
+
+        var matricule = User.FindFirstValue("matricule");
+        if (string.IsNullOrEmpty(matricule))
+            return Unauthorized();
+
+        var employe = await _db.Employes
+            .FirstOrDefaultAsync(e => e.Matricule == matricule && e.IsActive);
+
+        if (employe == null)
+            return NotFound(new { error = "Employé introuvable." });
+
+        employe.Telephone = telNettoye;
+        await _db.SaveChangesAsync();
+
+        return Ok(new { message = "Numéro de téléphone mis à jour avec succès." });
+    }
+
+    private static string NettoyerTel(string t)
+    {
+        t = t.Replace(" ", "").Replace("-", "").Replace(".", "");
+        if (t.StartsWith("+216"))      t = t.Substring(4);
+        else if (t.StartsWith("00216")) t = t.Substring(5);
+        else if (t.StartsWith("216"))   t = t.Substring(3);
+        return t.Trim();
     }
 }
 
@@ -247,4 +310,9 @@ public class UpdateEmployeDto
     public int?    SoldeConges { get; set; }
     public string? Role      { get; set; }
     public string? Telephone { get; set; }
+}
+
+public class TelephoneDto
+{
+    public string Telephone { get; set; } = "";
 }

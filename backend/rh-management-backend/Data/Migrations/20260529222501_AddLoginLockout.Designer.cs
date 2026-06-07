@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using rh_management_backend.Data;
 
@@ -11,9 +12,11 @@ using rh_management_backend.Data;
 namespace rh_management_backend.Data.Migrations
 {
     [DbContext(typeof(RhDbContext))]
-    partial class RhDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260529222501_AddLoginLockout")]
+    partial class AddLoginLockout
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -471,189 +474,6 @@ namespace rh_management_backend.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Notifications");
-                });
-
-            modelBuilder.Entity("rh_management_backend.Models.Parametrage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AssiduiteBaremeJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AutoriApremDebut")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AutoriApremFin")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("AutoriBlocageAuto")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("AutoriDureeMaxPerso")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("AutoriEteActif")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("AutoriEteDebut")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AutoriEteFin")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AutoriEteHeureDebut")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AutoriEteHeureFin")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AutoriMatinDebut")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AutoriMatinFin")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AutoriPauseDebut")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AutoriPauseFin")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("AutoriRamadanActif")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("AutoriRamadanDebut")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AutoriRamadanFin")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("CongesDebitApresValidation")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("CongesDelaiDepot")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("CongesInclusionFeries")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("CongesInclusionWeekend")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("CongesMotifObligatoire")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("CongesSoldeMinimum")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("CongesUniteJoursOuvres")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("HoraireApresMidiDebut")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HoraireApresMidiFin")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<bool>("HoraireEteActif")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("HoraireEtePeriodeDebut")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HoraireEtePeriodeFin")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HoraireEtePlageDebut")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HoraireEtePlageFin")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HoraireMatinDebut")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HoraireMatinFin")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HorairePauseDebut")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HorairePauseFin")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<bool>("HoraireRamadanActif")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("MaladieCertificatObligatoire")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("MaladieExclusionAssiduite")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("MaladieTypesJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("MaladieValidationRhOnly")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("NotificationsJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PersonnelFieldsJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RolePermsJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("WorkflowStepsJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Parametrages");
                 });
 
             modelBuilder.Entity("rh_management_backend.Models.Pointage", b =>

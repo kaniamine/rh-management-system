@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 
 namespace rh_management_backend.Services;
 
@@ -18,49 +19,52 @@ public class SmsService : ISmsService
 
     public async Task SendAsync(string toPhoneNumber, string message)
     {
-        var accountSid = _config["Twilio:AccountSid"];
-        var authToken  = _config["Twilio:AuthToken"];
-        var fromNumber = _config["Twilio:FromNumber"];
+        var apiKey  = _config["Infobip:ApiKey"];
+        var baseUrl = _config["Infobip:BaseUrl"];
+        var sender  = _config["Infobip:Sender"] ?? "AlBaraka";
 
-        Console.WriteLine($"[SMS] AccountSid present: {!string.IsNullOrEmpty(accountSid)}");
-        Console.WriteLine($"[SMS] AuthToken present:  {!string.IsNullOrEmpty(authToken)}");
-        Console.WriteLine($"[SMS] FromNumber: {fromNumber}");
-        Console.WriteLine($"[SMS] Sending to: {toPhoneNumber}");
-
-        if (string.IsNullOrEmpty(accountSid))
+        if (string.IsNullOrEmpty(apiKey))
         {
-            _logger.LogWarning("Twilio AccountSid is not configured — SMS skipped.");
+            _logger.LogWarning("Infobip ApiKey is not configured — SMS skipped.");
             return;
         }
 
-        var url = $"https://api.twilio.com/2010-04-01/Accounts/{accountSid}/Messages.json";
+        var url = $"{baseUrl}/sms/2/text/advanced";
 
-        var credentials = Convert.ToBase64String(
-            Encoding.UTF8.GetBytes($"{accountSid}:{authToken}"));
+        var payload = new
+        {
+            messages = new[]
+            {
+                new
+                {
+                    from = sender,
+                    destinations = new[] { new { to = toPhoneNumber } },
+                    text = message
+                }
+            }
+        };
 
         using var http = _factory.CreateClient();
         http.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Basic", credentials);
+            new AuthenticationHeaderValue("App", apiKey);
 
-        var formData = new FormUrlEncodedContent(new[]
-        {
-            new KeyValuePair<string, string>("From", fromNumber ?? string.Empty),
-            new KeyValuePair<string, string>("To",   toPhoneNumber),
-            new KeyValuePair<string, string>("Body", message)
-        });
+        var content = new StringContent(
+            JsonSerializer.Serialize(payload),
+            Encoding.UTF8,
+            "application/json");
 
-        var response = await http.PostAsync(url, formData);
+        var response = await http.PostAsync(url, content);
         var responseBody = await response.Content.ReadAsStringAsync();
 
         if (response.IsSuccessStatusCode)
         {
-            Console.WriteLine("[SMS] ✅ SendAsync completed.");
-            _logger.LogInformation("SMS sent to {To}.", toPhoneNumber);
+            _logger.LogInformation("SMS sent to {To} via Infobip.", toPhoneNumber);
         }
         else
         {
-            Console.Error.WriteLine($"[SMS ERROR] Twilio returned {(int)response.StatusCode}: {responseBody}");
-            _logger.LogWarning("Twilio returned {StatusCode}: {Body}", response.StatusCode, responseBody);
+            var msg = $"Infobip a retourné {(int)response.StatusCode}: {responseBody}";
+            _logger.LogWarning(msg);
+            throw new HttpRequestException(msg);
         }
     }
 }

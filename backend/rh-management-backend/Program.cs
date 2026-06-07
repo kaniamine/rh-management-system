@@ -37,7 +37,7 @@ builder.Services.AddOpenApi();
 // ── CORS ──────────────────────────────────────────────────────────────────────
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngular", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
         var allowedOrigins = builder.Configuration
             .GetSection("AllowedOrigins")
@@ -93,7 +93,7 @@ app.UseMiddleware<ExceptionMiddleware>();  // ← gestion globale erreurs
 if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 
-app.UseCors("AllowAngular");
+app.UseCors("AllowFrontend");
 app.UseAuthentication();   // ← JWT avant Authorization
 app.UseAuthorization();
 

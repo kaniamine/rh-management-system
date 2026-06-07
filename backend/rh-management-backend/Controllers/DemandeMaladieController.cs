@@ -41,6 +41,61 @@ public class DemandeMaladieController : ControllerBase
         return d == null ? NotFound() : Ok(d);
     }
 
+    // GET /api/demandes-maladie/mon-equipe — Maladies des subordonnés du SH connecté
+    [HttpGet("mon-equipe")]
+    [Authorize]
+    public async Task<IActionResult> GetMonEquipe()
+    {
+        try
+        {
+            var matriculeSH = User.FindFirst("matricule")?.Value
+                ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(matriculeSH))
+                return Unauthorized(new { error = "Matricule introuvable dans le token." });
+
+            // Récupérer les matricules de l'équipe supervisée par ce SH
+            var matriculesEquipe = await _db.Employes
+                .Where(e => e.SuperieurHierarchiqueMatricule == matriculeSH)
+                .Select(e => e.Matricule)
+                .ToListAsync();
+
+            if (!matriculesEquipe.Any())
+                return Ok(Array.Empty<object>());
+
+            // Charger les demandes de maladie en mémoire avant de formatter les DateOnly
+            var raw = await _db.DemandesMaladie
+                .Where(d => matriculesEquipe.Contains(d.Matricule))
+                .OrderByDescending(d => d.CreatedAt)
+                .ToListAsync();
+
+            var maladies = raw.Select(d => new {
+                d.Id,
+                d.Matricule,
+                d.NomComplet,
+                d.Direction,
+                d.Service,
+                d.TypeMaladie,
+                dateDebut                   = d.DateDebut.ToString("yyyy-MM-dd"),
+                dateFin                     = d.DateFin.ToString("yyyy-MM-dd"),
+                d.NombreJours,
+                d.ExempteAssiduité,
+                d.CertificatMedicalFichierNom,
+                d.Commentaire,
+                d.Statut,
+                d.CreatedAt,
+                d.UpdatedAt
+            }).ToList();
+
+            return Ok(maladies);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MALADIE SH] Erreur: {ex.Message}");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
     // POST /api/demandes-maladie — [FromForm] pour upload fichier
     [HttpPost]
     [Authorize(Roles = "employe,n1")]
@@ -122,6 +177,11 @@ public class DemandeMaladieController : ControllerBase
     [Authorize(Roles = "rh")]
     public async Task<IActionResult> Valider(int id, [FromBody] ActionMaladieDto dto)
     {
+        var role = User.FindFirst("role")?.Value
+            ?? User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+        if (role != "rh")
+            return StatusCode(403, new { error = "Seule la Direction RH peut valider les demandes de maladie." });
+
         var d = await _db.DemandesMaladie.FindAsync(id);
         if (d == null) return NotFound();
         if (d.Statut != "En attente de validation RH")
@@ -164,6 +224,11 @@ public class DemandeMaladieController : ControllerBase
     [Authorize(Roles = "rh")]
     public async Task<IActionResult> Rejeter(int id, [FromBody] ActionMaladieDto dto)
     {
+        var role = User.FindFirst("role")?.Value
+            ?? User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+        if (role != "rh")
+            return StatusCode(403, new { error = "Seule la Direction RH peut rejeter les demandes de maladie." });
+
         var d = await _db.DemandesMaladie.FindAsync(id);
         if (d == null) return NotFound();
         if (string.IsNullOrWhiteSpace(dto.Commentaire))

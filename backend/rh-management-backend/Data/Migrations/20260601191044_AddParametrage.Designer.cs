@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using rh_management_backend.Data;
 
@@ -11,9 +12,11 @@ using rh_management_backend.Data;
 namespace rh_management_backend.Data.Migrations
 {
     [DbContext(typeof(RhDbContext))]
-    partial class RhDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260601191044_AddParametrage")]
+    partial class AddParametrage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -564,62 +567,6 @@ namespace rh_management_backend.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<bool>("CongesUniteJoursOuvres")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("HoraireApresMidiDebut")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HoraireApresMidiFin")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<bool>("HoraireEteActif")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("HoraireEtePeriodeDebut")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HoraireEtePeriodeFin")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HoraireEtePlageDebut")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HoraireEtePlageFin")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HoraireMatinDebut")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HoraireMatinFin")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HorairePauseDebut")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("HorairePauseFin")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<bool>("HoraireRamadanActif")
                         .HasColumnType("bit");
 
                     b.Property<bool>("MaladieCertificatObligatoire")

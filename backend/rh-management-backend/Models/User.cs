@@ -20,7 +20,8 @@ public class User
     public bool IsActive { get; set; } = true;
     public bool MustChangePassword { get; set; } = true;
     public int NombreConnexions { get; set; } = 0;
-
+    public int FailedLoginAttempts { get; set; } = 0;
+    public DateTime? LockoutEnd { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

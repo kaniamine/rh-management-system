@@ -16,12 +16,14 @@ public class AuthController : ControllerBase
     private readonly IAuthService _authService;
     private readonly RhDbContext _db;
     private readonly IConfiguration _config;
+    private readonly IPointageService _pointage;
 
-    public AuthController(IAuthService authService, RhDbContext db, IConfiguration config)
+    public AuthController(IAuthService authService, RhDbContext db, IConfiguration config, IPointageService pointage)
     {
         _authService = authService;
         _db = db;
         _config = config;
+        _pointage = pointage;
     }
 
     [HttpPost("login")]
@@ -37,6 +39,14 @@ public class AuthController : ControllerBase
 
         if (result == null)
             return Unauthorized(new { message = "Matricule ou mot de passe incorrect." });
+
+        // Enregistrer automatiquement le pointage d'entrée pour les non-RH
+        if (result.Role != "rh" && result.Role != "admin")
+        {
+            try { await _pointage.PointerEntreeAsync(result.Matricule); }
+            catch (InvalidOperationException) { /* pointage déjà enregistré aujourd'hui */ }
+            catch (Exception ex) { Console.WriteLine($"[POINTAGE-AUTO] {ex.Message}"); }
+        }
 
         return Ok(result);
     }
@@ -65,38 +75,6 @@ public class AuthController : ControllerBase
             Console.WriteLine($"[CHANGE-PWD ERROR] {ex.Message}");
             return StatusCode(500, new { message = ex.Message });
         }
-    }
-
-    /// POST /api/auth/forgot-password
-    [HttpPost("forgot-password")]
-    [AllowAnonymous]
-    public async Task<IActionResult> ForgotPassword(
-        [FromBody] ForgotPasswordDto dto,
-        [FromServices] RhDbContext db,
-        [FromServices] ISmsService smsService)
-    {
-        var matricule = dto.Matricule.Trim().ToUpper();
-        var telephone = dto.Telephone.Trim();
-
-        var user = await db.Users
-            .Include(u => u.Employe)
-            .FirstOrDefaultAsync(u => u.Matricule == matricule && u.IsActive);
-
-        const string genericResponse = "Si ce matricule et ce numéro de téléphone sont valides, votre mot de passe a été réinitialisé.";
-
-        if (user == null || user.Employe.Telephone != telephone)
-            return Ok(new { message = genericResponse });
-
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword("0000");
-        user.MustChangePassword = true;
-        await db.SaveChangesAsync();
-
-        await smsService.SendAsync(
-            telephone,
-            "Al Baraka Assurances : votre mot de passe a été réinitialisé. Connectez-vous avec le mot de passe temporaire : 0000"
-        );
-
-        return Ok(new { message = genericResponse });
     }
 
     /// POST /api/auth/reset-password  (RH resets an employee's password)
