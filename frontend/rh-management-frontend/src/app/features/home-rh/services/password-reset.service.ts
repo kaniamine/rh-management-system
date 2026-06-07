@@ -17,4 +17,11 @@ export class PasswordResetService {
       nouveauMotDePasse
     });
   }
+
+  reinitialiserManuel(matricule: string, nouveauMotDePasse: string): Observable<any> {
+    return this.http.post(`${this.API}/reinitialiser-manuellement`, {
+      matricule,
+      nouveauMotDePasse
+    });
+  }
 }

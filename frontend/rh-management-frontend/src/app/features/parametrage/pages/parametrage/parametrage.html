@@ -36,112 +36,7 @@
     <!-- CONTENT -->
     <main class="param-content">
 
-      <!-- ══ 1. Personnel ══════════════════════════════════════ -->
-      @if (activeSection === 'personnel') {
-        <div class="sec-panel">
-          <div class="sec-panel-head">
-            <div class="sec-icon-wrap sec-icon-orange">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
-            </div>
-            <div>
-              <h2>Base de données du personnel</h2>
-              <p>Configurez les champs du référentiel RH, leurs obligations et leur modifiabilité.</p>
-            </div>
-          </div>
-          <div class="sec-panel-body">
-            <table class="param-table">
-              <thead>
-                <tr>
-                  <th>Champ</th>
-                  <th class="tcenter">Obligatoire</th>
-                  <th class="tcenter">Modifiable</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (f of personnelFields; track f.key) {
-                  <tr>
-                    <td class="field-name">{{ f.label }}</td>
-                    <td class="tcenter">
-                      <label class="toggle">
-                        <input type="checkbox" [(ngModel)]="f.required" [name]="'req_' + f.key" />
-                        <span class="toggle-track"></span>
-                      </label>
-                    </td>
-                    <td class="tcenter">
-                      <label class="toggle">
-                        <input type="checkbox" [(ngModel)]="f.editable" [name]="'edit_' + f.key" />
-                        <span class="toggle-track"></span>
-                      </label>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-          <div class="sec-footer">
-            <button class="btn-save" type="button" (click)="saveSection()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Enregistrer
-            </button>
-            @if (savedSection === 'personnel') {
-              <span class="save-toast">Modifications enregistrées.</span>
-            }
-          </div>
-        </div>
-      }
-
-      <!-- ══ 2. Rôles & habilitations ══════════════════════════ -->
-      @if (activeSection === 'roles') {
-        <div class="sec-panel">
-          <div class="sec-panel-head">
-            <div class="sec-icon-wrap sec-icon-teal">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            </div>
-            <div>
-              <h2>Profils, rôles et habilitations</h2>
-              <p>Définissez les droits de chaque rôle sur les fonctionnalités du système.</p>
-            </div>
-          </div>
-          <div class="sec-panel-body overflow-x">
-            <table class="param-table perm-matrix">
-              <thead>
-                <tr>
-                  <th>Droit / Action</th>
-                  @for (r of roles; track r.id) {
-                    <th class="tcenter role-col">{{ r.label }}</th>
-                  }
-                </tr>
-              </thead>
-              <tbody>
-                @for (p of permissions; track p.id) {
-                  <tr>
-                    <td class="field-name">{{ p.label }}</td>
-                    @for (r of roles; track r.id) {
-                      <td class="tcenter">
-                        <input type="checkbox"
-                               class="perm-check"
-                               [checked]="rolePerms[r.id][p.id]"
-                               (change)="togglePerm(r.id, p.id)" />
-                      </td>
-                    }
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-          <div class="sec-footer">
-            <button class="btn-save" type="button" (click)="saveSection()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Enregistrer
-            </button>
-            @if (savedSection === 'roles') {
-              <span class="save-toast">Modifications enregistrées.</span>
-            }
-          </div>
-        </div>
-      }
-
-      <!-- ══ 3. Congés ══════════════════════════════════════════ -->
+      <!-- ══ 1. Congés ══════════════════════════════════════════ -->
       @if (activeSection === 'conges') {
         <div class="sec-panel">
           <div class="sec-panel-head">
@@ -225,7 +120,7 @@
         </div>
       }
 
-      <!-- ══ 4. Workflow ════════════════════════════════════════ -->
+      <!-- ══ 2. Workflow ════════════════════════════════════════ -->
       @if (activeSection === 'workflow') {
         <div style="position:relative;">
 
@@ -305,7 +200,7 @@
         </div>
       }
 
-      <!-- ══ 5. Autorisations ═══════════════════════════════════ -->
+      <!-- ══ 3. Autorisations — Règles de contrôle uniquement ═══ -->
       @if (activeSection === 'autorisations') {
         <div class="sec-panel">
           <div class="sec-panel-head">
@@ -314,92 +209,10 @@
             </div>
             <div>
               <h2>Paramétrage — Autorisations de sortie</h2>
-              <p>Horaires de travail et règles de contrôle des autorisations personnelles.</p>
+              <p>Règles de contrôle des autorisations personnelles.</p>
             </div>
           </div>
           <div class="sec-panel-body">
-
-            <div class="rule-group">
-              <div class="rule-group-title">Horaires standard</div>
-              <div class="time-grid">
-                <div class="time-block">
-                  <span class="time-lbl">Matin</span>
-                  <div class="time-range">
-                    <input type="time" class="time-input" [(ngModel)]="autoriConfig.matinDebut" name="matinDebut" />
-                    <span class="time-sep">–</span>
-                    <input type="time" class="time-input" [(ngModel)]="autoriConfig.matinFin" name="matinFin" />
-                  </div>
-                </div>
-                <div class="time-block time-block-pause">
-                  <span class="time-lbl">Pause (exclue du calcul)</span>
-                  <div class="time-range">
-                    <input type="time" class="time-input" [(ngModel)]="autoriConfig.pauseDebut" name="pauseDebut" />
-                    <span class="time-sep">–</span>
-                    <input type="time" class="time-input" [(ngModel)]="autoriConfig.pauseFin" name="pauseFin" />
-                  </div>
-                </div>
-                <div class="time-block">
-                  <span class="time-lbl">Après-midi</span>
-                  <div class="time-range">
-                    <input type="time" class="time-input" [(ngModel)]="autoriConfig.apremDebut" name="apremDebut" />
-                    <span class="time-sep">–</span>
-                    <input type="time" class="time-input" [(ngModel)]="autoriConfig.apremFin" name="apremFin" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="rule-group">
-              <div class="rule-group-title">
-                Horaires été
-                <label class="toggle toggle-inline">
-                  <input type="checkbox" [(ngModel)]="autoriConfig.eteActif" name="eteActif" />
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
-              @if (autoriConfig.eteActif) {
-                <div class="time-grid">
-                  <div class="time-block">
-                    <span class="time-lbl">Période (JJ/MM)</span>
-                    <div class="time-range">
-                      <input type="text" class="time-input" placeholder="01/07" [(ngModel)]="autoriConfig.eteDebut" name="eteDebut" maxlength="5" />
-                      <span class="time-sep">–</span>
-                      <input type="text" class="time-input" placeholder="31/08" [(ngModel)]="autoriConfig.eteFin" name="eteFin" maxlength="5" />
-                    </div>
-                  </div>
-                  <div class="time-block">
-                    <span class="time-lbl">Plage horaire</span>
-                    <div class="time-range">
-                      <input type="time" class="time-input" [(ngModel)]="autoriConfig.eteHeureDebut" name="eteHD" />
-                      <span class="time-sep">–</span>
-                      <input type="time" class="time-input" [(ngModel)]="autoriConfig.eteHeureFin" name="eteHF" />
-                    </div>
-                  </div>
-                </div>
-              }
-            </div>
-
-            <div class="rule-group">
-              <div class="rule-group-title">
-                Horaires Ramadan
-                <label class="toggle toggle-inline">
-                  <input type="checkbox" [(ngModel)]="autoriConfig.ramadanActif" name="ramadanActif" />
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
-              @if (autoriConfig.ramadanActif) {
-                <div class="time-grid">
-                  <div class="time-block">
-                    <span class="time-lbl">Plage horaire Ramadan</span>
-                    <div class="time-range">
-                      <input type="time" class="time-input" [(ngModel)]="autoriConfig.ramadanDebut" name="ramadanD" />
-                      <span class="time-sep">–</span>
-                      <input type="time" class="time-input" [(ngModel)]="autoriConfig.ramadanFin" name="ramadanF" />
-                    </div>
-                  </div>
-                </div>
-              }
-            </div>
 
             <div class="rule-group">
               <div class="rule-group-title">Règles de contrôle</div>
@@ -432,7 +245,116 @@
         </div>
       }
 
-      <!-- ══ 6. Maladie ═════════════════════════════════════════ -->
+      <!-- ══ 4. Plages horaires ══════════════════════════════════ -->
+      @if (activeSection === 'plagesHoraires') {
+        <div class="sec-panel">
+          <div class="sec-panel-head">
+            <div class="sec-icon-wrap sec-icon-teal">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+              <h2>Plages horaires</h2>
+              <p>Horaires standard, été et Ramadan utilisés dans le calcul des autorisations.</p>
+            </div>
+          </div>
+          <div class="sec-panel-body">
+
+            <div class="rule-group">
+              <div class="rule-group-title">Horaires standard</div>
+              <div class="time-grid">
+                <div class="time-block">
+                  <span class="time-lbl">Matin</span>
+                  <div class="time-range">
+                    <input type="time" class="time-input" [(ngModel)]="plagesConfig.matinDebut" name="matinDebut" />
+                    <span class="time-sep">–</span>
+                    <input type="time" class="time-input" [(ngModel)]="plagesConfig.matinFin" name="matinFin" />
+                  </div>
+                </div>
+                <div class="time-block time-block-pause">
+                  <span class="time-lbl">Pause (exclue du calcul)</span>
+                  <div class="time-range">
+                    <input type="time" class="time-input" [(ngModel)]="plagesConfig.pauseDebut" name="pauseDebut" />
+                    <span class="time-sep">–</span>
+                    <input type="time" class="time-input" [(ngModel)]="plagesConfig.pauseFin" name="pauseFin" />
+                  </div>
+                </div>
+                <div class="time-block">
+                  <span class="time-lbl">Après-midi</span>
+                  <div class="time-range">
+                    <input type="time" class="time-input" [(ngModel)]="plagesConfig.apremDebut" name="apremDebut" />
+                    <span class="time-sep">–</span>
+                    <input type="time" class="time-input" [(ngModel)]="plagesConfig.apremFin" name="apremFin" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="rule-group">
+              <div class="rule-group-title">
+                Horaires été
+                <label class="toggle toggle-inline">
+                  <input type="checkbox" [(ngModel)]="plagesConfig.eteActif" name="eteActif" />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              @if (plagesConfig.eteActif) {
+                <div class="time-grid">
+                  <div class="time-block">
+                    <span class="time-lbl">Période (JJ/MM)</span>
+                    <div class="time-range">
+                      <input type="text" class="time-input" placeholder="01/07" [(ngModel)]="plagesConfig.eteDebut" name="eteDebut" maxlength="5" />
+                      <span class="time-sep">–</span>
+                      <input type="text" class="time-input" placeholder="31/08" [(ngModel)]="plagesConfig.eteFin" name="eteFin" maxlength="5" />
+                    </div>
+                  </div>
+                  <div class="time-block">
+                    <span class="time-lbl">Plage horaire</span>
+                    <div class="time-range">
+                      <input type="time" class="time-input" [(ngModel)]="plagesConfig.eteHeureDebut" name="eteHD" />
+                      <span class="time-sep">–</span>
+                      <input type="time" class="time-input" [(ngModel)]="plagesConfig.eteHeureFin" name="eteHF" />
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="rule-group">
+              <div class="rule-group-title">
+                Horaires Ramadan
+                <label class="toggle toggle-inline">
+                  <input type="checkbox" [(ngModel)]="plagesConfig.ramadanActif" name="ramadanActif" />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              @if (plagesConfig.ramadanActif) {
+                <div class="time-grid">
+                  <div class="time-block">
+                    <span class="time-lbl">Plage horaire Ramadan</span>
+                    <div class="time-range">
+                      <input type="time" class="time-input" [(ngModel)]="plagesConfig.ramadanDebut" name="ramadanD" />
+                      <span class="time-sep">–</span>
+                      <input type="time" class="time-input" [(ngModel)]="plagesConfig.ramadanFin" name="ramadanF" />
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+          </div>
+          <div class="sec-footer">
+            <button class="btn-save" type="button" (click)="saveSection()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Enregistrer
+            </button>
+            @if (savedSection === 'plagesHoraires') {
+              <span class="save-toast">Modifications enregistrées.</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ══ 5. Maladie ═════════════════════════════════════════ -->
       @if (activeSection === 'maladie') {
         <div class="sec-panel">
           <div class="sec-panel-head">
@@ -509,7 +431,7 @@
         </div>
       }
 
-      <!-- ══ 7. Assiduité ═══════════════════════════════════════ -->
+      <!-- ══ 6. Assiduité ═══════════════════════════════════════ -->
       @if (activeSection === 'assiduite') {
         <div class="sec-panel">
           <div class="sec-panel-head">
@@ -560,47 +482,12 @@
         </div>
       }
 
-      <!-- ══ 8. Notifications ═══════════════════════════════════ -->
-      @if (activeSection === 'notifications') {
-        <div class="sec-panel">
-          <div class="sec-panel-head">
-            <div class="sec-icon-wrap sec-icon-orange">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            </div>
-            <div>
-              <h2>Notifications RH automatiques</h2>
-              <p>Activez ou désactivez les alertes envoyées aux parties prenantes.</p>
-            </div>
-          </div>
-          <div class="sec-panel-body">
-            @for (n of notifications; track n.label) {
-              <div class="notif-row">
-                <div class="notif-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                </div>
-                <div class="notif-info">
-                  <strong>{{ n.label }}</strong>
-                  <span>{{ n.desc }}</span>
-                </div>
-                <label class="toggle">
-                  <input type="checkbox" [(ngModel)]="n.active" [name]="'notif_' + n.label" />
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
-            }
-          </div>
-          <div class="sec-footer">
-            <button class="btn-save" type="button" (click)="saveSection()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Enregistrer
-            </button>
-            @if (savedSection === 'notifications') {
-              <span class="save-toast">Modifications enregistrées.</span>
-            }
-          </div>
-        </div>
-      }
-
     </main>
   </div>
+
+  @if (savedSection) {
+    <div style="position:fixed;bottom:24px;right:24px;background:#0D776E;color:white;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:9999;">
+      ✅ Modifications enregistrées.
+    </div>
+  }
 </div>

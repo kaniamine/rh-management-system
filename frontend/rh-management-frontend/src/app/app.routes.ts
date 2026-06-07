@@ -69,7 +69,7 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'pointage',
+    path: 'rh/pointage',
     loadChildren: () =>
       import('./features/pointage/pointage-module').then(m => m.PointageModule),
     canActivate: [authGuard]

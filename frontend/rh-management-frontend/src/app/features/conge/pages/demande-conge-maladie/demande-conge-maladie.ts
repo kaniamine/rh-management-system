@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../../core/auth.service';
+import { ParametrageService } from '../../../../core/parametrage.service';
 
 type TypeMaladie = 'simple' | 'maternite' | 'chirurgie';
 
@@ -14,9 +15,10 @@ type TypeMaladie = 'simple' | 'maternite' | 'chirurgie';
   templateUrl: './demande-conge-maladie.html',
   styleUrls: ['./demande-conge-maladie.css']
 })
-export class DemandeCongeArrMaladie {
-  private readonly http = inject(HttpClient);
-  private readonly auth = inject(AuthService);
+export class DemandeCongeArrMaladie implements OnInit, OnDestroy {
+  private readonly http        = inject(HttpClient);
+  private readonly auth        = inject(AuthService);
+  private readonly parametrage = inject(ParametrageService);
 
   showConfirm = false;
   submitting = false;
@@ -28,6 +30,11 @@ export class DemandeCongeArrMaladie {
   certificatValide: boolean | null = null;
   certificatMessage = '';
   certificatPreviewUrl: string | null = null;
+
+  certificatObligatoire = true;
+  bareme: any[] = [];
+
+  private readonly _onParametrageUpdated = () => this.chargerParametrage();
 
   get employee() {
     const s = this.auth.session;
@@ -96,13 +103,38 @@ export class DemandeCongeArrMaladie {
     const j = this.nombreJours;
     if (this.selectedTypeInfo?.exempteAssiduity) return 'Exempté';
     if (j <= 0) return '--';
-    if (j <= 10) return '0 point';
-    if (j <= 15) return '0,5 point';
-    if (j <= 20) return '1 point';
-    if (j <= 30) return '2 points';
-    return '3 points';
+    const points = this.parametrage.calculerDeduction(j);
+    const formatted = points.toString().replace('.', ',');
+    return `${formatted} point${points >= 2 ? 's' : ''}`;
   }
 
+  isPalierActif(palier: any): boolean {
+    const j = this.nombreJours;
+    if (j <= 0) return false;
+    const { min, max } = this.parametrage.parsePalierRange(palier);
+    return j >= min && j <= max;
+  }
+
+  // ── Lifecycle ────────────────────────────────────────────
+  ngOnInit(): void {
+    this.chargerParametrage();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('parametrage-updated', this._onParametrageUpdated);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('parametrage-updated', this._onParametrageUpdated);
+    }
+  }
+
+  chargerParametrage(): void {
+    this.certificatObligatoire = this.parametrage.isCertificatObligatoire();
+    this.bareme                = this.parametrage.getBareme();
+  }
+
+  // ── Certificat ────────────────────────────────────────────
   onCertificatSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -128,8 +160,7 @@ export class DemandeCongeArrMaladie {
           this.certificatValide = res.valide;
           this.certificatMessage = res.message ?? '';
         },
-        error: (err) => {
-          console.error('[CERTIFICAT ERROR]', err);
+        error: () => {
           this.certificatValidating = false;
           this.certificatValide = true;
           this.certificatMessage = '✅ Document accepté.';
@@ -145,6 +176,7 @@ export class DemandeCongeArrMaladie {
     this.certificatPreviewUrl = null;
   }
 
+  // ── Actions ──────────────────────────────────────────────
   openConfirm(): void {
     this.errorMessage = null;
     this.successMessage = null;
@@ -159,7 +191,7 @@ export class DemandeCongeArrMaladie {
       this.errorMessage = 'La date de fin ne peut pas être antérieure à la date de début.';
       return;
     }
-    if (!this.certificatFile) {
+    if (this.certificatObligatoire && !this.certificatFile) {
       this.errorMessage = 'Le certificat médical est obligatoire. Veuillez joindre le document.';
       return;
     }

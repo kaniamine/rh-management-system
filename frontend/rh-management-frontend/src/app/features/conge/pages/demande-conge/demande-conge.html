@@ -174,6 +174,30 @@
           </div>
         </div>
 
+        <div style="background:#f8f9fa; border:1px solid #e5e7eb;
+                    border-radius:8px; padding:12px 16px;
+                    margin-bottom:16px;">
+          <p style="margin:0 0 8px; font-size:12px;
+                    font-weight:700; color:#5e6167;">
+            Circuit de validation actif :
+          </p>
+          <div style="display:flex; align-items:center;
+                      gap:8px; flex-wrap:wrap;">
+            @for (etape of workflowActif; track etape; let last = $last) {
+              <span style="display:flex; align-items:center; gap:8px;">
+                <span style="background:#ff5800; color:white;
+                             padding:3px 10px; border-radius:12px;
+                             font-size:11px; font-weight:700;">
+                  {{ etape }}
+                </span>
+                @if (!last) {
+                  <span style="color:#a7a9ac; font-size:14px;">→</span>
+                }
+              </span>
+            }
+          </div>
+        </div>
+
         <div class="workflow">
           <div class="wf-step wf-active">
             <div class="wf-num">1</div>

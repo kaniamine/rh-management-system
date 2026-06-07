@@ -1,20 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 
 const API = '/api/auth';
-
-interface ResetRequest {
-  notifId:   number;
-  matricule: string;
-  timestamp: string;
-  isRead:    boolean;
-  checking:  boolean;
-  exists:    boolean | null;
-  resetting: boolean;
-  done:      boolean;
-}
 
 @Component({
   selector: 'app-reset-password-requests',
@@ -23,15 +12,8 @@ interface ResetRequest {
   templateUrl: './reset-password-requests.html',
   styleUrl: './reset-password-requests.css'
 })
-export class ResetPasswordRequests implements OnInit {
+export class ResetPasswordRequests {
   private readonly http = inject(HttpClient);
-
-  demandes: any[] = [];
-  loading         = true;
-
-  smsLoading = false;
-  smsSuccess = '';
-  smsError   = '';
 
   manualMatricule              = '';
   manualChecking               = false;
@@ -40,57 +22,11 @@ export class ResetPasswordRequests implements OnInit {
   manualDone                   = false;
   manualError                  = '';
 
-  get loadingRequests(): boolean { return this.loading; }
-
   get manualLedState(): 'idle' | 'checking' | 'found' | 'not-found' {
     if (this.manualChecking)         return 'checking';
     if (this.manualExists === true)  return 'found';
     if (this.manualExists === false) return 'not-found';
     return 'idle';
-  }
-
-  ngOnInit(): void { this.loadDemandes(); }
-
-  loadDemandes(): void {
-    this.loading  = true;
-    this.demandes = [];
-    this.smsSuccess = '';
-    this.smsError   = '';
-    this.http.get<any[]>(`${API}/demandes-reinitialisation`).subscribe({
-      next:  (data) => { this.demandes = data; this.loading = false; },
-      error: ()     => { this.loading = false; }
-    });
-  }
-
-  refresh(): void { this.loadDemandes(); }
-
-  reinitialiserMotDePasse(demandeId: number): void {
-    this.smsError   = '';
-    this.smsSuccess = '';
-    this.smsLoading = true;
-
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const mdp   = Array.from({ length: 8 }, () =>
-      chars[Math.floor(Math.random() * chars.length)]
-    ).join('');
-
-    this.http
-      .post<any>(`${API}/reinitialiser-mot-de-passe`, { demandeId, nouveauMotDePasse: mdp })
-      .subscribe({
-        next: () => {
-          this.smsSuccess = 'SMS envoyé — mot de passe réinitialisé avec succès.';
-          this.demandes   = this.demandes.filter((d: any) => d.id !== demandeId);
-          this.smsLoading = false;
-        },
-        error: (err: any) => {
-          this.smsError   =
-            err?.error?.message ??
-            err?.error?.Message ??
-            err?.message ??
-            'Erreur lors de la réinitialisation.';
-          this.smsLoading = false;
-        }
-      });
   }
 
   checkManual(): void { this.onManualCheck(); }
@@ -132,13 +68,5 @@ export class ResetPasswordRequests implements OnInit {
             'Erreur lors de la réinitialisation.';
         }
       });
-  }
-
-  formatDate(ts: string): string {
-    if (!ts) return '';
-    return new Date(ts).toLocaleString('fr-FR', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    });
   }
 }

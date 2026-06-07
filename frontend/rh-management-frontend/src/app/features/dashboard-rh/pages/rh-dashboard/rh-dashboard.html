@@ -52,6 +52,18 @@
         </svg>
         {{ exporting ? 'Génération…' : 'Exporter PDF' }}
       </button>
+      <button
+        (click)="exportCSV()"
+        [disabled]="loading || !data"
+        style="background:#0D776E;color:white;border:none;border-radius:8px;
+               padding:8px 16px;font-size:14px;font-weight:700;cursor:pointer;
+               display:flex;align-items:center;gap:6px;transition:all 0.2s;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+          <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2
+                   16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+        </svg>
+        Exporter CSV
+      </button>
     </div>
   </div>
 
@@ -391,140 +403,6 @@
       </div>
     </div>
 
-
-    <!-- ═══════════════════════════════════════════ -->
-    <!-- SECTION POINTAGE — visible RH uniquement   -->
-    <!-- ═══════════════════════════════════════════ -->
-    @if (currentRole === 'rh') {
-      <div class="kpi-section-label" style="margin-top:32px">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 16 14"/>
-        </svg>
-        Pointage du personnel
-      </div>
-
-      <!-- Stats rapides -->
-      <div class="kpi-row">
-        <div class="kpi-card" style="--accent:#0D776E">
-          <div class="kpi-icon-wrap" style="background:rgba(13,119,110,0.1)">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                 stroke="#0D776E" stroke-width="2" stroke-linecap="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </div>
-          <div class="kpi-info">
-            <span class="kpi-lbl">Présents aujourd'hui</span>
-            <strong class="kpi-val">{{ statsPointageJour?.presents ?? 0 }}</strong>
-          </div>
-        </div>
-        <div class="kpi-card" style="--accent:#c60c30">
-          <div class="kpi-icon-wrap" style="background:rgba(198,12,48,0.1)">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                 stroke="#c60c30" stroke-width="2" stroke-linecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </div>
-          <div class="kpi-info">
-            <span class="kpi-lbl">Absents aujourd'hui</span>
-            <strong class="kpi-val">{{ statsPointageJour?.absents ?? 0 }}</strong>
-          </div>
-        </div>
-        <div class="kpi-card" style="--accent:#ff5800">
-          <div class="kpi-icon-wrap" style="background:rgba(255,88,0,0.1)">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                 stroke="#ff5800" stroke-width="2" stroke-linecap="round">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-          </div>
-          <div class="kpi-info">
-            <span class="kpi-lbl">Retards aujourd'hui</span>
-            <strong class="kpi-val">{{ statsPointageJour?.retards ?? 0 }}</strong>
-          </div>
-        </div>
-        <div class="kpi-card" style="--accent:#8b5cf6">
-          <div class="kpi-icon-wrap" style="background:rgba(139,92,246,0.1)">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                 stroke="#8b5cf6" stroke-width="2" stroke-linecap="round">
-              <rect x="3" y="4" width="18" height="18" rx="2"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-          </div>
-          <div class="kpi-info">
-            <span class="kpi-lbl">Durée moy. ce mois</span>
-            <strong class="kpi-val" style="font-size:18px">{{ statsPointageJour?.dureeMoyenne ?? '—' }}</strong>
-          </div>
-        </div>
-      </div>
-
-      <!-- Filtres -->
-      <div class="ptg-filters">
-        <input type="date" class="ptg-input" [(ngModel)]="filtreDate"
-               (change)="filtrerPointage()" />
-        <input type="text" class="ptg-input" [(ngModel)]="filtreEmploye"
-               placeholder="Rechercher par matricule ou nom…"
-               (input)="filtrerPointage()" />
-        <select class="ptg-select" [(ngModel)]="filtreStatut"
-                (change)="filtrerPointage()">
-          <option value="">Tous les statuts</option>
-          <option value="present">Présent</option>
-          <option value="absent">Absent</option>
-          <option value="retard">En retard</option>
-          <option value="incomplet">Incomplet</option>
-        </select>
-      </div>
-
-      <!-- Tableau -->
-      <div class="ptg-table-wrap">
-        <table class="ptg-table">
-          <thead>
-            <tr>
-              <th>Matricule</th>
-              <th>Nom</th>
-              <th>Prénom</th>
-              <th>Date</th>
-              <th>Entrée</th>
-              <th>Sortie</th>
-              <th>Durée</th>
-              <th>Retard</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (p of pointagesFiltres; track (p.matricule + p.date)) {
-              <tr>
-                <td>{{ p.matricule }}</td>
-                <td>{{ p.nom }}</td>
-                <td>{{ p.prenom }}</td>
-                <td>{{ p.date | date:'dd/MM/yyyy' }}</td>
-                <td>{{ p.heureEntree ?? '—' }}</td>
-                <td>{{ p.heureSortie ?? '—' }}</td>
-                <td>{{ p.duree ?? '—' }}</td>
-                <td [style.color]="p.retardMinutes > 0 ? '#c60c30' : '#0D776E'">
-                  {{ p.retardMinutes > 0 ? (p.retardMinutes + ' min') : 'À l\'heure' }}
-                </td>
-                <td>
-                  <span class="ptg-badge"
-                    [style.background]="
-                      p.statut === 'present'   ? '#0D776E' :
-                      p.statut === 'retard'    ? '#ff5800' :
-                      p.statut === 'absent'    ? '#c60c30' : '#a7a9ac'">
-                    {{ p.statut | titlecase }}
-                  </span>
-                </td>
-              </tr>
-            }
-            @if (pointagesFiltres.length === 0) {
-              <tr>
-                <td colspan="9" class="ptg-empty">Aucun enregistrement trouvé.</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    }
 
   }
 </div>

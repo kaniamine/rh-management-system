@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from '../../../../core/auth.service';
@@ -34,10 +35,11 @@ interface DemandeConge {
   styleUrls: ['./dg-validations.css']
 })
 export class DgValidations implements OnInit {
-  private readonly http = inject(HttpClient);
-  private readonly auth = inject(AuthService);
-  private readonly cdr  = inject(ChangeDetectorRef);
-  private readonly API  = 'http://localhost:5131';
+  private readonly http   = inject(HttpClient);
+  private readonly auth   = inject(AuthService);
+  private readonly cdr    = inject(ChangeDetectorRef);
+  private readonly router = inject(Router);
+  private readonly API    = 'http://localhost:5131';
 
   activeTab: 'validation' | 'historique' = 'validation';
 
@@ -68,6 +70,9 @@ export class DgValidations implements OnInit {
 
   ngOnInit(): void {
     this.loadDemandes();
+    if (this.router.url.includes('historique-complet')) {
+      this.switchTab('historique');
+    }
   }
 
   switchTab(tab: 'validation' | 'historique'): void {

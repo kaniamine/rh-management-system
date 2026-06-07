@@ -1,6 +1,7 @@
-import { Component, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth.service';
 
 @Component({
@@ -10,9 +11,16 @@ import { AuthService } from '../../core/auth.service';
   templateUrl: './profil.html',
   styleUrls: ['./profil.css']
 })
-export class Profil {
+export class Profil implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly cdr  = inject(ChangeDetectorRef);
+  private readonly http = inject(HttpClient);
+  private readonly API  = '/api';
+
+  telephone        = '';
+  telephoneLoading = false;
+  telephoneSuccess = '';
+  telephoneError   = '';
 
   ancienMotDePasse  = '';
   nouveauMotDePasse = '';
@@ -27,6 +35,41 @@ export class Profil {
   successMessage = '';
 
   get session() { return this.auth.session; }
+
+  ngOnInit(): void { this.loadTelephone(); }
+
+  loadTelephone(): void {
+    const m = this.session?.matricule;
+    if (!m) return;
+    this.http.get<any>(`${this.API}/employes/${m}`).subscribe({
+      next: (d) => {
+        this.telephone = d?.telephone ?? d?.Telephone ?? '';
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
+  }
+
+  updateTelephone(): void {
+    const m = this.session?.matricule;
+    if (!m) return;
+    this.telephoneLoading = true;
+    this.telephoneSuccess = '';
+    this.telephoneError   = '';
+    this.http.patch(`${this.API}/employes/${m}/telephone`, { telephone: this.telephone }).subscribe({
+      next: () => {
+        this.telephoneLoading = false;
+        this.telephoneSuccess = 'Numéro mis à jour avec succès.';
+        this.cdr.detectChanges();
+        setTimeout(() => { this.telephoneSuccess = ''; this.cdr.detectChanges(); }, 3000);
+      },
+      error: (err: any) => {
+        this.telephoneLoading = false;
+        this.telephoneError   = err?.error?.message ?? 'Erreur lors de la mise à jour.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   get initiales(): string {
     const stored = this.session?.initiales ?? '';

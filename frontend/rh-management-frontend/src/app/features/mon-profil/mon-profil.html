@@ -38,11 +38,58 @@
         }
       </div>
     </div>
-    <a routerLink="/profil" class="mp-change-pwd-btn">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z" clip-rule="evenodd"/></svg>
-      Changer mon mot de passe
-    </a>
+    <div class="mp-header-actions">
+      <a routerLink="/profil" class="mp-change-pwd-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z" clip-rule="evenodd"/></svg>
+        Changer mon mot de passe
+      </a>
+      <button type="button" class="mp-change-tel-btn" (click)="toggleFormTelephone()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+        </svg>
+        Changer mon numéro
+      </button>
+    </div>
   </div>
+
+  <!-- FORMULAIRE TÉLÉPHONE INLINE -->
+  @if (showFormTelephone) {
+    <div class="mp-tel-form">
+      <h4 class="mp-tel-title">Modifier mon numéro de téléphone</h4>
+
+      <div class="mp-tel-field">
+        <label>Numéro actuel</label>
+        <input [value]="telephoneActuel ?? 'Non renseigné'" readonly class="mp-tel-input mp-tel-input-readonly" />
+      </div>
+
+      <div class="mp-tel-field">
+        <label>Nouveau numéro <span class="req">*</span></label>
+        <input [(ngModel)]="nouveauTelephone" type="tel" placeholder="XX XXX XXX" maxlength="15"
+               class="mp-tel-input" [class.mp-tel-input-err]="!!erreurTelephone" name="nouveauTel" />
+      </div>
+
+      <div class="mp-tel-field">
+        <label>Confirmer le nouveau numéro <span class="req">*</span></label>
+        <input [(ngModel)]="confirmationTelephone" type="tel" placeholder="XX XXX XXX" maxlength="15"
+               class="mp-tel-input" [class.mp-tel-input-err]="!!erreurTelephone" name="confirmTel" />
+      </div>
+
+      @if (erreurTelephone) {
+        <div class="mp-tel-msg mp-tel-msg-err">⚠️ {{ erreurTelephone }}</div>
+      }
+      @if (succesTelephone) {
+        <div class="mp-tel-msg mp-tel-msg-ok">✅ {{ succesTelephone }}</div>
+      }
+
+      <div class="mp-tel-btns">
+        <button type="button" class="mp-tel-btn-cancel" (click)="toggleFormTelephone()">Annuler</button>
+        <button type="button" class="mp-tel-btn-save" (click)="changerTelephone()" [disabled]="isLoadingTelephone"
+                [style.opacity]="isLoadingTelephone ? '0.6' : '1'">
+          {{ isLoadingTelephone ? 'Enregistrement...' : 'Enregistrer le nouveau numéro' }}
+        </button>
+      </div>
+    </div>
+  }
 
   <!-- Stats title -->
   <h2 class="mp-section-title">Statistiques</h2>

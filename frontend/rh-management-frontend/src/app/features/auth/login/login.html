@@ -27,6 +27,7 @@
             placeholder="ex: EMP001"
             [(ngModel)]="matricule"
             (keydown.enter)="onLogin()"
+            [disabled]="isLocked"
           />
         </div>
         <div class="field">
@@ -40,6 +41,7 @@
               placeholder="Saisir votre mot de passe"
               [(ngModel)]="password"
               (keydown.enter)="onLogin()"
+              [disabled]="isLocked"
             />
             <button type="button" class="toggle-password" (click)="showPassword = !showPassword">
               {{ showPassword ? 'Masquer' : 'Afficher' }}
@@ -47,17 +49,12 @@
           </div>
           <a class="forgot-link" (click)="showForgotForm = !showForgotForm">Mot de passe oublié ?</a>
         </div>
-        <div class="form-options">
-          <label class="remember-me">
-            <input type="checkbox" />
-            <span>Se souvenir de moi</span>
-          </label>
-        </div>
-        @if (errorMessage) {
+      
+@if (errorMessage) {
           <div style="color:#c60c30;font-size:13px;margin-top:-4px;">{{ errorMessage }}</div>
         }
-        <button type="button" class="login-btn" (click)="onLogin()" [disabled]="loading">
-          {{ loading ? 'Connexion...' : 'Se connecter' }}
+        <button type="button" class="login-btn" (click)="onLogin()" [disabled]="loading || isLocked">
+          {{ loading ? 'Connexion...' : isLocked ? 'Compte bloqué...' : 'Se connecter' }}
         </button>
       </form>
       @if (showForgotForm) {
@@ -81,7 +78,7 @@
           @if (forgotSuccess) { <p class="form-success">{{ forgotSuccess }}</p> }
           <button type="button" class="login-btn" (click)="onForgotPassword()"
                   [disabled]="forgotLoading">
-            {{ forgotLoading ? 'Envoi en cours...' : 'Envoyer la demande à la RH' }}
+            {{ forgotLoading ? 'Réinitialisation en cours...' : 'Réinitialiser mon mot de passe' }}
           </button>
         </div>
       }

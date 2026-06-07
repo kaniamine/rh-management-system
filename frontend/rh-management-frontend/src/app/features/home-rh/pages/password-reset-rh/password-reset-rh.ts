@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PasswordResetService } from '../../services/password-reset.service';
@@ -10,32 +10,14 @@ import { PasswordResetService } from '../../services/password-reset.service';
   templateUrl: './password-reset-rh.html',
   styleUrl: './password-reset-rh.css'
 })
-export class PasswordResetRh implements OnInit {
+export class PasswordResetRh {
   private readonly service = inject(PasswordResetService);
 
-  demandes: any[]         = [];
-  loading                 = true;
-  activeDemandeId: number | null = null;
-  nouveauMotDePasse       = '';
-  submitLoading           = false;
-  submitSuccess           = '';
-  submitError             = '';
-
-  ngOnInit(): void { this.loadDemandes(); }
-
-  loadDemandes(): void {
-    this.service.getDemandesEnAttente().subscribe({
-      next:  (data) => { this.demandes = data; this.loading = false; },
-      error: ()     => { this.loading = false; }
-    });
-  }
-
-  toggleTraiter(id: number): void {
-    this.activeDemandeId  = this.activeDemandeId === id ? null : id;
-    this.nouveauMotDePasse = '';
-    this.submitSuccess    = '';
-    this.submitError      = '';
-  }
+  matricule         = '';
+  nouveauMotDePasse = '';
+  submitLoading     = false;
+  submitSuccess     = '';
+  submitError       = '';
 
   genererMotDePasse(): void {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -44,23 +26,29 @@ export class PasswordResetRh implements OnInit {
     ).join('');
   }
 
-  confirmerReinitialisation(demandeId: number): void {
+  reinitialiser(): void {
     this.submitError   = '';
     this.submitSuccess = '';
-    if (!this.nouveauMotDePasse) {
+
+    if (!this.matricule.trim()) {
+      this.submitError = 'Veuillez saisir le matricule de l\'employé.';
+      return;
+    }
+    if (!this.nouveauMotDePasse.trim()) {
       this.submitError = 'Veuillez saisir ou générer un mot de passe.';
       return;
     }
+
     this.submitLoading = true;
-    this.service.reinitialiserMotDePasse(demandeId, this.nouveauMotDePasse).subscribe({
+    this.service.reinitialiserManuel(this.matricule.trim().toUpperCase(), this.nouveauMotDePasse).subscribe({
       next: () => {
-        this.submitSuccess    = 'SMS envoyé — mot de passe réinitialisé.';
-        this.demandes         = this.demandes.filter(d => d.id !== demandeId);
+        this.submitSuccess    = 'Mot de passe réinitialisé avec succès. Un SMS a été envoyé à l\'employé.';
         this.submitLoading    = false;
-        this.activeDemandeId  = null;
+        this.matricule        = '';
+        this.nouveauMotDePasse = '';
       },
       error: (err: any) => {
-        this.submitError   = err.error?.message ?? 'Erreur.';
+        this.submitError   = err?.error?.message ?? err?.error?.error ?? 'Erreur lors de la réinitialisation.';
         this.submitLoading = false;
       }
     });

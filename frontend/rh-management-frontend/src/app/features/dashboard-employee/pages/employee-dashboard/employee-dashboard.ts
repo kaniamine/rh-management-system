@@ -167,6 +167,40 @@ export class EmployeeDashboard implements OnInit {
     );
   }
 
+  exporterPDF(): void {
+    const styleImport = document.createElement('style');
+    styleImport.id    = 'print-style';
+    styleImport.innerHTML = `
+      @media print {
+        app-navbar, app-baraka-chatbot, .btn-export, .no-print { display: none !important; }
+        .dashboard-content, .main-content { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+        body { font-size: 12px; }
+        .print-header { display: block !important; }
+      }
+    `;
+    document.head.appendChild(styleImport);
+
+    const header = document.createElement('div');
+    header.className    = 'print-header';
+    header.style.display = 'none';
+    header.innerHTML = `
+      <h2 style="color:#ff5800;margin-bottom:4px;">Mon Tableau de Bord — Al Baraka Assurances</h2>
+      <p style="color:#5e6167;font-size:11px;">
+        Exporté le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}
+      </p>
+      <hr style="border-color:#ff5800;margin:8px 0;">
+    `;
+    document.body.prepend(header);
+
+    window.print();
+
+    setTimeout(() => {
+      const s = document.getElementById('print-style');
+      if (s) s.remove();
+      if (header.parentNode) header.parentNode.removeChild(header);
+    }, 1000);
+  }
+
   annuler(d: Demande): void {
     if (!this.canCancel(d)) return;
     this.actionLoading = true;

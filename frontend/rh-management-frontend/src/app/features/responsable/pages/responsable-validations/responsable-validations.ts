@@ -6,6 +6,7 @@ import { catchError } from 'rxjs/operators';
 import { AuthService } from '../../../../core/auth.service';
 import { Conge } from '../../../conge/services/conge';
 import { Autorisation } from '../../../conge/services/autorisation';
+import { Maladie } from '../../../conge/services/maladie';
 import { SignaturePad, LeaveRequestSummary, SignatureResult } from '../../../../shared/components/signature-pad/signature-pad';
 
 type StatutDemande =
@@ -52,6 +53,7 @@ interface Demande {
 export class ResponsableValidations implements OnInit {
   private readonly congeService = inject(Conge);
   private readonly autoService  = inject(Autorisation);
+  private readonly maladSvc     = inject(Maladie);
   private readonly auth         = inject(AuthService);
   private readonly cdr          = inject(ChangeDetectorRef);
 
@@ -95,9 +97,11 @@ export class ResponsableValidations implements OnInit {
       conges: this.congeService.getDemandes(undefined, 'En attente de validation N+1')
         .pipe(catchError(() => of([]))),
       autorisations: this.autoService.getDemandes(undefined, 'En attente de validation du supérieur hiérarchique')
+        .pipe(catchError(() => of([]))),
+      maladies: this.maladSvc.getDemandes()
         .pipe(catchError(() => of([])))
     }).subscribe({
-      next: ({ conges, autorisations }) => {
+      next: ({ conges, autorisations, maladies }) => {
         const mappedConges = (conges as any[]).map(d => ({
           id:           d.id,
           refNo:        `#CON-${d.id}`,
@@ -134,7 +138,23 @@ export class ResponsableValidations implements OnInit {
           statut:       d.statut
         } as Demande));
 
-        this.demandes = [...mappedConges, ...mappedAutorisations];
+        const mappedMaladies = (maladies as any[]).map(d => ({
+          id:           d.id,
+          refNo:        `#MAL-${d.id}`,
+          type:         'maladie' as TypeDemande,
+          typeLabel:    'Maladie',
+          sousType:     'Congé maladie',
+          employe:      d.nomComplet ?? d.nom_complet ?? '',
+          matricule:    d.matricule ?? '',
+          service:      d.service ?? '',
+          dateCreation: (d.createdAt ?? d.dateSoumission ?? '').substring(0, 10),
+          dateDebut:    (d.dateDebut ?? d.date_debut ?? '').substring(0, 10),
+          dateFin:      d.dateFin ?? d.date_fin ?? undefined,
+          motif:        d.motif ?? d.description ?? '',
+          statut:       d.statut as StatutDemande
+        } as Demande));
+
+        this.demandes = [...mappedConges, ...mappedAutorisations, ...mappedMaladies];
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -231,6 +251,10 @@ export class ResponsableValidations implements OnInit {
 
   approuveDemande(): void {
     if (!this.selectedDemande) return;
+    if (this.estDemandeMaladie(this.selectedDemande)) {
+      console.warn('[SH] Action non autorisée sur demande maladie');
+      return;
+    }
     const { id, type } = this.selectedDemande;
     const matricule = this.auth.session?.matricule ?? '';
     this.actionLoading = true;
@@ -253,6 +277,10 @@ export class ResponsableValidations implements OnInit {
 
   rejeteDemande(): void {
     if (!this.selectedDemande || !this.rejectMotif.trim()) return;
+    if (this.estDemandeMaladie(this.selectedDemande)) {
+      console.warn('[SH] Action non autorisée sur demande maladie');
+      return;
+    }
     const { id, type } = this.selectedDemande;
     const matricule = this.auth.session?.matricule ?? '';
     this.actionLoading = true;
@@ -272,6 +300,11 @@ export class ResponsableValidations implements OnInit {
       },
       error: () => { this.actionLoading = false; this.cdr.detectChanges(); }
     });
+  }
+
+  estDemandeMaladie(d: Demande | null): boolean {
+    if (!d) return false;
+    return d.type === 'maladie';
   }
 
   isPendingValidation(d: Demande): boolean {

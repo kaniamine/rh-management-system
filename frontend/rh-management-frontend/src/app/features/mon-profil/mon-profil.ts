@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef, PLATFORM_ID } from '@angu
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from '../../core/auth.service';
@@ -9,7 +10,7 @@ import { AuthService } from '../../core/auth.service';
 @Component({
   selector: 'app-mon-profil',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './mon-profil.html',
   styleUrl: './mon-profil.css'
 })
@@ -24,6 +25,15 @@ export class MonProfil implements OnInit {
   demandesRejetees = 0;
   demandesAttente  = 0;
   statsLoading     = true;
+
+  // ── Téléphone ────────────────────────────────────────────────────────────────
+  showFormTelephone     = false;
+  telephoneActuel:       string | null = null;
+  nouveauTelephone      = '';
+  confirmationTelephone = '';
+  erreurTelephone       = '';
+  succesTelephone       = '';
+  isLoadingTelephone    = false;
 
   get session() { return this.auth.session; }
   get isRh(): boolean { return this.auth.role === 'rh'; }
@@ -67,12 +77,16 @@ export class MonProfil implements OnInit {
     const matricule = this.session?.matricule;
     if (!matricule) { this.statsLoading = false; return; }
 
+    // Initialise le téléphone depuis la session si disponible
+    this.telephoneActuel = (this.session as any)?.telephone ?? null;
+
     forkJoin({
       conges:        this.http.get<any[]>(`/api/demandes-conge?matricule=${matricule}`).pipe(catchError(() => of([]))),
       autorisations: this.http.get<any[]>(`/api/demandes-autorisation?matricule=${matricule}`).pipe(catchError(() => of([]))),
-      maladies:      this.http.get<any[]>(`/api/demandes-maladie?matricule=${matricule}`).pipe(catchError(() => of([])))
+      maladies:      this.http.get<any[]>(`/api/demandes-maladie?matricule=${matricule}`).pipe(catchError(() => of([]))),
+      profil:        this.http.get<any>(`/api/employes/${matricule}`).pipe(catchError(() => of(null)))
     }).subscribe({
-      next: ({ conges, autorisations, maladies }) => {
+      next: ({ conges, autorisations, maladies, profil }) => {
         const all = [...conges, ...autorisations, ...maladies];
         this.totalDemandes    = all.length;
         this.demandesValidees = all.filter(d =>
@@ -84,10 +98,81 @@ export class MonProfil implements OnInit {
         this.demandesAttente  = all.filter(d =>
           (d.statut ?? '').startsWith('En attente')
         ).length;
+        if (profil) {
+          this.telephoneActuel = profil.telephone ?? profil.Telephone ?? this.telephoneActuel;
+        }
         this.statsLoading = false;
         this.cdr.detectChanges();
       },
       error: () => { this.statsLoading = false; this.cdr.detectChanges(); }
+    });
+  }
+
+  // ── Téléphone ────────────────────────────────────────────────────────────────
+
+  toggleFormTelephone(): void {
+    this.showFormTelephone    = !this.showFormTelephone;
+    this.nouveauTelephone     = '';
+    this.confirmationTelephone = '';
+    this.erreurTelephone      = '';
+    this.succesTelephone      = '';
+  }
+
+  validerTelephone(tel: string): boolean {
+    const nettoye = tel.replace(/[\s\-\.\(\)\+]/g, '');
+    const numero  = nettoye.startsWith('00216')
+      ? nettoye.substring(5)
+      : nettoye.startsWith('216')
+      ? nettoye.substring(3)
+      : nettoye;
+    return /^[0-9]{8}$/.test(numero);
+  }
+
+  changerTelephone(): void {
+    this.erreurTelephone  = '';
+    this.succesTelephone  = '';
+
+    if (!this.nouveauTelephone.trim() || !this.confirmationTelephone.trim()) {
+      this.erreurTelephone = 'Tous les champs sont obligatoires.';
+      return;
+    }
+    if (!this.validerTelephone(this.nouveauTelephone)) {
+      this.erreurTelephone = 'Le numéro de téléphone est invalide. Entrez un numéro tunisien valide (8 chiffres).';
+      return;
+    }
+    if (this.nouveauTelephone.trim() !== this.confirmationTelephone.trim()) {
+      this.erreurTelephone = 'Les deux numéros ne correspondent pas.';
+      return;
+    }
+    if (this.telephoneActuel &&
+        this.nouveauTelephone.replace(/[\s\-\.]/g, '') ===
+        this.telephoneActuel.replace(/[\s\-\.]/g, '')) {
+      this.erreurTelephone = 'Le nouveau numéro est identique à l\'actuel.';
+      return;
+    }
+
+    this.isLoadingTelephone = true;
+    this.http.put('/api/employes/mon-telephone', {
+      telephone: this.nouveauTelephone.trim()
+    }).subscribe({
+      next: () => {
+        this.isLoadingTelephone = false;
+        this.succesTelephone    = 'Numéro de téléphone mis à jour avec succès.';
+        this.telephoneActuel    = this.nouveauTelephone.trim();
+        this.nouveauTelephone   = '';
+        this.confirmationTelephone = '';
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          this.showFormTelephone = false;
+          this.succesTelephone   = '';
+          this.cdr.detectChanges();
+        }, 2000);
+      },
+      error: (err: any) => {
+        this.isLoadingTelephone = false;
+        this.erreurTelephone    = err?.error?.error ?? err?.error?.message ?? 'Erreur lors de la mise à jour. Veuillez réessayer.';
+        this.cdr.detectChanges();
+      }
     });
   }
 }

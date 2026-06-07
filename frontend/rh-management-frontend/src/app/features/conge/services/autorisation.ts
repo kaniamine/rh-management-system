@@ -41,7 +41,7 @@ export class Autorisation {
 
   creerDemande(payload: DemandeAutorisationPayload): Observable<DemandeAutorisationResponse> {
     return this.http.post<DemandeAutorisationResponse>(
-      `${API_BASE_URL}/api/autorisations-sortie`,
+      `${API_BASE_URL}/api/demandes-autorisation`,
       payload
     );
   }

@@ -20,7 +20,7 @@ export interface UserSession {
 }
 
 const POINTAGE_EXCLUDED_ROLES = ['rh', 'admin'];
-const POINTAGE_API = '/api/pointage';
+const POINTAGE_API = 'http://localhost:5131/api/pointage';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -79,12 +79,8 @@ export class AuthService {
           sessionStorage.setItem('user_session', JSON.stringify(user));
         }
 
-        // Auto check-in for non-rh/admin roles
+        // Heartbeat pour les rôles non-RH/admin (l'entrée est gérée dans login.ts)
         if (!POINTAGE_EXCLUDED_ROLES.includes(user.role)) {
-          this.http.post(`${POINTAGE_API}/entree`, {}).subscribe({
-            next: () => console.log('Entrée enregistrée'),
-            error: err => console.error('Erreur pointage entrée:', err)
-          });
           this.demarrerHeartbeat();
         }
       })

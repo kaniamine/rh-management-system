@@ -128,7 +128,7 @@
           </div>
         </div>
 
-        @if (isPendingValidation(selectedDemande)) {
+        @if (isPendingValidation(selectedDemande) && !estDemandeMaladie(selectedDemande)) {
           <div class="detail-actions">
             <button class="abtn abtn-danger w100" (click)="openRejectModal()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -138,6 +138,16 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               Valider
             </button>
+          </div>
+        }
+        @if (estDemandeMaladie(selectedDemande)) {
+          <div class="detail-actions">
+            <span style="background:#f0f4ff;color:#1565c0;border:1px solid #90caf9;border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#1565c0">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+              </svg>
+              Lecture seule
+            </span>
           </div>
         }
       </div>

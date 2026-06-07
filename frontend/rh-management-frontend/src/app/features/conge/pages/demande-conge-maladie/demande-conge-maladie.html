@@ -192,11 +192,12 @@
           </div>
           <div class="bareme">
             <div class="bareme-row bareme-head"><span>Durée cumulée</span><span>Déduction</span></div>
-            <div class="bareme-row" [class.bareme-active]="nombreJours >= 0 && nombreJours <= 10"><span>0 – 10 jours</span><span>0 point</span></div>
-            <div class="bareme-row" [class.bareme-active]="nombreJours >= 11 && nombreJours <= 15"><span>11 – 15 jours</span><span>0,5 point</span></div>
-            <div class="bareme-row" [class.bareme-active]="nombreJours >= 16 && nombreJours <= 20"><span>16 – 20 jours</span><span>1 point</span></div>
-            <div class="bareme-row" [class.bareme-active]="nombreJours >= 21 && nombreJours <= 30"><span>21 – 30 jours</span><span>2 points</span></div>
-            <div class="bareme-row" [class.bareme-active]="nombreJours > 30"><span>> 30 jours</span><span>3 points</span></div>
+            @for (palier of bareme; track palier.tranche) {
+              <div class="bareme-row" [class.bareme-active]="isPalierActif(palier)">
+                <span>{{ palier.tranche }}</span>
+                <span>{{ palier.points?.toString()?.replace('.', ',') }} point{{ palier.points >= 2 ? 's' : '' }}</span>
+              </div>
+            }
           </div>
         </div>
       }
@@ -232,7 +233,7 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
       Brouillon
     </button>
-    <button class="fbtn fbtn-primary" type="button" (click)="openConfirm()" [disabled]="submitting || !certificatNom || certificatValidating || certificatValide === false">
+    <button class="fbtn fbtn-primary" type="button" (click)="openConfirm()" [disabled]="submitting || (certificatObligatoire && (!certificatNom || certificatValidating || certificatValide === false))">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       {{ submitting ? 'Envoi…' : 'Soumettre la demande' }}
     </button>

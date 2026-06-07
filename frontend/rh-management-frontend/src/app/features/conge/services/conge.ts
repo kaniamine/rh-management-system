@@ -10,6 +10,7 @@ export interface DemandeCongePayload {
   dateDebut: string;
   dateFin: string;
   estBrouillon: boolean;
+  statut?: string | null;
   nomComplet: string;
   matricule: string;
   service?: string | null;

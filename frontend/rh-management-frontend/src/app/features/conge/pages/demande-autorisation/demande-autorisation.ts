@@ -1,10 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../../core/auth.service';
 import { Autorisation, CumulMensuelResponse } from '../../services/autorisation';
+import { ParametrageService } from '../../../../core/parametrage.service';
 
 type AutorisationType = 'personnel' | 'professionnel' | 'formation';
 
@@ -28,9 +29,10 @@ interface PlageHoraire {
   templateUrl: './demande-autorisation.html',
   styleUrls: ['./demande-autorisation.css'],
 })
-export class DemandeAutorisation implements OnInit {
+export class DemandeAutorisation implements OnInit, OnDestroy {
   private readonly autorisationService = inject(Autorisation);
-  private readonly auth = inject(AuthService);
+  private readonly auth                = inject(AuthService);
+  private readonly parametrage         = inject(ParametrageService);
 
   getInitiales(nom: string): string {
     const parts = (nom ?? '').trim().split(/\s+/).filter(Boolean);
@@ -39,17 +41,19 @@ export class DemandeAutorisation implements OnInit {
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
   }
 
+  readonly dateAujourdhui: string = new Date().toISOString().split('T')[0];
+
   selectedType: AutorisationType = 'personnel';
   showConfirm = false;
   submitting = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
-  uploadedFiles: { name: string; file: File }[] = [];
 
   cumulMensuel: CumulMensuelResponse | null = null;
   cumulLoading = false;
 
-  readonly LIMITE_DUREE_PERSONNELLE_MIN = 90;
+  limiteDureePersonnelleMin = 90;
+  private readonly _onParametrageUpdated = () => this.chargerParametrage();
 
   get employee() {
     const s = this.auth.session;
@@ -66,8 +70,7 @@ export class DemandeAutorisation implements OnInit {
     date: '',
     heureDepart: '',
     heureRetour: '',
-    motif: '',
-    commentaire: ''
+    motif: ''
   };
 
   readonly typeOptions: TypeOption[] = [
@@ -91,10 +94,27 @@ export class DemandeAutorisation implements OnInit {
     }
   ];
 
+  // ── Lifecycle ────────────────────────────────────────────
   ngOnInit(): void {
+    this.form.date = new Date().toISOString().split('T')[0];
     this.chargerCumulMensuel();
+    this.chargerParametrage();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('parametrage-updated', this._onParametrageUpdated);
+    }
   }
 
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('parametrage-updated', this._onParametrageUpdated);
+    }
+  }
+
+  chargerParametrage(): void {
+    this.limiteDureePersonnelleMin = this.parametrage.getDureeMaxAutorisation();
+  }
+
+  // ── Helpers ──────────────────────────────────────────────
   get selectedTypeLabel(): string {
     return this.typeOptions.find(t => t.value === this.selectedType)?.label ?? '';
   }
@@ -138,8 +158,14 @@ export class DemandeAutorisation implements OnInit {
     return `${h.toString().padStart(2, '0')}h ${m.toString().padStart(2, '0')}`;
   }
 
+  get limiteDureeLabel(): string {
+    const h = Math.floor(this.limiteDureePersonnelleMin / 60);
+    const m = this.limiteDureePersonnelleMin % 60;
+    return m > 0 ? `${h}h${m.toString().padStart(2, '0')}` : `${h}h`;
+  }
+
   get isOverLimit(): boolean {
-    return this.selectedType === 'personnel' && this.dureeMinutes > this.LIMITE_DUREE_PERSONNELLE_MIN;
+    return this.selectedType === 'personnel' && this.dureeMinutes > this.limiteDureePersonnelleMin;
   }
 
   // Vérifie si la date saisie tombe en période estivale (juillet–août)
@@ -208,19 +234,6 @@ export class DemandeAutorisation implements OnInit {
     });
   }
 
-  onFileChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (!input.files) return;
-    Array.from(input.files).forEach(file => {
-      this.uploadedFiles.push({ name: file.name, file });
-    });
-    input.value = '';
-  }
-
-  removeFile(index: number): void {
-    this.uploadedFiles.splice(index, 1);
-  }
-
   openConfirm(): void {
     this.errorMessage = null;
     this.successMessage = null;
@@ -249,7 +262,7 @@ export class DemandeAutorisation implements OnInit {
     }
     if (this.isOverLimit) {
       this.errorMessage =
-        `La durée calculée (${this.dureeCalculee}) dépasse la limite de 1h30 autorisée pour les autorisations personnelles.`;
+        `La durée calculée (${this.dureeCalculee}) dépasse la limite de ${this.limiteDureeLabel} autorisée pour les autorisations personnelles.`;
       return;
     }
 
@@ -320,13 +333,11 @@ export class DemandeAutorisation implements OnInit {
       heureRetour:           this.form.heureRetour || null,
       dureeCalculee:         this.dureeMinutes > 0 ? this.dureeCalculee : null,
       motif:                 this.form.motif.trim() || null,
-      commentaire:           this.form.commentaire.trim() || null,
       estBrouillon
     };
   }
 
   private resetForm(): void {
-    this.form = { date: '', heureDepart: '', heureRetour: '', motif: '', commentaire: '' };
-    this.uploadedFiles = [];
+    this.form = { date: '', heureDepart: '', heureRetour: '', motif: '' };
   }
 }

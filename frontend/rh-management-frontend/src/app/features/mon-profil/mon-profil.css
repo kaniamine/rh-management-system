@@ -105,6 +105,128 @@
   box-shadow: 0 2px 10px rgba(255,88,0,0.15);
 }
 
+/* ── Header actions (pwd + phone buttons) ────────────────── */
+.mp-header-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mp-change-tel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: #fff;
+  border: 1.5px solid rgba(255,88,0,0.30);
+  border-radius: 10px;
+  color: #ff5800;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.mp-change-tel-btn:hover {
+  background: rgba(255,88,0,0.05);
+  border-color: #ff5800;
+  box-shadow: 0 2px 10px rgba(255,88,0,0.15);
+}
+
+/* ── Phone form ──────────────────────────────────────────── */
+.mp-tel-form {
+  background: #f8f9fa;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  animation: mpFadeUp 0.2s ease both;
+}
+
+.mp-tel-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ff5800;
+  margin: 0 0 20px;
+}
+
+.mp-tel-field {
+  margin-bottom: 14px;
+}
+
+.mp-tel-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #5e6167;
+  margin-bottom: 6px;
+}
+
+.req { color: #c60c30; }
+
+.mp-tel-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.mp-tel-input:focus { border-color: #ff5800; }
+.mp-tel-input-readonly { background: #f0f0f0; color: #a7a9ac; cursor: not-allowed; }
+.mp-tel-input-err { border-color: #c60c30 !important; }
+
+.mp-tel-msg {
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+.mp-tel-msg-err { background: #fff0f3; border: 1px solid #c60c30; color: #c60c30; }
+.mp-tel-msg-ok  { background: #f0fff4; border: 1px solid #0D776E; color: #0D776E; }
+
+.mp-tel-btns {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.mp-tel-btn-cancel {
+  flex: 1;
+  padding: 10px;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #5e6167;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.mp-tel-btn-cancel:hover { background: #f0f0f0; }
+
+.mp-tel-btn-save {
+  flex: 2;
+  padding: 10px;
+  background: #ff5800;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.mp-tel-btn-save:hover:not(:disabled) { background: #e04e00; }
+.mp-tel-btn-save:disabled { cursor: not-allowed; }
+
 /* ── Section title ───────────────────────────────────────── */
 .mp-section-title {
   font-size: 18px;

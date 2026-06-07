@@ -2,10 +2,9 @@ import {
   Component, OnInit, OnDestroy, inject,
   ElementRef, ViewChild, ChangeDetectorRef
 } from '@angular/core';
-import { CommonModule, DecimalPipe, TitleCasePipe } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
 import { AnalyticsService, RhAnalytics } from '../../services/analytics.service';
 import { AuthService } from '../../../../core/auth.service';
@@ -15,7 +14,7 @@ Chart.register(...registerables);
 @Component({
   selector:    'app-rh-dashboard',
   standalone:  true,
-  imports:     [CommonModule, RouterLink, DecimalPipe, TitleCasePipe, FormsModule],
+  imports:     [CommonModule, RouterLink, DecimalPipe, FormsModule],
   templateUrl: './rh-dashboard.html',
   styleUrls:   ['./rh-dashboard.css']
 })
@@ -23,7 +22,6 @@ export class RhDashboard implements OnInit, OnDestroy {
   private analytics = inject(AnalyticsService);
   private auth      = inject(AuthService);
   private cdr       = inject(ChangeDetectorRef);
-  private http      = inject(HttpClient);
 
   data:        RhAnalytics | null = null;
   loading      = true;
@@ -42,42 +40,7 @@ export class RhDashboard implements OnInit, OnDestroy {
   @ViewChild('c5') c5!: ElementRef<HTMLCanvasElement>;
   @ViewChild('c7') c7!: ElementRef<HTMLCanvasElement>;
 
-  // ── Pointage section (RH only) ───────────────────────────────────────────────
-  statsPointageJour: any         = null;
-  historiquePointage: any[]      = [];
-  pointagesFiltres:  any[]       = [];
-  filtreDate     = '';
-  filtreEmploye  = '';
-  filtreStatut   = '';
-
   get currentRole(): string { return this.auth.role; }
-
-  chargerPointagePersonnel(): void {
-    this.http.get<any>('/api/pointage/stats-jour').subscribe({
-      next: data => { this.statsPointageJour = data; this.cdr.detectChanges(); },
-      error: err => console.error('stats-pointage:', err)
-    });
-    this.http.get<any[]>('/api/pointage/historique-rh').subscribe({
-      next: data => {
-        this.historiquePointage = data;
-        this.pointagesFiltres   = data;
-        this.cdr.detectChanges();
-      },
-      error: err => console.error('historique-pointage:', err)
-    });
-  }
-
-  filtrerPointage(): void {
-    this.pointagesFiltres = this.historiquePointage.filter(p => {
-      const matchDate    = !this.filtreDate     || (p.date ?? '').startsWith(this.filtreDate);
-      const matchEmploye = !this.filtreEmploye  ||
-        (p.matricule ?? '').toLowerCase().includes(this.filtreEmploye.toLowerCase()) ||
-        (p.nom       ?? '').toLowerCase().includes(this.filtreEmploye.toLowerCase());
-      const matchStatut  = !this.filtreStatut   || p.statut === this.filtreStatut;
-      return matchDate && matchEmploye && matchStatut;
-    });
-    this.cdr.detectChanges();
-  }
 
   ngOnInit(): void {
     this.analytics.getAvailableYears().subscribe({
@@ -88,9 +51,6 @@ export class RhDashboard implements OnInit, OnDestroy {
       }
     });
     this.load();
-    if (this.auth.role === 'rh') {
-      this.chargerPointagePersonnel();
-    }
   }
 
   ngOnDestroy() { this.destroyCharts(); }
@@ -431,6 +391,72 @@ export class RhDashboard implements OnInit, OnDestroy {
   getTypeColor(t: any): string {
     const name = this.getTypeName(t);
     return this._typeColorMap[name] ?? '#999';
+  }
+
+  exportCSV(): void {
+    try {
+      const lignes: string[] = [];
+      lignes.push('Tableau de bord analytique — Al Baraka Assurances');
+      lignes.push(`Exporté le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}`);
+      lignes.push('');
+
+      lignes.push('VOLUME ET RÉPARTITION');
+      lignes.push('Type;Nombre');
+      if (this.data?.repartitionParType?.length) {
+        this.data.repartitionParType.forEach((r: any) => {
+          lignes.push(`${this.getTypeName(r)};${this.getTypeCount(r)}`);
+        });
+      }
+      lignes.push('');
+
+      lignes.push('INDICATEURS DE PERFORMANCE');
+      lignes.push('Indicateur;Valeur');
+      if (this.data) {
+        lignes.push(`Total demandes;${this.data.totalDemandes ?? 0}`);
+        lignes.push(`Demandes validées;${this.data.validees ?? 0}`);
+        lignes.push(`En attente;${this.data.enAttente ?? 0}`);
+        lignes.push(`Rejetées/Annulées;${this.data.rejetees ?? 0}`);
+        lignes.push(`Jours congés pris;${this.data.totalJoursConge ?? 0}`);
+        lignes.push(`Jours maladie;${this.data.totalJoursMaladie ?? 0}`);
+      }
+      lignes.push('');
+
+      if (this.data?.topEmployes?.length) {
+        lignes.push('TOP 5 EMPLOYÉS');
+        lignes.push('Matricule;Nom;Total demandes');
+        this.data.topEmployes.forEach((e: any) => {
+          lignes.push(`${e.matricule ?? ''};${e.nomComplet ?? ''};${e.count ?? 0}`);
+        });
+        lignes.push('');
+      }
+
+      lignes.push('TAUX DE VALIDATION PAR TYPE (%)');
+      lignes.push('Type;Taux (%)');
+      if (this.data) {
+        lignes.push(`Congés;${this.data.tauxValidationConge ?? 0}%`);
+        lignes.push(`Autorisations;${this.data.tauxValidationAuto ?? 0}%`);
+        lignes.push(`Maladies;${this.data.tauxValidationMaladie ?? 0}%`);
+      }
+      lignes.push('');
+
+      if (this.data?.moyenneSoldeConges !== undefined) {
+        lignes.push('SOLDE MOYEN DE CONGÉS');
+        lignes.push(`Solde moyen;${this.data.moyenneSoldeConges} jours`);
+      }
+
+      const bom = '﻿';
+      const contenuCSV = bom + lignes.join('\n');
+      const blob = new Blob([contenuCSV], { type: 'text/csv;charset=utf-8;' });
+      const url  = URL.createObjectURL(blob);
+      const lien = document.createElement('a');
+      lien.href  = url;
+      lien.download = `tableau-bord-analytique-${new Date().toISOString().split('T')[0]}.csv`;
+      lien.click();
+      URL.revokeObjectURL(url);
+      console.log('[EXPORT] CSV généré avec succès');
+    } catch (err) {
+      console.error('[EXPORT CSV ERROR]', err);
+    }
   }
 
   async exportPDF(): Promise<void> {

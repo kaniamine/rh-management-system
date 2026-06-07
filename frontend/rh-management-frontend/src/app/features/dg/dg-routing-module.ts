@@ -3,7 +3,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { DgValidations } from './pages/dg-validations/dg-validations';
 
 const routes: Routes = [
-  { path: '', component: DgValidations }
+  { path: '', component: DgValidations },
+  { path: 'historique-complet', component: DgValidations }
 ];
 
 @NgModule({

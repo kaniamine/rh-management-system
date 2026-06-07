@@ -1,10 +1,11 @@
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { Conge } from '../../services/conge';
 import { AuthService } from '../../../../core/auth.service';
+import { ParametrageService } from '../../../../core/parametrage.service';
 
 @Component({
   selector: 'app-demande-conge',
@@ -13,9 +14,11 @@ import { AuthService } from '../../../../core/auth.service';
   templateUrl: './demande-conge.html',
   styleUrls: ['./demande-conge.css']
 })
-export class DemandeConge {
+export class DemandeConge implements OnInit, OnDestroy {
   private readonly congeService = inject(Conge);
-  private readonly auth = inject(AuthService);
+  private readonly auth         = inject(AuthService);
+  private readonly parametrage  = inject(ParametrageService);
+  private readonly cdr          = inject(ChangeDetectorRef);
 
   getInitiales(nom: string): string {
     const parts = (nom ?? '').trim().split(/\s+/).filter(Boolean);
@@ -33,12 +36,18 @@ export class DemandeConge {
   modalTitle = '';
   modalMessage = '';
 
+  delaiMinimumJours = 3;
+  workflowActif: string[] = [];
+  statutInitial: string = '';
+
+  private readonly _onParametrageUpdated = () => this.chargerParametrage();
+  private readonly _onWorkflowUpdated    = () => { this.chargerWorkflow(); this.cdr.detectChanges(); };
+
   readonly typesConge = [
     'Congé annuel',
     'Congé exceptionnel de courte durée',
     'Congé maternité',
     'Congé de décès',
-    'Congé sans solde',
     'Congé compensatoire'
   ];
 
@@ -69,8 +78,34 @@ export class DemandeConge {
     pieceJustificativeFichierNom: '' as string
   };
 
-  // ─── Calculs automatiques ───────────────────────────────────────────────────
+  // ── Lifecycle ────────────────────────────────────────────
+  ngOnInit(): void {
+    this.chargerParametrage();
+    this.chargerWorkflow();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('parametrage-updated', this._onParametrageUpdated);
+      window.addEventListener('workflow-updated', this._onWorkflowUpdated);
+    }
+  }
 
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('parametrage-updated', this._onParametrageUpdated);
+      window.removeEventListener('workflow-updated', this._onWorkflowUpdated);
+    }
+  }
+
+  chargerParametrage(): void {
+    this.delaiMinimumJours = this.parametrage.getDelaiMinimumConge();
+    this.chargerWorkflow();
+  }
+
+  chargerWorkflow(): void {
+    this.workflowActif = this.parametrage.getEtapesActives();
+    this.statutInitial = this.parametrage.getStatutInitialConge();
+  }
+
+  // ── Calculs automatiques ─────────────────────────────────
   get dureeJours(): number {
     if (!this.form.dateDebut || !this.form.dateFin) return 0;
     const debut = new Date(this.form.dateDebut);
@@ -92,8 +127,7 @@ export class DemandeConge {
     return `${j} jour${j > 1 ? 's' : ''}`;
   }
 
-  // ─── Règles de gestion ──────────────────────────────────────────────────────
-
+  // ── Règles de gestion ────────────────────────────────────
   get isCongeMaladie(): boolean {
     return this.form.typeConge.toLowerCase().includes('maladie');
   }
@@ -103,7 +137,6 @@ export class DemandeConge {
   }
 
   private readonly typesSansVerifSolde = new Set([
-    'Congé sans solde',
     'Congé maternité',
     'Congé de décès',
     'Congé compensatoire'
@@ -122,10 +155,10 @@ export class DemandeConge {
     let joursOuvres = 0;
     const cur = new Date(today);
     cur.setDate(cur.getDate() + 1);
-    while (joursOuvres < 3) {
+    while (joursOuvres < this.delaiMinimumJours) {
       const dow = cur.getDay();
       if (dow !== 0 && dow !== 6) joursOuvres++;
-      if (joursOuvres < 3) cur.setDate(cur.getDate() + 1);
+      if (joursOuvres < this.delaiMinimumJours) cur.setDate(cur.getDate() + 1);
     }
     return debut < cur;
   }
@@ -139,8 +172,7 @@ export class DemandeConge {
     return !this.soldeInsuffisant && !this.dateTropProche && !this.dateFinAvantDebut;
   }
 
-  // ─── Actions ────────────────────────────────────────────────────────────────
-
+  // ── Actions ──────────────────────────────────────────────
   openConfirmModal(action: 'submit' | 'draft'): void {
     this.errorMessage = null;
     this.successMessage = null;
@@ -156,7 +188,7 @@ export class DemandeConge {
         return;
       }
       if (this.dateTropProche) {
-        this.errorMessage = 'La demande doit être déposée au minimum 3 jours ouvrés avant la date de début.';
+        this.errorMessage = `La demande doit être déposée au minimum ${this.delaiMinimumJours} jours ouvrés avant la date de début.`;
         return;
       }
       if (this.soldeInsuffisant) {
@@ -218,6 +250,7 @@ export class DemandeConge {
         dateDebut: this.form.dateDebut,
         dateFin: this.form.dateFin,
         estBrouillon,
+        statut: estBrouillon ? 'Brouillon' : this.parametrage.getStatutInitialConge(),
         nomComplet: this.auth.session?.nomComplet ?? '',
         matricule: this.auth.session?.matricule ?? '',
         service: this.auth.session?.service ?? '',
